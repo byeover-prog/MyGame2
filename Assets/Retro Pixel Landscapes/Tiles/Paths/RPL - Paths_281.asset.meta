@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 3df3d8c16223f56b392e0dd362c1933b
+timeCreated: 1593196988
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 151539
+  packageName: Retro Pixel Landscapes
+  packageVersion: 1.1.1
+  assetPath: Assets/Retro Pixel Landscapes/Tiles/Paths/RPL - Paths_281.asset
+  uploadId: 714032

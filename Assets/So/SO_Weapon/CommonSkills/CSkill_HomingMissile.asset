@@ -1,0 +1,157 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e145025ec83b9db4f8cd8df69737373e, type: 3}
+  m_Name: CSkill_HomingMissile
+  m_EditorClassIdentifier: Assembly-CSharp::CommonSkillConfigSO
+  kind: 3
+  displayName: "\uD638\uBC0D \uBBF8\uC0AC\uC77C"
+  icon: {fileID: -6905929645522730374, guid: 36689240a53ab7e4d8ef4d1af6744c84, type: 3}
+  weaponPrefab: {fileID: 1345828415596979063, guid: a0cf58367e92773489d6ee10ff827650,
+    type: 3}
+  maxLevel: 8
+  levels:
+  - cooldown: 1.35
+    damage: 19
+    projectileCount: 1
+    projectileSpeed: 7.5
+    lifeSeconds: 3.5
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 360
+  - cooldown: 1.35
+    damage: 24
+    projectileCount: 1
+    projectileSpeed: 7.5
+    lifeSeconds: 3.5
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 1
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 360
+  - cooldown: 1.35
+    damage: 29
+    projectileCount: 1
+    projectileSpeed: 7.5
+    lifeSeconds: 3.5
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 2
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 360
+  - cooldown: 1.35
+    damage: 34
+    projectileCount: 1
+    projectileSpeed: 7.5
+    lifeSeconds: 3.5
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 3
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 360
+  - cooldown: 1.35
+    damage: 39
+    projectileCount: 1
+    projectileSpeed: 7.5
+    lifeSeconds: 3.5
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 4
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 360
+  - cooldown: 1.35
+    damage: 44
+    projectileCount: 1
+    projectileSpeed: 7.5
+    lifeSeconds: 3.5
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 5
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 360
+  - cooldown: 1.35
+    damage: 49
+    projectileCount: 1
+    projectileSpeed: 7.5
+    lifeSeconds: 3.5
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 6
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 360
+  - cooldown: 1.35
+    damage: 54
+    projectileCount: 1
+    projectileSpeed: 7.5
+    lifeSeconds: 3.5
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 7
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 360

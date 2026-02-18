@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0c26b18eb2cb6384e82ebed9f2b0e009
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 151539
+  packageName: Retro Pixel Landscapes
+  packageVersion: 1.1.1
+  assetPath: Assets/Retro Pixel Landscapes/Animation/Water.controller
+  uploadId: 714032

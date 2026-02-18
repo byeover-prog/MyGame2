@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e02a3724e4460ee4a88eefe76cd401bc
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 151539
+  packageName: Retro Pixel Landscapes
+  packageVersion: 1.1.1
+  assetPath: Assets/Retro Pixel Landscapes/Tiles/Collision/rpl_collision_5.asset
+  uploadId: 714032
