@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
+  m_Name: Weapon_Arrow
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  weaponId: arrow
+  displayNameKr: "\uD654\uC0B4"
+  tagsKr: "\uBB3C\uB9AC"
+  icon: {fileID: -8438435414053321817, guid: c162335258a880a43a85181ba3b019a4, type: 3}
+  includeInPrototype: 1
+  isMainBasicSkill: 0
+  weight: 100
+  projectilePrefab: {fileID: 5443065447192772646, guid: 79da6a4e067c3504096efbd55fb65963,
+    type: 3}
+  baseDamage: 10
+  baseFireInterval: 0.7
+  baseRange: 10
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 8192
+  targetPolicy: 0
+  avoidDuplicateTargets: 1
