@@ -285,15 +285,15 @@ public static class CommonSkillSOAutoBuilder
         }
     }
 
-    private static CommonSkillLevelParams[] BuildDefaultLevels(CommonSkillKind kind, int maxLevel)
+    private static SkillEffectConfig[] BuildDefaultLevels(CommonSkillKind kind, int maxLevel)
     {
         maxLevel = Mathf.Max(1, maxLevel);
-        var arr = new CommonSkillLevelParams[maxLevel];
+        var arr = new SkillEffectConfig[maxLevel];
 
         for (int i = 0; i < maxLevel; i++)
         {
             int lv = i + 1;
-            var p = new CommonSkillLevelParams();
+            var p = new SkillEffectConfig();
 
             // 공통 베이스
             p.cooldown = 0.55f;

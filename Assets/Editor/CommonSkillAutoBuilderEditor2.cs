@@ -25,6 +25,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         configs.Add(UpsertConfig(CommonSkillKind.DarkOrb, "다크오브", "Weapon_DarkOrb", "Icon_DarkOrb", ApplyDarkOrbDefaults));
         configs.Add(UpsertConfig(CommonSkillKind.Shuriken, "수리검", "Weapon_Shuriken", "Icon_Shuriken", ApplyShurikenDefaults));
         configs.Add(UpsertConfig(CommonSkillKind.ArrowShot, "기본 화살", "Weapon_ArrowShot", "Icon_ArrowShot", ApplyArrowShotDefaults));
+        configs.Add(UpsertConfig(CommonSkillKind.ArrowRain, "화살비", "Weapon_ArrowRain", "Icon_ArrowRain", ApplyArrowRainDefaults));
 
         // 기본 스킬 3종(네가 enum 확장하면 자동으로 생성됨)
         // enum에 아래 이름이 없다면 스킵된다.
@@ -202,7 +203,7 @@ public sealed class CommonSkillAutoBuilderEditor2
     private static void EnsureLevels(CommonSkillConfigSO cfg)
     {
         if (cfg.levels == null || cfg.levels.Length != cfg.maxLevel)
-            cfg.levels = new CommonSkillLevelParams[cfg.maxLevel];
+            cfg.levels = new SkillEffectConfig[cfg.maxLevel];
     }
 
     private static void ApplyOrbitingBladeDefaults(CommonSkillConfigSO cfg)
@@ -210,7 +211,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = 0f;
             p.damage = 4 + lv * 2;
             p.projectileCount = Mathf.Clamp(lv, 1, 8);
@@ -226,7 +227,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = Mathf.Max(0.35f, 1.10f - 0.06f * (lv - 1));
             p.damage = 10 + lv * 3;
             p.projectileCount = 1 + Mathf.Max(0, lv / 2); // 1,1,2,2,3,3...
@@ -244,7 +245,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = 0.45f;
             p.damage = 8 + (lv - 1) * 7;
             p.projectileCount = 1;
@@ -260,7 +261,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = 1.35f;
             p.damage = 14 + lv * 5;
             p.projectileCount = 1;
@@ -277,7 +278,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = 2.1f;
             p.damage = 18 + lv * 6;
             p.projectileCount = 1;
@@ -295,7 +296,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = 0.90f;
             p.damage = 9 + lv * 4;
             p.projectileCount = 1;
@@ -311,7 +312,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = 0.55f;
             p.damage = 7 + lv * 3;
             p.projectileCount = (lv == 1) ? 1 : (1 + (lv - 1) * 2);
@@ -328,7 +329,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = Mathf.Max(0.45f, 0.90f - 0.05f * (lv - 1));
             p.damage = 10 + (lv - 1) * 3;
             p.projectileCount = 1;
@@ -344,7 +345,7 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = Mathf.Max(0.35f, 0.75f - 0.04f * (lv - 1));
             p.damage = 12 + (lv - 1) * 4;
             p.projectileCount = 1 + Mathf.Max(0, lv - 1); // 베는 횟수 용도로 사용(무기에서 해석)
@@ -359,13 +360,28 @@ public sealed class CommonSkillAutoBuilderEditor2
         EnsureLevels(cfg);
         for (int lv = 1; lv <= cfg.maxLevel; lv++)
         {
-            CommonSkillLevelParams p = new CommonSkillLevelParams();
+            SkillEffectConfig p = new SkillEffectConfig();
             p.cooldown = Mathf.Max(0.55f, 1.10f - 0.06f * (lv - 1));
             p.damage = 14 + (lv - 1) * 5;
             p.projectileCount = 1;
             p.projectileSpeed = 9.0f;
             p.lifeSeconds = 2.0f;
             p.explosionRadius = 1.1f;
+            cfg.levels[lv - 1] = p;
+        }
+    }
+
+    private static void ApplyArrowRainDefaults(CommonSkillConfigSO cfg)
+    {
+        EnsureLevels(cfg);
+        for (int lv = 1; lv <= cfg.maxLevel; lv++)
+        {
+            SkillEffectConfig p = new SkillEffectConfig();
+            p.cooldown = Mathf.Max(2.5f, 5.0f - 0.25f * (lv - 1));
+            p.damage = 2 + (lv - 1);
+            p.areaRadius = 2.0f + 0.1f * (lv - 1);
+            p.lifeSeconds = 4.0f;
+            p.areaDamageTickInterval = 0.25f;
             cfg.levels[lv - 1] = p;
         }
     }

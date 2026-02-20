@@ -8,6 +8,10 @@ public sealed class CommonSkillCardPicker2D : MonoBehaviour
     [SerializeField] private CommonSkillManager2D manager;
     [SerializeField] private CommonSkillCardPoolSO pool;
 
+    [Header("레벨업 소스(자동 연결)")]
+    [Tooltip("비우면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private PlayerExp playerExp;
+
     [Header("UI")]
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private CommonSkillCardView2D cardView1;
@@ -19,6 +23,7 @@ public sealed class CommonSkillCardPicker2D : MonoBehaviour
 
     private bool _isOpen;
     private float _prevTimeScale;
+    private int _pendingCount;
 
     private readonly List<CommonSkillCardSO> _candidates = new List<CommonSkillCardSO>(32);
     private readonly List<CommonSkillCardSO> _picked = new List<CommonSkillCardSO>(3);
@@ -28,9 +33,32 @@ public sealed class CommonSkillCardPicker2D : MonoBehaviour
 
     private void Awake()
     {
+        if (playerExp == null)
+            playerExp = FindFirstObjectByType<PlayerExp>();
+
         if (panelRoot != null) panelRoot.SetActive(false);
         _isOpen = false;
         _prevTimeScale = 1f;
+        _pendingCount = 0;
+    }
+
+    private void OnEnable()
+    {
+        if (playerExp != null)
+            playerExp.OnLevelUp += OnLevelUp;
+    }
+
+    private void OnDisable()
+    {
+        if (playerExp != null)
+            playerExp.OnLevelUp -= OnLevelUp;
+    }
+
+    private void OnLevelUp(int level)
+    {
+        _pendingCount++;
+        if (!_isOpen)
+            Open();
     }
 
     public void Open()
@@ -74,6 +102,10 @@ public sealed class CommonSkillCardPicker2D : MonoBehaviour
 
         if (panelRoot != null) panelRoot.SetActive(false);
         _isOpen = false;
+
+        _pendingCount = Mathf.Max(0, _pendingCount - 1);
+        if (_pendingCount > 0)
+            Open();
     }
 
     public void Pick(CommonSkillCardSO card)
@@ -93,17 +125,13 @@ public sealed class CommonSkillCardPicker2D : MonoBehaviour
         {
             var c = pool.cards[i];
             if (c == null || c.skill == null) continue;
-
-            if (manager.IsMaxLevel(c.skill))
-                continue;
-
+            if (manager.IsMaxLevel(c.skill)) continue;
             _candidates.Add(c);
         }
     }
 
     private CommonSkillCardSO PickWeightedNoDuplicate()
     {
-        // 후보가 적으므로 단순 반복(성능 충분)
         for (int retry = 0; retry < 20; retry++)
         {
             var c = PickWeighted();
@@ -112,7 +140,6 @@ public sealed class CommonSkillCardPicker2D : MonoBehaviour
             return c;
         }
 
-        // fallback
         for (int i = 0; i < _candidates.Count; i++)
         {
             var c = _candidates[i];

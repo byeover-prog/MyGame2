@@ -355,25 +355,54 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         return Mathf.Clamp(f, 0.05f, 10f);
     }
 
-    // "왜 2레벨부터?" 느낌 줄이기: 획득/강화 + 레벨 표기 개선
+    // 카드 제목: 레벨 숫자 없이 스킬 이름만 표시
     private static string BuildCardTitle(WeaponDefinitionSO w, int cur, int next, int max)
     {
-        string name = string.IsNullOrWhiteSpace(w.weaponNameKr) ? w.name : w.weaponNameKr;
-
-        if (cur <= 0) return $"{name} (획득)";
-        return $"{name} (Lv.{cur} → Lv.{next})";
+        return string.IsNullOrWhiteSpace(w.weaponNameKr) ? w.name : w.weaponNameKr;
     }
 
-    // 수치 대신 문장형(네가 원하는 UX)
+    // 카드 설명: 레벨별 실제 변화량 자동 계산
     private string BuildCardDescriptionText(WeaponDefinitionSO w, int curLevel, int nextLevel)
     {
         if (w == null) return string.Empty;
 
-        // 지금 구조상 레벨업은 기본적으로 피해/쿨/범위를 건드림.
-        // 당장 1줄 UX로 고정.
         if (curLevel <= 0)
             return "새 스킬을 획득합니다.";
 
-        return "피해량이 증가하고 재사용 대기 시간이 감소합니다.";
+        // LV 표기
+        string lvLine = $"LV{curLevel} → LV{nextLevel}";
+
+        // 변화량 계산
+        int dmgCur  = CalculateDesiredBonusDamage(w, curLevel);
+        int dmgNext = CalculateDesiredBonusDamage(w, nextLevel);
+        float cdCur  = CalculateDesiredCooldownMul(w, curLevel);
+        float cdNext = CalculateDesiredCooldownMul(w, nextLevel);
+
+        var lines = new System.Text.StringBuilder();
+        lines.AppendLine(lvLine);
+
+        int dmgDelta = dmgNext - dmgCur;
+        if (dmgDelta > 0)
+            lines.AppendLine($"공격력 +{dmgDelta}");
+        else if (dmgDelta < 0)
+            lines.AppendLine($"공격력 {dmgDelta}");
+
+        float cdDelta = cdNext - cdCur;
+        if (cdDelta < -0.001f)
+            lines.AppendLine($"쿨타임 감소");
+        else if (cdDelta > 0.001f)
+            lines.AppendLine($"쿨타임 증가");
+
+        float rangeCur  = CalculateDesiredRangeAdd(w, curLevel);
+        float rangeNext = CalculateDesiredRangeAdd(w, nextLevel);
+        float rangeDelta = rangeNext - rangeCur;
+        if (rangeDelta > 0.001f)
+            lines.AppendLine($"사거리 +{rangeDelta:F1}");
+
+        // 아무 변화도 없으면 기본 문구
+        if (dmgDelta == 0 && Mathf.Abs(cdDelta) <= 0.001f && Mathf.Abs(rangeDelta) <= 0.001f)
+            lines.AppendLine("스킬이 강화됩니다.");
+
+        return lines.ToString().TrimEnd();
     }
 }
