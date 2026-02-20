@@ -61,7 +61,11 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour
         OnLevelChanged();
     }
 
-    protected CommonSkillLevelParams P => (config != null) ? config.GetLevelParams(level) : default;
+    /// <summary>
+    /// 현재 레벨의 SkillEffectConfig를 반환합니다.
+    /// CommonSkillConfigSO.levels[] Inspector 값을 즉시 반영합니다.
+    /// </summary>
+    protected SkillEffectConfig P => (config != null) ? config.GetLevelParams(level) : default;
 
     protected bool TryGetNearest(out EnemyRegistryMember2D enemy)
     {

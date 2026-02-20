@@ -6,9 +6,11 @@ public sealed class BalsiWeapon2D : CommonSkillWeapon2D
     [SerializeField] private ProjectilePool2D pool;
     [SerializeField] private Transform spawnPoint;
 
-    [Header("발시 옵션")]
-    [SerializeField, Tooltip("관통 횟수(0=첫 타격에 소멸, 1=1회 관통 후 소멸)")]
-    private int pierceCount = 0;
+    [Header("발시 옵션 (fallback)")]
+    [Tooltip("SkillEffectConfig.pierceCount == 0 일 때 사용하는 기본 관통 횟수.\n" +
+             "CommonSkillConfigSO.levels[].pierceCount 에 값이 있으면 그 값이 우선 적용됩니다.")]
+    [SerializeField, Min(0)]
+    private int fallbackPierceCount = 0;
 
     [Header("디버그")]
     [SerializeField] private bool debugLog = false;
@@ -69,7 +71,9 @@ public sealed class BalsiWeapon2D : CommonSkillWeapon2D
 
         var proj = pool.Get<BalsiProjectile2D>(origin, Quaternion.identity);
         ApplyProjectileSorting(proj.gameObject);
-        proj.Init(enemyMask, P.damage, P.projectileSpeed, P.lifeSeconds, dir, pierceCount);
+        // SkillEffectConfig.pierceCount를 우선, 없으면 Inspector fallback 사용
+        int pierce = P.pierceCount > 0 ? P.pierceCount : fallbackPierceCount;
+        proj.Init(enemyMask, P.damage, P.projectileSpeed, P.lifeSeconds, dir, pierce);
 
         if (debugLog)
             Debug.Log($"[BalsiWeapon2D] Fire target={(target != null)} dmg={P.damage} cd={P.cooldown:0.00}", this);
