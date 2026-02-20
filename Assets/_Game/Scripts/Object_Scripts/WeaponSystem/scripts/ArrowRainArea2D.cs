@@ -69,6 +69,29 @@ public sealed class ArrowRainArea2D : MonoBehaviour
 
     private readonly HashSet<Collider2D> enemiesInside = new HashSet<Collider2D>(64);
 
+    // ──────────────────────────────────────────────────────────────────
+    // 런타임 구성 API
+    // ArrowRainWeapon2D(CommonSkillWeapon2D 래퍼)가 SkillEffectConfig 값을
+    // 이 메서드로 주입합니다. Enable 전에 호출해야 합니다.
+    // ──────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// SkillEffectConfig 기반으로 장판 파라미터를 런타임에 주입합니다.
+    /// ArrowRainWeapon2D가 Spawn 직후에 호출합니다.
+    /// </summary>
+    public void Configure(int tickDamage, float tickInterval, float areaRad, float duration, LayerMask mask)
+    {
+        damagePerTick       = Mathf.Max(0, tickDamage);
+        damageTickInterval  = Mathf.Max(0.05f, tickInterval);
+        radius              = Mathf.Max(0.1f, areaRad);
+        durationSeconds     = Mathf.Max(0f, duration);
+        enemyLayerMask      = mask;
+
+        // 컬라이더가 이미 생성됐다면 즉시 반영
+        if (circleTrigger != null)
+            ApplyRadiusToCollider();
+    }
+
     private float tickTimer;
     private float spawnTimer;
     private float aliveTimer;
