@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
   m_Name: Weapon_Musket
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  damageStepScale: 1
+  cooldownStepScale: 1
+  rangeStepScale: 1
   weaponId: bullet
   displayNameKr: "\uD654\uC2B9\uCD1D"
   tagsKr: "\uBB3C\uB9AC"
@@ -19,7 +22,7 @@ MonoBehaviour:
   includeInPrototype: 1
   isMainBasicSkill: 0
   weight: 100
-  projectilePrefab: {fileID: 3426262971046224484, guid: b70445170e9b30141bd69f6dd27d3c97,
+  projectilePrefab: {fileID: 5761721769350010560, guid: 069497d131db4804f822e79cc494aa17,
     type: 3}
   baseDamage: 18
   baseFireInterval: 1.2

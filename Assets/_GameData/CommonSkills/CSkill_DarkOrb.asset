@@ -1,0 +1,183 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e145025ec83b9db4f8cd8df69737373e, type: 3}
+  m_Name: CSkill_DarkOrb
+  m_EditorClassIdentifier: Assembly-CSharp::CommonSkillConfigSO
+  kind: 4
+  displayName: "\uB2E4\uD06C\uC624\uBE0C"
+  behaviorDescriptionKr: "\uBA85\uC911 \uC2DC \uD3ED\uBC1C\uD558\uACE0 \uBD84\uC5F4\uD558\uB294
+    \uC554\uD751\uAD6C\uB97C \uBC1C\uC0AC\uD569\uB2C8\uB2E4."
+  icon: {fileID: 0}
+  weaponPrefab: {fileID: 1613607384121689352, guid: 69b1a13eabf79664e894ac632e5a353a,
+    type: 3}
+  maxLevel: 8
+  levels:
+  - cooldown: 2.1
+    damage: 24
+    projectileCount: 1
+    projectileSpeed: 6.5
+    lifeSeconds: 2.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 1.2
+    splitCount: 2
+    childSpeed: 8.5
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
+  - cooldown: 2.1
+    damage: 30
+    projectileCount: 1
+    projectileSpeed: 6.5
+    lifeSeconds: 2.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 1.2
+    splitCount: 4
+    childSpeed: 8.5
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
+  - cooldown: 2.1
+    damage: 36
+    projectileCount: 1
+    projectileSpeed: 6.5
+    lifeSeconds: 2.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 1.2
+    splitCount: 6
+    childSpeed: 8.5
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
+  - cooldown: 2.1
+    damage: 42
+    projectileCount: 1
+    projectileSpeed: 6.5
+    lifeSeconds: 2.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 1.2
+    splitCount: 8
+    childSpeed: 8.5
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
+  - cooldown: 2.1
+    damage: 48
+    projectileCount: 1
+    projectileSpeed: 6.5
+    lifeSeconds: 2.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 1.2
+    splitCount: 10
+    childSpeed: 8.5
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
+  - cooldown: 2.1
+    damage: 54
+    projectileCount: 1
+    projectileSpeed: 6.5
+    lifeSeconds: 2.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 1.2
+    splitCount: 12
+    childSpeed: 8.5
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
+  - cooldown: 2.1
+    damage: 60
+    projectileCount: 1
+    projectileSpeed: 6.5
+    lifeSeconds: 2.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 1.2
+    splitCount: 14
+    childSpeed: 8.5
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
+  - cooldown: 2.1
+    damage: 66
+    projectileCount: 1
+    projectileSpeed: 6.5
+    lifeSeconds: 2.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 1.2
+    splitCount: 16
+    childSpeed: 8.5
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0

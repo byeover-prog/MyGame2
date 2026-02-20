@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
   m_Name: Weapon_DarkOrb
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  damageStepScale: 1
+  cooldownStepScale: 1
+  rangeStepScale: 1
   weaponId: dark_orb
   displayNameKr: "\uC554\uD751\uAD6C"
   tagsKr: "\uC74C"
@@ -19,7 +22,7 @@ MonoBehaviour:
   includeInPrototype: 1
   isMainBasicSkill: 0
   weight: 100
-  projectilePrefab: {fileID: 1613607384121689352, guid: 3915aa7e91dace84c881d7c795e06023,
+  projectilePrefab: {fileID: 3132555082536606338, guid: 51dac0e13e34d404db1bf644139c5bef,
     type: 3}
   baseDamage: 10
   baseFireInterval: 0.5

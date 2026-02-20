@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
   m_Name: Weapon_Shuriken
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  damageStepScale: 1
+  cooldownStepScale: 1
+  rangeStepScale: 1
   weaponId: shuriken
   displayNameKr: "\uC218\uB9AC\uAC80"
   tagsKr: "\uBB3C\uB9AC"
@@ -19,7 +22,7 @@ MonoBehaviour:
   includeInPrototype: 1
   isMainBasicSkill: 0
   weight: 100
-  projectilePrefab: {fileID: 7832524090223798467, guid: 8b17762ec1f463446b3cd248c32f04c7,
+  projectilePrefab: {fileID: 5000209898010349714, guid: 7935c7cec6de13948ad780e1512bee6f,
     type: 3}
   baseDamage: 10
   baseFireInterval: 0.5

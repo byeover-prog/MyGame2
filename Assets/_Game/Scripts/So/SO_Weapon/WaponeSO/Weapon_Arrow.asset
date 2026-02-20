@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
   m_Name: Weapon_Arrow
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  damageStepScale: 1
+  cooldownStepScale: 1
+  rangeStepScale: 1
   weaponId: arrow
   displayNameKr: "\uD654\uC0B4"
   tagsKr: "\uBB3C\uB9AC"
@@ -19,7 +22,7 @@ MonoBehaviour:
   includeInPrototype: 1
   isMainBasicSkill: 0
   weight: 100
-  projectilePrefab: {fileID: 5443065447192772646, guid: 79da6a4e067c3504096efbd55fb65963,
+  projectilePrefab: {fileID: 7796759533629522074, guid: c59f2bc8b62758e459bdbc51d56ffeb5,
     type: 3}
   baseDamage: 10
   baseFireInterval: 0.7
