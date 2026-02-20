@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b4cc2da0c8a30541ad5a44e6ab9b8ba, type: 3}
+  m_Name: WeaponSkillDeck_
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponSkillDeckSO
+  weapons:
+  - {fileID: 11400000, guid: fc4822f792be1174f9d9c02398f52696, type: 2}
+  - {fileID: 11400000, guid: 863bf6010be563745aaeeb64f91e420a, type: 2}
+  - {fileID: 11400000, guid: 6f2a43797d129464fbe888a5df7c5619, type: 2}
+  - {fileID: 11400000, guid: 1ef11b9e9f59ffc44b679a829e6c27f3, type: 2}
+  - {fileID: 11400000, guid: 4209007b3b2c86e41a6d2d35a3276718, type: 2}
+  - {fileID: 11400000, guid: 24ad1f6538aa13a4db2a8258ffe56912, type: 2}
+  - {fileID: 11400000, guid: 061ccd1bc9697a54d82e436a8cfd7497, type: 2}
+  - {fileID: 11400000, guid: 9235a8d11cb4fcb43bf94fb5f15eff9d, type: 2}

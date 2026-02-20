@@ -1,0 +1,156 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e145025ec83b9db4f8cd8df69737373e, type: 3}
+  m_Name: CSkill_ArrowRain
+  m_EditorClassIdentifier: Assembly-CSharp::CommonSkillConfigSO
+  kind: 7
+  displayName: "\uD654\uC0B4\uBE44"
+  icon: {fileID: -7548049993707339484, guid: e4865d9dc9adb174aab50cec76e85267, type: 3}
+  weaponPrefab: {fileID: 0}
+  maxLevel: 8
+  levels:
+  - cooldown: 0.55
+    damage: 10
+    projectileCount: 1
+    projectileSpeed: 12
+    lifeSeconds: 1.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.55
+    damage: 13
+    projectileCount: 1
+    projectileSpeed: 12
+    lifeSeconds: 1.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.55
+    damage: 16
+    projectileCount: 1
+    projectileSpeed: 12
+    lifeSeconds: 1.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.55
+    damage: 19
+    projectileCount: 1
+    projectileSpeed: 12
+    lifeSeconds: 1.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.55
+    damage: 22
+    projectileCount: 1
+    projectileSpeed: 12
+    lifeSeconds: 1.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.55
+    damage: 25
+    projectileCount: 1
+    projectileSpeed: 12
+    lifeSeconds: 1.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.55
+    damage: 28
+    projectileCount: 1
+    projectileSpeed: 12
+    lifeSeconds: 1.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.55
+    damage: 31
+    projectileCount: 1
+    projectileSpeed: 12
+    lifeSeconds: 1.2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
+  m_Name: Wapon_RainArrow
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  weaponId: RainArrow
+  displayNameKr: "\uD654\uC0B4\uBE44"
+  tagsKr: "\uACF5\uD1B5"
+  includeInPrototype: 1
+  isMainBasicSkill: 0
+  weight: 100
+  projectilePrefab: {fileID: 5179655189123409110, guid: 550e6dce4a8f3114eacdb5f8637a7389,
+    type: 3}
+  baseDamage: 10
+  baseFireInterval: 0.5
+  baseRange: 10
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 8192
+  targetPolicy: 0
+  avoidDuplicateTargets: 1
