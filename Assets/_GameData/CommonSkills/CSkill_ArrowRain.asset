@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CommonSkillConfigSO
   kind: 7
   displayName: "\uD654\uC0B4\uBE44"
-  behaviorDescriptionKr: 
-  icon: {fileID: 0}
+  behaviorDescriptionKr: "\uD558\uB298\uC5D0\uC11C \uD654\uCC28\uC5D0\uC11C \uBC1C\uC0AC\uB41C
+    \uD654\uC0B4\uB4E4\uC774 \uBB34\uC218\uD788 \uB5A8\uC5B4\uC9D1\uB2C8\uB2E4."
+  icon: {fileID: 7780243940698477534, guid: 534db0867bfe22f48b37944e1e296cbe, type: 3}
   weaponPrefab: {fileID: 5179655189123409110, guid: 550e6dce4a8f3114eacdb5f8637a7389,
     type: 3}
   maxLevel: 8

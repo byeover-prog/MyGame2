@@ -110,7 +110,9 @@ public sealed class CommonSkillCardView2D : MonoBehaviour
 
     private void OnClick()
     {
-        if (_picker == null || _card == null) return;
+        Debug.Log($"[CardView2D] OnClick | picker={_picker != null} | card={_card != null}");
+        if (_picker == null) { Debug.LogError("[CardView2D] _picker null - Bind() 미호출"); return; }
+        if (_card == null)   { Debug.LogError("[CardView2D] _card null"); return; }
         _picker.Pick(_card);
     }
 }

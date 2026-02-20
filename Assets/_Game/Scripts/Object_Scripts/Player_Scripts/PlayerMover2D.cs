@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
+[DisallowMultipleComponent]
 public sealed class PlayerMover2D : MonoBehaviour
 {
     [Header("이동")]
@@ -7,7 +9,7 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     [Header("대시")]
     [Tooltip("스페이스바로 대시합니다.")]
-    [SerializeField] private KeyCode dashKey = KeyCode.Space;
+    [SerializeField] private KeyCode dashKey = KeyCode.Space; // (레거시 호환용) 인스펙터 노출 유지
 
     [Tooltip("대시 거리(대략적으로 이동할 거리)")]
     [SerializeField] private float dashDistance = 2.5f;
@@ -28,6 +30,10 @@ public sealed class PlayerMover2D : MonoBehaviour
     private float _nextDashReadyTime = 0f;
     private Vector2 _dashVelocity;
 
+    // 입력 시스템 값 캐시
+    private Vector2 _moveInputCache;
+    private bool _dashPressedThisFrame;
+
     private void Reset()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -38,25 +44,59 @@ public sealed class PlayerMover2D : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
     }
 
+    /*
+     * [Input System 연결 방식]
+     * - PlayerInput(Invoke Unity Events) 사용 시:
+     *   - Move(Action: Value/Vector2)  -> 이 스크립트의 OnMove에 연결
+     *   - Dash(Action: Button)         -> 이 스크립트의 OnDash에 연결
+     *
+     * - 복잡도: O(1)
+     * - 주의: Update에서 UnityEngine.Input(레거시) 호출 금지
+     */
+
+    // Move 액션(Unity Events)에서 호출
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        _moveInputCache = context.ReadValue<Vector2>();
+
+        // 대각선 입력 정규화(길이 1 초과 방지)
+        if (_moveInputCache.sqrMagnitude > 1f)
+            _moveInputCache.Normalize();
+    }
+
+    // Dash 액션(Unity Events)에서 호출 (Press)
+    public void OnDash(InputAction.CallbackContext context)
+    {
+        // Button이 눌린 “순간”만 트리거
+        if (context.performed)
+            _dashPressedThisFrame = true;
+    }
+
     private void Update()
     {
-        float x = Input.GetAxisRaw("Horizontal"); // A/D
-        float y = Input.GetAxisRaw("Vertical");   // W/S
-
-        Vector2 input = new Vector2(x, y);
-        if (input.sqrMagnitude > 1f) input.Normalize();
-        MoveInput = input;
+        // 입력 적용
+        MoveInput = _moveInputCache;
 
         // 바라보는 방향 갱신(입력이 있을 때만)
         if (MoveInput.sqrMagnitude > 0.0001f)
             FacingDir = MoveInput;
 
-        if (Input.GetKeyDown(dashKey))
+        // 대시 입력(이번 프레임에 눌렸으면)
+        if (_dashPressedThisFrame)
+        {
+            _dashPressedThisFrame = false;
             TryDash();
+        }
+
+        // (레거시 호환) dashKey는 인스펙터 유지용으로 남겼지만,
+        // Active Input Handling = New일 때는 아래 레거시 입력 호출을 절대 쓰면 안 됨.
+        // if (Input.GetKeyDown(dashKey)) TryDash();  // <- 금지
     }
 
     private void FixedUpdate()
     {
+        if (rb == null) return;
+
         if (Time.time < _dashEndTime)
         {
             rb.linearVelocity = _dashVelocity;
