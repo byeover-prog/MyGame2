@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
   m_Name: Weapon_Homing
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  damageStepScale: 1
+  cooldownStepScale: 1
+  rangeStepScale: 1
   weaponId: homing
   displayNameKr: "\uC601\uD63C\uAD6C"
   tagsKr: "\uC591"
@@ -19,7 +22,7 @@ MonoBehaviour:
   includeInPrototype: 1
   isMainBasicSkill: 0
   weight: 100
-  projectilePrefab: {fileID: 1345828415596979063, guid: a0cf58367e92773489d6ee10ff827650,
+  projectilePrefab: {fileID: 8561632100752635023, guid: 6f78a42690b83ec46b19264e52164c54,
     type: 3}
   baseDamage: 6
   baseFireInterval: 0.35

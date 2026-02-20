@@ -12,9 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
   m_Name: Wapon_RainArrow
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  damageStepScale: 1
+  cooldownStepScale: 1
+  rangeStepScale: 1
   weaponId: RainArrow
   displayNameKr: "\uD654\uC0B4\uBE44"
   tagsKr: "\uACF5\uD1B5"
+  icon: {fileID: -7548049993707339484, guid: e4865d9dc9adb174aab50cec76e85267, type: 3}
   includeInPrototype: 1
   isMainBasicSkill: 0
   weight: 100

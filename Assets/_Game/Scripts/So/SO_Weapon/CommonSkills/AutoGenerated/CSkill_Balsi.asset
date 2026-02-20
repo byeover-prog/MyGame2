@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CommonSkillConfigSO
   kind: 8
   displayName: "\uBC1C\uC2DC"
+  behaviorDescriptionKr: 
   icon: {fileID: -7315724085840980281, guid: d0f329f129ac2374999735d93a885fa5, type: 3}
-  weaponPrefab: {fileID: 2049324827547978147, guid: ed5539695ad60f34fbd9d3cdf44d1385,
+  weaponPrefab: {fileID: 2049324827547978147, guid: b9f8327ae915d094994a52b538fe2f5f,
     type: 3}
   maxLevel: 8
   levels:
@@ -26,16 +27,19 @@ MonoBehaviour:
     lifeSeconds: 1.2
     maxDistance: 0
     spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 0
-    childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 0
+    splitCount: 0
+    childSpeed: 0
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
   - cooldown: 0.5
     damage: 13
     projectileCount: 1
@@ -43,16 +47,19 @@ MonoBehaviour:
     lifeSeconds: 1.2
     maxDistance: 0
     spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 0
-    childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 0
+    splitCount: 0
+    childSpeed: 0
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
   - cooldown: 0.5
     damage: 16
     projectileCount: 1
@@ -60,16 +67,19 @@ MonoBehaviour:
     lifeSeconds: 1.2
     maxDistance: 0
     spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 0
-    childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 0
+    splitCount: 0
+    childSpeed: 0
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
   - cooldown: 0.5
     damage: 19
     projectileCount: 1
@@ -77,16 +87,19 @@ MonoBehaviour:
     lifeSeconds: 1.2
     maxDistance: 0
     spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 0
-    childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 0
+    splitCount: 0
+    childSpeed: 0
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
   - cooldown: 0.5
     damage: 22
     projectileCount: 1
@@ -94,16 +107,19 @@ MonoBehaviour:
     lifeSeconds: 1.2
     maxDistance: 0
     spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 0
-    childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 0
+    splitCount: 0
+    childSpeed: 0
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
   - cooldown: 0.5
     damage: 25
     projectileCount: 1
@@ -111,16 +127,19 @@ MonoBehaviour:
     lifeSeconds: 1.2
     maxDistance: 0
     spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 0
-    childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 0
+    splitCount: 0
+    childSpeed: 0
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
   - cooldown: 0.5
     damage: 28
     projectileCount: 1
@@ -128,16 +147,19 @@ MonoBehaviour:
     lifeSeconds: 1.2
     maxDistance: 0
     spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 0
-    childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 0
+    splitCount: 0
+    childSpeed: 0
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0
   - cooldown: 0.5
     damage: 31
     projectileCount: 1
@@ -145,13 +167,16 @@ MonoBehaviour:
     lifeSeconds: 1.2
     maxDistance: 0
     spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 0
-    childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
+    chainCount: 0
+    explosionRadius: 0
+    splitCount: 0
+    childSpeed: 0
+    bounceCount: 0
+    pierceCount: 0
+    areaRadius: 0
+    areaDamageTickInterval: 0

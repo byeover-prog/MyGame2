@@ -361,7 +361,7 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         return string.IsNullOrWhiteSpace(w.weaponNameKr) ? w.name : w.weaponNameKr;
     }
 
-    // 카드 설명: 동작 방식 중심 문장(수치/레벨 미노출)
+    // 카드 설명: 레벨별 실제 변화량 자동 계산
     private string BuildCardDescriptionText(WeaponDefinitionSO w, int curLevel, int nextLevel)
     {
         if (w == null) return string.Empty;
@@ -369,6 +369,40 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         if (curLevel <= 0)
             return "새 스킬을 획득합니다.";
 
-        return "스킬이 강화됩니다.";
+        // LV 표기
+        string lvLine = $"LV{curLevel} → LV{nextLevel}";
+
+        // 변화량 계산
+        int dmgCur  = CalculateDesiredBonusDamage(w, curLevel);
+        int dmgNext = CalculateDesiredBonusDamage(w, nextLevel);
+        float cdCur  = CalculateDesiredCooldownMul(w, curLevel);
+        float cdNext = CalculateDesiredCooldownMul(w, nextLevel);
+
+        var lines = new System.Text.StringBuilder();
+        lines.AppendLine(lvLine);
+
+        int dmgDelta = dmgNext - dmgCur;
+        if (dmgDelta > 0)
+            lines.AppendLine($"공격력 +{dmgDelta}");
+        else if (dmgDelta < 0)
+            lines.AppendLine($"공격력 {dmgDelta}");
+
+        float cdDelta = cdNext - cdCur;
+        if (cdDelta < -0.001f)
+            lines.AppendLine($"쿨타임 감소");
+        else if (cdDelta > 0.001f)
+            lines.AppendLine($"쿨타임 증가");
+
+        float rangeCur  = CalculateDesiredRangeAdd(w, curLevel);
+        float rangeNext = CalculateDesiredRangeAdd(w, nextLevel);
+        float rangeDelta = rangeNext - rangeCur;
+        if (rangeDelta > 0.001f)
+            lines.AppendLine($"사거리 +{rangeDelta:F1}");
+
+        // 아무 변화도 없으면 기본 문구
+        if (dmgDelta == 0 && Mathf.Abs(cdDelta) <= 0.001f && Mathf.Abs(rangeDelta) <= 0.001f)
+            lines.AppendLine("스킬이 강화됩니다.");
+
+        return lines.ToString().TrimEnd();
     }
 }
