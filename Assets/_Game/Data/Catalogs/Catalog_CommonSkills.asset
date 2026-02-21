@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0915138e021c57d46b213c8de2b7f7a2, type: 3}
+  m_Name: Catalog_CommonSkills
+  m_EditorClassIdentifier: Assembly-CSharp::CommonSkillCatalogSO
+  skills:
+  - {fileID: 11400000, guid: 2c2c5149d283fd048a80283da92a7575, type: 2}
+  - {fileID: 11400000, guid: af7e3ede66bc316489b8fe82b161eaf5, type: 2}
+  - {fileID: 11400000, guid: 827eaba4d3734724494242d8ee0707e9, type: 2}
+  - {fileID: 11400000, guid: 67e86e363166ef942a84a0af84277517, type: 2}
+  - {fileID: 11400000, guid: d4f2dbc9faa5452468092d4a038f82a3, type: 2}
+  - {fileID: 11400000, guid: 524161ed9a667ab4c9e495b680c2b9b5, type: 2}
+  - {fileID: 11400000, guid: a65863df10508544ba8536dd2e036926, type: 2}
+  - {fileID: 11400000, guid: 870987b2ca8628942872ddc7371a984a, type: 2}
+  cardPool: {fileID: 0}

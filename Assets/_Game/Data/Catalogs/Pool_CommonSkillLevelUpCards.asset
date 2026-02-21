@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f22de57b77318bc42a7f1cc8b5b13884, type: 3}
+  m_Name: Pool_CommonSkillLevelUpCards
+  m_EditorClassIdentifier: Assembly-CSharp::CommonSkillCardPoolSO
+  cards:
+  - {fileID: 11400000, guid: c12adcf37b083fb4ba1329120015d462, type: 2}
+  - {fileID: 11400000, guid: 463a3cf941f8ed94d88fd3efdc9824e1, type: 2}
+  - {fileID: 11400000, guid: 7d93cb53bb469aa42b8aae9de9821182, type: 2}
+  - {fileID: 11400000, guid: 24ef83361ffc8e347a86c9bd4fb207b4, type: 2}
+  - {fileID: 11400000, guid: a5e28b13de7ba9643b5aff1539ba1c07, type: 2}
+  - {fileID: 11400000, guid: 28c643c971b2e00469db23d77332927a, type: 2}
+  - {fileID: 11400000, guid: 12659ced7d46c11428931ad8e863f03a, type: 2}
+  - {fileID: 11400000, guid: dd0bc053ad1e77e44a1e98cca518b592, type: 2}

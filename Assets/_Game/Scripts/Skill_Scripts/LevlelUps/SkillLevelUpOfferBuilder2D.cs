@@ -17,6 +17,26 @@ public sealed class SkillLevelUpOfferBuilder2D : MonoBehaviour
         BuildMap();
     }
 
+    /// <summary>
+    /// 런타임에서 트랙 목록을 주입합니다.
+    /// - Root(SO) 기반 진입점을 쓰고 싶을 때 사용.
+    /// - 에디터/씬 인스펙터 연결이 이미 되어있다면 호출하지 않아도 됩니다.
+    /// </summary>
+    public void SetTracks(IReadOnlyList<SkillLevelTrackSO> newTracks)
+    {
+        tracks.Clear();
+        if (newTracks != null)
+        {
+            for (int i = 0; i < newTracks.Count; i++)
+            {
+                var t = newTracks[i];
+                if (t != null) tracks.Add(t);
+            }
+        }
+
+        BuildMap();
+    }
+
     private void BuildMap()
     {
         _trackMap.Clear();
@@ -30,26 +50,19 @@ public sealed class SkillLevelUpOfferBuilder2D : MonoBehaviour
         }
     }
 
-    public List<WeaponUpgradeCardSO> BuildOffers(WeaponShooterSystem2D shooter, SkillLevelRuntimeState2D levelState, int offerCount = 3)
+    /// <summary>
+    /// "후보 전체"를 생성합니다.
+    /// - 최종 3장 뽑기는 상위(LevelUpSystem)에서 수행하는 쪽이 확장성이 좋습니다.
+    /// - 여기서는 '트랙 + 현재레벨'에 의해 가능한 카드(다음 레벨 업그레이드)만 만든다.
+    /// </summary>
+    public List<WeaponUpgradeCardSO> BuildCandidates(WeaponShooterSystem2D shooter, SkillLevelRuntimeState2D levelState)
     {
         var candidates = new List<WeaponUpgradeCardSO>(64);
 
         if (shooter == null || levelState == null)
             return candidates;
 
-        // Shooter 슬롯 구조는 Serialized가 아니라 런타임 필드 접근이 필요하므로,
-        // 여기서는 applier가 실제 슬롯을 만질 수 있다는 전제(우리가 이미 그렇게 만들었음)로 간다.
-        // 후보는 "트랙 + 현재레벨"로 만든다.
-
-        // 슬롯 수 파악: applier 내부 리플렉션으로도 알 수 있지만,
-        // 여기선 shooter가 공개 API가 없으니 "업그레이드 후보는 트랙 기반"으로만 만든다.
-        // 실제 slotIndex는 카드에 박아서 Picker/Applier가 적용한다.
-
-        // 가장 안전한 방법: tracks를 기준으로 slotIndex를 찾는 게 아니라,
-        // shooter slots에서 weaponId를 가져와야 한다.
-        // 이 프로젝트에서 weaponId는 WeaponDefinitionSO에 public string weaponId로 확정했으니,
-        // shooter의 slots[i].weapon을 리플렉션으로 읽어온다.
-
+        // shooter의 slots[i].weapon을 안전하게 읽기 위해 리플렉션 리더를 사용한다.
         var slots = ShooterSlotReader.ReadSlots(shooter);
         if (slots == null) return candidates;
 
@@ -86,10 +99,14 @@ public sealed class SkillLevelUpOfferBuilder2D : MonoBehaviour
                 }
 
                 var card = ScriptableObject.CreateInstance<WeaponUpgradeCardSO>();
+                // 런타임 생성 카드: 에디터/빌드에 저장되면 꼬이므로 저장 금지
+                card.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor | HideFlags.HideInHierarchy;
+
                 card.slotIndex = slotIndex;
                 card.weaponId = wid;
                 card.weaponNameKr = track.GetDisplayName();
                 card.tagsKr = string.IsNullOrWhiteSpace(def.tagsKr) ? "공통" : def.tagsKr;
+                card.icon = weaponDef.icon;
 
                 card.type = def.type;
                 card.value = def.value;
@@ -106,10 +123,13 @@ public sealed class SkillLevelUpOfferBuilder2D : MonoBehaviour
             }
         }
 
-        // 후보에서 3장 뽑기(슬롯 중복 방지: 같은 slotIndex 카드 2장 나오면 UX 망)
-        var picked = WeightedPickWithoutReplacementBySlot(candidates, offerCount);
+        return candidates;
+    }
 
-        return picked;
+    public List<WeaponUpgradeCardSO> BuildOffers(WeaponShooterSystem2D shooter, SkillLevelRuntimeState2D levelState, int offerCount = 3)
+    {
+        var candidates = BuildCandidates(shooter, levelState);
+        return WeightedPickWithoutReplacementBySlot(candidates, offerCount);
     }
 
     private static string BuildTitle(string weaponName, WeaponUpgradeType type, UpgradeValue v)

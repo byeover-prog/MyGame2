@@ -5,6 +5,11 @@ public sealed class CommonSkillConfigSO : ScriptableObject
 {
     public CommonSkillKind kind;
     public string displayName = "공통 스킬";
+
+    [Tooltip("레벨업 카드에 반드시 표시되는 '공격 방식' 설명(레벨 표기 금지).\n예: '플레이어 주변을 원형으로 회전하며 접촉 피해를 줍니다.'")]
+    [TextArea]
+    public string visualDescriptionKr;
+
     public Sprite icon;
     public GameObject weaponPrefab;
 
