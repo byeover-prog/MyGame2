@@ -107,6 +107,28 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         PrewarmPool();
     }
 
+
+    /// <summary>
+    /// 런타임에서 장판 파라미터를 덮어쓴다.
+    /// (CommonSkill 레벨 파라미터 적용용)
+    /// </summary>
+    public void Setup(float newRadius, float newDurationSeconds, float newDamageTickInterval, int newDamagePerTick, LayerMask newEnemyMask)
+    {
+        radius = Mathf.Max(0.1f, newRadius);
+        durationSeconds = Mathf.Max(0f, newDurationSeconds);
+        damageTickInterval = Mathf.Max(0.05f, newDamageTickInterval);
+        damagePerTick = Mathf.Max(0, newDamagePerTick);
+        enemyLayerMask = newEnemyMask;
+
+        tickTimer = 0f;
+        spawnTimer = 0f;
+        aliveTimer = 0f;
+        enemiesInside.Clear();
+
+        ApplyRadiusToCollider();
+        ApplyAreaAlpha();
+    }
+
     private void OnEnable()
     {
         tickTimer = 0f;

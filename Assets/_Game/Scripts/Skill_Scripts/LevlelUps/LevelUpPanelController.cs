@@ -5,6 +5,20 @@ using TMPro;
 
 public sealed class LevelUpPanelController : MonoBehaviour
 {
+    [Header("공통 스킬(11 스킬 중 8개)")]
+    [SerializeField] private CommonSkillCatalogSO commonSkillCatalog;
+    [SerializeField] private CommonSkillManager2D commonSkillManager;
+
+    [Header("패시브(8개)")]
+    [SerializeField] private PassiveCatalogSO passiveCatalog;
+    [SerializeField] private PassiveManager2D passiveManager;
+
+    [Header("슬롯 제한(결정 전이니 인스펙터로 바꿀 수 있게)")]
+    [SerializeField] private int maxSkillSlots = 8;
+    [SerializeField] private int maxPassiveSlots = 8;
+    [SerializeField] private bool useTotalSlotCap = true;
+    [SerializeField] private int maxTotalSlots = 16;
+
     [Header("패널 루트(없으면 자기 자신)")]
     [SerializeField] private GameObject panelRoot;
 
@@ -24,6 +38,10 @@ public sealed class LevelUpPanelController : MonoBehaviour
     private int _rerollRemaining;
     private Func<(LevelUpChoice a, LevelUpChoice b, LevelUpChoice c)> _onRerollRequest;
 
+    // TimeScale 복구 안전장치
+    private float _prevTimeScale = 1f;
+    private bool _didPause = false;
+
     private bool _isOpen;
     private LevelUpChoice _a;
     private LevelUpChoice _b;
@@ -35,6 +53,9 @@ public sealed class LevelUpPanelController : MonoBehaviour
     private void Awake()
     {
         if (panelRoot == null) panelRoot = gameObject;
+
+        if (commonSkillManager == null) commonSkillManager = FindFirstObjectByType<CommonSkillManager2D>();
+        if (passiveManager == null) passiveManager = FindFirstObjectByType<PassiveManager2D>();
 
         if (cardA != null) cardA.BindClick(OnCardClicked);
         if (cardB != null) cardB.BindClick(OnCardClicked);
@@ -53,9 +74,15 @@ public sealed class LevelUpPanelController : MonoBehaviour
     {
         if (rerollButton != null)
             rerollButton.onClick.RemoveListener(OnRerollClicked);
+
+        RestoreTimeScaleIfNeeded();
     }
 
-    // 리롤 콜백까지 받도록 시그니처 확장
+    private void OnDisable()
+    {
+        RestoreTimeScaleIfNeeded();
+    }
+
     public void Open(
         LevelUpChoice a,
         LevelUpChoice b,
@@ -74,7 +101,16 @@ public sealed class LevelUpPanelController : MonoBehaviour
 
         _isOpen = true;
 
-        if (pauseTimeWhenOpen) Time.timeScale = 0f;
+        if (pauseTimeWhenOpen)
+        {
+            // 이미 0이면 “이전 값”이 0으로 덮여 영원히 복구 못 하는 사고 방지
+            _prevTimeScale = Time.timeScale;
+            if (_prevTimeScale <= 0f) _prevTimeScale = 1f;
+
+            Time.timeScale = 0f;
+            _didPause = true;
+        }
+
         if (panelRoot != null) panelRoot.SetActive(true);
 
         ApplyToCard(cardA, _a);
@@ -90,7 +126,7 @@ public sealed class LevelUpPanelController : MonoBehaviour
     {
         _isOpen = false;
 
-        if (pauseTimeWhenOpen) Time.timeScale = 1f;
+        RestoreTimeScaleIfNeeded();
         if (panelRoot != null) panelRoot.SetActive(false);
 
         _a = null;
@@ -101,6 +137,15 @@ public sealed class LevelUpPanelController : MonoBehaviour
         _onRerollRequest = null;
         _rerollRemaining = 0;
         RefreshRerollUI();
+    }
+
+    private void RestoreTimeScaleIfNeeded()
+    {
+        if (!pauseTimeWhenOpen) return;
+        if (!_didPause) return;
+
+        Time.timeScale = (_prevTimeScale <= 0f) ? 1f : _prevTimeScale;
+        _didPause = false;
     }
 
     private void RefreshRerollUI()
@@ -141,20 +186,15 @@ public sealed class LevelUpPanelController : MonoBehaviour
     {
         if (card == null) return;
 
-        if (choice == null || choice.Skill == null)
+        if (choice == null)
         {
             card.SetData("", "EMPTY", "선택 가능한 업그레이드가 없습니다.", "", null);
             return;
         }
 
-        card.SetData(
-            choice.Skill.Id,
-            choice.Title,
-            choice.Description,
-            choice.Tag,
-            choice.Icon
-        );
+        card.SetData(choice.Id, choice.Title, choice.Description, choice.Tag, choice.Icon);
     }
+
     public void OnClickReroll()
     {
         OnRerollClicked();
@@ -171,8 +211,7 @@ public sealed class LevelUpPanelController : MonoBehaviour
         else if (clicked == cardB) choice = _b;
         else if (clicked == cardC) choice = _c;
 
-        if (choice == null || choice.Skill == null)
-            return;
+        if (choice == null) return;
 
         if (cardA != null) cardA.SetSelected(cardA == clicked);
         if (cardB != null) cardB.SetSelected(cardB == clicked);

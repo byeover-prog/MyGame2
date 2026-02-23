@@ -12,7 +12,7 @@ public static class SOAutoBuilderMenu
     public static void CreateFolders()
     {
         CreateFolderIfMissing("Assets/_Game");
-        CreateFolderIfMissing("Assets/_Game/Data");
+        CreateFolderIfMissing(Root);
         CreateFolderIfMissing(SkillFolder);
 
         AssetDatabase.Refresh();
@@ -24,9 +24,24 @@ public static class SOAutoBuilderMenu
     {
         CreateFolders();
 
-        CreateSkillIfMissing("skill_arrow", "발시", SkillKind.Weapon, "SO_Skill_Arrow");
-        CreateSkillIfMissing("skill_darkorb", "다크 오브", SkillKind.CommonSkill, "SO_Skill_DarkOrb");
-        CreateSkillIfMissing("skill_shuriken", "수리검", SkillKind.CommonSkill, "SO_Skill_Shuriken");
+        // 예시: definitionType만 구분하고, 실제 로직 SO는 linkedAsset에 연결(여기서는 비워둠)
+        CreateSkillIfMissing(
+            id: "skill_arrow",
+            titleKr: "발시",
+            defType: SkillDefinitionType.Weapon,
+            assetName: "SkillDef_Arrow");
+
+        CreateSkillIfMissing(
+            id: "skill_darkorb",
+            titleKr: "다크 오브",
+            defType: SkillDefinitionType.CommonSkill,
+            assetName: "SkillDef_DarkOrb");
+
+        CreateSkillIfMissing(
+            id: "skill_shuriken",
+            titleKr: "수리검",
+            defType: SkillDefinitionType.CommonSkill,
+            assetName: "SkillDef_Shuriken");
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -45,16 +60,24 @@ public static class SOAutoBuilderMenu
             var so = AssetDatabase.LoadAssetAtPath<SkillDefinitionSO>(path);
             if (so == null) continue;
 
-            if (string.IsNullOrWhiteSpace(so.SkillId))
+            // SkillDefinitionSO의 필드명에 맞춰 검증
+            if (string.IsNullOrWhiteSpace(so.id))
             {
-                Debug.LogError($"[SO][스킬] SkillId 비어있음: {path}", so);
+                Debug.LogError($"[SO][스킬] id 비어있음: {path}", so);
                 errorCount++;
             }
 
-            if (string.IsNullOrWhiteSpace(so.DisplayName))
+            if (string.IsNullOrWhiteSpace(so.titleKr))
             {
-                Debug.LogError($"[SO][스킬] DisplayName 비어있음: {path}", so);
+                Debug.LogError($"[SO][스킬] titleKr 비어있음: {path}", so);
                 errorCount++;
+            }
+
+            // 실제 로직 SO 연결은 선택사항이지만, 타입이 Weapon/CommonSkill인데 비어있으면 경고로 띄우기
+            if ((so.definitionType == SkillDefinitionType.CommonSkill || so.definitionType == SkillDefinitionType.Weapon)
+                && so.linkedAsset == null)
+            {
+                Debug.LogWarning($"[SO][스킬] linkedAsset 미연결(선택): {path}", so);
             }
         }
 
@@ -68,23 +91,33 @@ public static class SOAutoBuilderMenu
 
         var parent = Path.GetDirectoryName(folderPath);
         var name = Path.GetFileName(folderPath);
-        if (!AssetDatabase.IsValidFolder(parent)) CreateFolderIfMissing(parent);
+
+        if (!string.IsNullOrEmpty(parent) && !AssetDatabase.IsValidFolder(parent))
+            CreateFolderIfMissing(parent);
 
         AssetDatabase.CreateFolder(parent, name);
     }
 
-    private static void CreateSkillIfMissing(string id, string displayName, SkillKind kind, string assetName)
+    private static void CreateSkillIfMissing(string id, string titleKr, SkillDefinitionType defType, string assetName)
     {
         var path = $"{SkillFolder}/{assetName}.asset";
         if (File.Exists(path)) return;
 
         var so = ScriptableObject.CreateInstance<SkillDefinitionSO>();
 
-        // SerializedField이라 직접 접근 못하니 SerializedObject로 세팅
+        // public 필드라면 직접 세팅 가능하지만, 필드가 SerializeField로 바뀌어도 안전하게 SerializedObject 사용
         var serialized = new SerializedObject(so);
-        serialized.FindProperty("skillId").stringValue = id;
-        serialized.FindProperty("displayName").stringValue = displayName;
-        serialized.FindProperty("kind").enumValueIndex = (int)kind;
+
+        serialized.FindProperty("definitionType").enumValueIndex = (int)defType;
+        serialized.FindProperty("id").stringValue = id;
+        serialized.FindProperty("titleKr").stringValue = titleKr;
+
+        // descriptionKr는 템플릿에선 비워둠(카드에 들어갈 "공격 방식" 문구를 나중에 채우기)
+        serialized.FindProperty("descriptionKr").stringValue = "";
+
+        // linkedAsset도 템플릿에선 비워둠(나중에 CommonSkillConfigSO/WeaponDefinitionSO 등을 연결)
+        serialized.FindProperty("linkedAsset").objectReferenceValue = null;
+
         serialized.ApplyModifiedPropertiesWithoutUndo();
 
         AssetDatabase.CreateAsset(so, path);

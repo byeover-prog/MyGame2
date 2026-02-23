@@ -47,6 +47,9 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
     private int overlapBufferSize = 64;
 
     [Header("보스 태그")] [SerializeField] private string bossTag = "Boss";
+    
+    [Header("플레이어 능력치")]
+    [SerializeField] private PlayerCombatStats2D stats;
 
     private Collider2D[] _buffer;
     private readonly HashSet<int> _reservedTargetIds = new HashSet<int>();
@@ -56,6 +59,8 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
     private void Awake()
     {
         if (firePoint == null) firePoint = transform;
+        
+        if (stats == null) stats = GetComponentInParent<PlayerCombatStats2D>();
 
         if (projectilePool == null)
         {
@@ -122,18 +127,31 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
             if (slot == null || !slot.enabled) continue;
             if (slot.weapon == null || slot.weapon.projectilePrefab == null) continue;
 
-            float interval = Mathf.Max(0.05f, slot.weapon.baseFireInterval * Mathf.Max(0.1f, slot.cooldownMul));
-            if (now < slot.nextFireTime) continue;
-            slot.nextFireTime = now + interval;
+            // 1) 슬롯별 발사 간격 계산(무기 기본 * 슬롯 강화 * 패시브 쿨감)
+            float slotInterval = Mathf.Max(0.05f, slot.weapon.baseFireInterval * Mathf.Max(0.1f, slot.cooldownMul));
+            if (stats != null) slotInterval *= stats.CooldownMul;
 
-            float range = Mathf.Max(0.1f, slot.weapon.baseRange + slot.rangeAdd);
+            if (now < slot.nextFireTime) continue;
+            slot.nextFireTime = now + slotInterval;
+
+            // 2) 슬롯별 사거리 계산(무기 기본 + 슬롯 강화 + 패시브 범위)
+            float slotRange = Mathf.Max(0.1f, slot.weapon.baseRange + slot.rangeAdd);
+            if (stats != null) slotRange *= stats.AreaMul;
+
             int mask = slot.weapon.enemyLayer.value;
             if (mask == 0) continue;
 
-            if (!TryPickTarget(origin, range, mask, slot.weapon.targetPolicy, slot.weapon.avoidDuplicateTargets,
+            // 3) 타겟 선택
+            if (!TryPickTarget(
+                    origin,
+                    slotRange,
+                    mask,
+                    slot.weapon.targetPolicy,
+                    slot.weapon.avoidDuplicateTargets,
                     out var target))
                 continue;
 
+            // 4) 발사(데미지 배율은 Fire()에서 처리)
             Fire(slot, origin, target);
         }
     }
@@ -148,6 +166,7 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
         dir.Normalize();
 
         int damage = Mathf.Max(1, weapon.baseDamage + slot.bonusDamage);
+        if (stats != null) damage = Mathf.Max(1, Mathf.RoundToInt(damage * stats.DamageMul));
 
         // 업그레이드(멀티샷) 반영: 기본 1 + addShotCount
         int extraShots = 0;

@@ -7,6 +7,16 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
     [Header("블레이드 템플릿(자식)")]
     [SerializeField] private OrbitingBladeHitbox2D bladeTemplate;
 
+    [Header("안전 캡(프로토타입용)")]
+    [Tooltip("회전 반경이 너무 작으면 시각적으로 답답하고 근접 히트가 과도해집니다.")]
+    [SerializeField] private float minOrbitRadius = 2.0f;
+
+    [Tooltip("히트 간격이 너무 짧으면 접촉형이 폭발적으로 강해집니다.")]
+    [SerializeField] private float minHitInterval = 0.20f;
+
+    [Tooltip("밸런스 사고 방지용 데미지 상한(레벨 데이터가 잘못 들어왔을 때만 의미 있음)")]
+    [SerializeField] private int maxDamagePerHit = 50;
+
     private readonly List<OrbitingBladeHitbox2D> blades = new List<OrbitingBladeHitbox2D>(16);
     private readonly Dictionary<int, float> lastHitTime = new Dictionary<int, float>(256);
 
@@ -18,6 +28,7 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
         EnsureBladeInstances();
         OnLevelChanged();
     }
+
     private void LateUpdate()
     {
         if (owner == null) return;
@@ -26,7 +37,6 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
 
     protected override void OnLevelChanged()
     {
-        // 레벨당 검 개수 증가(기획)
         EnsureBladeInstances();
 
         int activeCount = Mathf.Max(1, P.projectileCount);
@@ -42,7 +52,7 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
         if (owner == null || config == null) return;
 
         int activeCount = Mathf.Max(1, P.projectileCount);
-        float radius = Mathf.Max(0.1f, P.orbitRadius);
+        float radius = Mathf.Max(minOrbitRadius, P.orbitRadius);
         float angSpeed = P.orbitAngularSpeed;
         baseAngle = (baseAngle + angSpeed * Time.deltaTime) % 360f;
 
@@ -69,7 +79,6 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
             blades.Add(b);
         }
 
-        // 원본 템플릿은 비활성 권장(중복 타격 방지)
         if (bladeTemplate.gameObject.activeSelf)
             bladeTemplate.gameObject.SetActive(false);
     }
@@ -82,7 +91,8 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
         int id = DamageUtil2D.GetRootId(other);
         float now = Time.time;
 
-        float interval = Mathf.Max(0.05f, P.hitInterval);
+        // 접촉형은 “적별 히트 쿨다운”이 없으면 DPS 폭발
+        float interval = Mathf.Max(minHitInterval, P.hitInterval);
 
         if (lastHitTime.TryGetValue(id, out float t))
         {
@@ -91,6 +101,8 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
         }
 
         lastHitTime[id] = now;
-        DamageUtil2D.TryApplyDamage(other, P.damage);
+
+        int dmg = Mathf.Clamp(P.damage, 1, Mathf.Max(1, maxDamagePerHit));
+        DamageUtil2D.TryApplyDamage(other, dmg);
     }
 }

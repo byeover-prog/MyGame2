@@ -33,6 +33,7 @@ public sealed class PlayerHealth : MonoBehaviour
 
     private bool _isDead = false;
     private float _invincibleUntil = 0f;
+    private int _baseMaxHp;
 
     private Collider2D _col;
     private Rigidbody2D _rb;
@@ -41,9 +42,19 @@ public sealed class PlayerHealth : MonoBehaviour
     {
         maxHp = Mathf.Max(1, maxHp);
         currentHp = Mathf.Clamp(currentHp, 0, maxHp);
+        _baseMaxHp = maxHp;
+        currentHp = maxHp;
 
         _col = GetComponent<Collider2D>();
         _rb = GetComponent<Rigidbody2D>();
+    }
+    
+    public void SetMaxHpBonus(int bonus, bool healToFull)
+    {
+        int newMax = Mathf.Max(1, _baseMaxHp + Mathf.Max(0, bonus));
+        maxHp = newMax;
+        if (healToFull) currentHp = maxHp;
+        else currentHp = Mathf.Min(currentHp, maxHp);
     }
 
     public void TakeDamage(int amount)
