@@ -656,6 +656,7 @@ GameObject:
   - component: {fileID: 8067255818212884645}
   - component: {fileID: 1998398278544516566}
   - component: {fileID: 3632411967291611376}
+  - component: {fileID: 6788546152434045463}
   m_Layer: 5
   m_Name: SkillCard
   m_TagString: Untagged
@@ -779,3 +780,23 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &6788546152434045463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5420665980195834915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf377de4afb825e4eaa8678a601e908e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillCardView
+  iconImage: {fileID: 2940135017792239772}
+  nameText: {fileID: 6683062257374859136}
+  descText: {fileID: 787018741015838302}
+  tagText: {fileID: 2620998743797331322}
+  selectedOutline: {fileID: 0}
+  hoverOutline: {fileID: 0}
+  button: {fileID: 3632411967291611376}
+  enableHoverHighlight: 1

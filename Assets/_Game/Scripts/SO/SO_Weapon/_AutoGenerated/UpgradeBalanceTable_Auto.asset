@@ -16,6 +16,26 @@ MonoBehaviour:
   damageAdd: 5
   cooldownMul: 0.95
   rangeAdd: 1
-  damageAddByLevel: 
-  cooldownMulByLevel: []
-  rangeAddByLevel: []
+  damageAddByLevel: 05000000050000000500000005000000050000000500000005000000050000000500000005000000
+  cooldownMulByLevel:
+  - 0.95
+  - 0.95
+  - 0.95
+  - 0.95
+  - 0.95
+  - 0.95
+  - 0.95
+  - 0.95
+  - 0.95
+  - 0.95
+  rangeAddByLevel:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
