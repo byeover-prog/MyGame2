@@ -4,7 +4,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class DarkOrbProjectile2D : PooledObject2D
 {
-    [SerializeField] private Rigidbody2D rb;
     [SerializeField] private SpriteRenderer sr;
 
     private LayerMask enemyMask;
@@ -28,7 +27,6 @@ public sealed class DarkOrbProjectile2D : PooledObject2D
 
     private void Awake()
     {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (sr == null) sr = GetComponentInChildren<SpriteRenderer>();
     }
 
@@ -76,9 +74,6 @@ public sealed class DarkOrbProjectile2D : PooledObject2D
             c.a = Mathf.Clamp01(alpha);
             sr.color = c;
         }
-
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
     }
 
     private void FixedUpdate()
@@ -90,8 +85,7 @@ public sealed class DarkOrbProjectile2D : PooledObject2D
             return;
         }
 
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
+        transform.position += (Vector3)(dir * speed * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

@@ -274,15 +274,17 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
             var s = commonSkillCatalog.skills[idx];
 
             int curLevel = commonSkillManager != null ? commonSkillManager.GetLevel(s.kind) : 0;
-            int max = Mathf.Max(1, (int)s.maxLevel); // ✅ 타입 혼재 대비
+            int max = Mathf.Max(1, (int)s.maxLevel);
             int nextLevel = Mathf.Clamp(curLevel + 1, 1, max);
 
-            string name = string.IsNullOrWhiteSpace(s.displayName) ? s.name : s.displayName;
-            string title = $"{name} Lv.{nextLevel}";
+            string skillName = string.IsNullOrWhiteSpace(s.displayName) ? s.name : s.displayName;
 
-            string desc = "";
-            if (!string.IsNullOrWhiteSpace(s.visualDescriptionKr))
-                desc = s.visualDescriptionKr;
+            // [Issue 4 수정] "Lv." 표기 제거 + 신규 획득/업그레이드 구분 타이틀
+            // 이미 보유 중이면 "스킬명 강화", 신규면 "스킬명 획득"
+            string title = curLevel <= 0 ? $"{skillName} (획득)" : $"{skillName} (강화)";
+
+            // 카드 설명: 공격 방식 + 다음 레벨 수치 요약
+            string desc = BuildCommonSkillDesc(s, nextLevel);
 
             return new LevelUpChoice(s, nextLevel, title, desc, "공통 스킬", s.icon);
         }
@@ -318,24 +320,49 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         var cfg = passiveCatalog.passives[pick];
 
         int curLv = passiveManager.GetLevel(cfg.kind);
-        int maxLv = Mathf.Max(1, (int)cfg.maxLevel); // ✅ 타입 혼재 대비
+        int maxLv = Mathf.Max(1, (int)cfg.maxLevel);
         int nextLv = Mathf.Clamp(curLv + 1, 1, maxLv);
 
-        string name = string.IsNullOrWhiteSpace(cfg.displayName) ? cfg.name : cfg.displayName;
-        string title = $"{name} Lv.{nextLv}";
+        string passiveName = string.IsNullOrWhiteSpace(cfg.displayName) ? cfg.name : cfg.displayName;
 
+        // [Issue 5 수정] "Lv." 표기 제거: 패시브 이름만 타이틀로 사용
+        string title = passiveName;
+
+        // [Issue 5] 수치 표기 필수: SO의 다음 레벨 params에서 자동 생성
+        // PassiveAutoBuilder struct 버그 수정 후 0%가 아닌 실제 값이 표시됨
         var lp = cfg.GetLevelParams(nextLv);
-        string desc = cfg.descriptionKr;
-
-        if (string.IsNullOrWhiteSpace(desc))
-        {
-            if (cfg.kind == PassiveKind.MaxHp)
-                desc = $"최대 체력 +{lp.addInt}";
-            else
-                desc = $"{Mathf.RoundToInt(lp.addPercent * 100f)}%";
-        }
+        string desc = BuildPassiveDesc(cfg.kind, passiveName, lp);
 
         return new LevelUpChoice(cfg, nextLv, title, desc, "패시브", cfg.icon);
+    }
+
+    // [Issue 5] 패시브 카드 설명: 수치 명시, Lv. 표기 없음
+    private static string BuildPassiveDesc(PassiveKind kind, string kindName, PassiveLevelParams lp)
+    {
+        switch (kind)
+        {
+            case PassiveKind.AttackDamage:
+                return $"{kindName} +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.Defense:
+                return $"피해 감소 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.CooldownReduction:
+                return $"쿨타임 -{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.MoveSpeed:
+                return $"이동속도 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.PickupRange:
+                return $"아이템 획득 범위 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.MaxHp:
+                return $"최대 체력 +{lp.addInt}";
+            case PassiveKind.ElementDamage:
+                return $"속성 피해 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.SkillArea:
+                return $"스킬 범위 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            default:
+                // 범용 처리: addInt가 0이면 퍼센트, 0이 아니면 정수
+                if (lp.addInt != 0)
+                    return $"{kindName} +{lp.addInt}";
+                return $"{kindName} +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+        }
     }
 
     // ============================
@@ -575,6 +602,54 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         float f = (float)r;
         if (f <= 0.0001f) f = 1f;
         return Mathf.Clamp(f, 0.05f, 10f);
+    }
+
+    // [Issue 4] 공통 스킬 카드 설명: 공격 방식 + 다음 레벨 수치 요약(Lv. 표기 없음)
+    private static string BuildCommonSkillDesc(CommonSkillConfigSO s, int nextLevel)
+    {
+        if (s == null) return string.Empty;
+
+        // 1) 공격 방식 설명
+        string visual = !string.IsNullOrWhiteSpace(s.visualDescriptionKr)
+            ? s.visualDescriptionKr
+            : "자동으로 적을 공격합니다.";
+
+        // 2) 다음 레벨 핵심 수치 요약
+        var p = s.GetLevelParams(nextLevel);
+        string effect;
+
+        switch (s.kind)
+        {
+            case CommonSkillKind.OrbitingBlade:
+                effect = $"피해 {p.damage} | 검 {p.projectileCount}개 | 틱 {p.hitInterval:0.##}s";
+                break;
+            case CommonSkillKind.Boomerang:
+                effect = $"피해 {p.damage} | 투사체 {p.projectileCount}개 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.PiercingBullet:
+                effect = $"피해 {p.damage} | 투사체 {p.projectileCount}개 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.HomingMissile:
+                effect = $"피해 {p.damage} | 연쇄 {p.chainCount}회 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.DarkOrb:
+                effect = $"피해 {p.damage} | 분열 {p.splitCount}개 | 폭발반경 {p.explosionRadius:0.#}";
+                break;
+            case CommonSkillKind.Shuriken:
+                effect = $"피해 {p.damage} | 튕김 {p.bounceCount}회 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.ArrowShot:
+                effect = $"피해 {p.damage} | 화살 {p.projectileCount}발 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.ArrowRain:
+                effect = $"피해 {p.damage} | 반경 {p.explosionRadius:0.#} | 쿨 {p.cooldown:0.##}s";
+                break;
+            default:
+                effect = $"피해 {p.damage} | 쿨 {p.cooldown:0.##}s";
+                break;
+        }
+
+        return $"{visual}\n효과: {effect}";
     }
 
     // "왜 2레벨부터?" 느낌 줄이기: 획득/강화 + 레벨 표기 개선

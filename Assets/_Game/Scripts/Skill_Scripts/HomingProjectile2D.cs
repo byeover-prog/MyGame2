@@ -21,7 +21,6 @@ public sealed class HomingProjectile2D : MonoBehaviour, IPooledProjectile2D
     private LayerMask _enemyMask;
 
     private Vector2 _velocityDir = Vector2.right;
-    private Rigidbody2D _rb;
     private Transform _target;
 
     private float _dieAt;
@@ -29,11 +28,6 @@ public sealed class HomingProjectile2D : MonoBehaviour, IPooledProjectile2D
     // 풀링 계약용
     private ProjectilePool _pool;
     private GameObject _originPrefab;
-
-    private void Awake()
-    {
-        _rb = GetComponent<Rigidbody2D>();
-    }
 
     // ===== IPooledProjectile2D 필수 구현 =====
     public void SetOriginPrefab(GameObject prefab)
@@ -56,12 +50,6 @@ public sealed class HomingProjectile2D : MonoBehaviour, IPooledProjectile2D
 
         _target = null;
         TryAcquireTarget();
-
-        if (_rb != null)
-        {
-            _rb.linearVelocity = _velocityDir * projectileSpeed;
-            _rb.angularVelocity = 0f;
-        }
 
         // 방향 회전(+X 전방 기준)
         float angle = Mathf.Atan2(_velocityDir.y, _velocityDir.x) * Mathf.Rad2Deg;
@@ -94,10 +82,7 @@ public sealed class HomingProjectile2D : MonoBehaviour, IPooledProjectile2D
             }
         }
 
-        if (_rb != null)
-            _rb.linearVelocity = _velocityDir * projectileSpeed;
-        else
-            transform.position += (Vector3)(_velocityDir * projectileSpeed * Time.fixedDeltaTime);
+        transform.position += (Vector3)(_velocityDir * projectileSpeed * Time.fixedDeltaTime);
     }
 
     private static Vector2 RotateTowards(Vector2 from, Vector2 to, float maxRadians)

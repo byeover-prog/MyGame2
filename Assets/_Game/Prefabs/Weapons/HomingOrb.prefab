@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 8392747210335044994}
   - component: {fileID: 9168321655529700828}
-  - component: {fileID: 8368754870894434020}
   - component: {fileID: 3964394486746800233}
   - component: {fileID: 7356455914434238269}
   - component: {fileID: 352200905192923142}
+  - component: {fileID: -6296528407078833480}
   m_Layer: 15
   m_Name: HomingOrb
   m_TagString: Untagged
@@ -96,33 +96,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!50 &8368754870894434020
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8561632100752635023}
-  m_BodyType: 1
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 0
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
 --- !u!58 &3964394486746800233
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -171,7 +144,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cd59c3d199e90041b7428f71692bfcb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HomingMissileProjectile2D
-  rb: {fileID: 8368754870894434020}
 --- !u!114 &352200905192923142
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -184,8 +156,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55c6660993948ac4bbb0b89f92f19d0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HomingProjectile2D
-  rb: {fileID: 8368754870894434020}
-  sr: {fileID: 9168321655529700828}
-  lifetime: 3.5
-  seekRadius: 6
-  overlapBufferSize: 32
+  projectileSpeed: 8
+  turnSpeedDeg: 360
+  lifeTime: 6
+--- !u!50 &-6296528407078833480
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8561632100752635023}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0

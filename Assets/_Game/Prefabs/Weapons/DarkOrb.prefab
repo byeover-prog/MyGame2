@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1081094156054933996}
   - component: {fileID: 6300340382264474135}
-  - component: {fileID: 8786011548285864179}
   - component: {fileID: 6754508966770860860}
   - component: {fileID: 4936022068496991512}
   - component: {fileID: -2952939611202965268}
+  - component: {fileID: 151329374544690741}
   m_Layer: 15
   m_Name: DarkOrb
   m_TagString: Untagged
@@ -96,33 +96,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!50 &8786011548285864179
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3132555082536606338}
-  m_BodyType: 1
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 0
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
 --- !u!58 &6754508966770860860
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -171,7 +144,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d2259f251b6d924f83db3523eb5cd20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DarkOrbProjectile2D
-  rb: {fileID: 8786011548285864179}
   sr: {fileID: 6300340382264474135}
 --- !u!114 &-2952939611202965268
 MonoBehaviour:
@@ -185,4 +157,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e230d8d4369d03b439bc2ff8e917e2f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DarkOrbSplitProjectile2D
-  rb: {fileID: 8786011548285864179}
+--- !u!50 &151329374544690741
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3132555082536606338}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0

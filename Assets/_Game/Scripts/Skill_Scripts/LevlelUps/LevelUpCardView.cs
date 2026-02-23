@@ -5,15 +5,25 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+// [구현 원리 요약]
+// SO 데이터(패시브/스킬)에 적힌 텍스트와 아이콘을 읽어와서 실제 화면의 UI(카드)에 글씨를 써주는 역할입니다.
 public sealed class LevelUpCardView : MonoBehaviour
 {
-    [Header("UI 참조")]
+    [Header("UI 연결 (Inspector에서 끌어다 놓으세요)")]
+    [Tooltip("카드의 그림이 들어갈 Image 컴포넌트입니다.")]
     [SerializeField] private Image iconImage;
+    
+    [Tooltip("카드의 이름(예: 회전검)이 적힐 텍스트 컴포넌트입니다.")]
     [SerializeField] private TMP_Text titleText;
+    
+    [Tooltip("카드의 수치 설명(예: 데미지 10% 증가)이 적힐 텍스트 컴포넌트입니다.")]
     [SerializeField] private TMP_Text descriptionText;
 
-    [Header("태그 UI(선택)")]
+    [Header("태그 UI (속성 표시용)")]
+    [Tooltip("불, 물 등의 속성 태그가 생성될 빈 공간(부모)입니다.")]
     [SerializeField] private Transform tagContainer;
+    
+    [Tooltip("생성될 태그의 원본 프리팹입니다.")]
     [SerializeField] private GameObject tagItemPrefab;
 
     private ILevelUpCardData _data;
@@ -25,6 +35,8 @@ public sealed class LevelUpCardView : MonoBehaviour
 
         if (iconImage != null) iconImage.sprite = data != null ? data.Icon : null;
         if (titleText != null) titleText.text = data != null ? data.TitleKorean : string.Empty;
+        
+        // 설명(Description)을 그대로 가져옵니다. 별도의 LV 문자열을 강제로 붙이지 않으므로, SO에 적힌 수치만 깔끔하게 나옵니다.
         if (descriptionText != null) descriptionText.text = data != null ? data.DescriptionKorean : string.Empty;
 
         if (data != null) BuildTagsSafe(data.Tags);

@@ -4,8 +4,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class HomingMissileProjectile2D : PooledObject2D
 {
-    [SerializeField] private Rigidbody2D rb;
-
     private LayerMask enemyMask;
     private int damage;
     private float speed;
@@ -19,11 +17,6 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
     private EnemyRegistryMember2D target;
 
     private readonly HashSet<int> hitSet = new HashSet<int>(64);
-
-    private void Awake()
-    {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
-    }
 
     public void Init(LayerMask mask, int dmg, float spd, float lifeSeconds, float turnDeg, int chainCount, Vector2 startDir, EnemyRegistryMember2D startTarget)
     {
@@ -40,9 +33,6 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
         target = startTarget;
 
         hitSet.Clear();
-
-        if (rb != null)
-            rb.linearVelocity = currentDir * speed;
     }
 
     private void FixedUpdate()
@@ -69,8 +59,7 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
             }
         }
 
-        if (rb != null)
-            rb.linearVelocity = currentDir * speed;
+        transform.position += (Vector3)(currentDir * speed * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

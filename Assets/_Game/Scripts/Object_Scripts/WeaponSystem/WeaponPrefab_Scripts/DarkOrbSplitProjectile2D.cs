@@ -4,8 +4,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class DarkOrbSplitProjectile2D : PooledObject2D
 {
-    [SerializeField] private Rigidbody2D rb;
-
     private LayerMask enemyMask;
     private int damage;
     private float speed;
@@ -18,11 +16,6 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
     // Unity6 권장: ContactFilter + List 재사용(할당/GC 방지)
     private readonly List<Collider2D> _hitList = new List<Collider2D>(16);
     private ContactFilter2D _enemyFilter;
-
-    private void Awake()
-    {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
-    }
 
     public void Init(LayerMask mask, int dmg, float spd, float lifeSeconds, Vector2 direction, float explosionRadius)
     {
@@ -42,9 +35,6 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
             layerMask = enemyMask,
             useTriggers = true
         };
-
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
     }
 
     private void FixedUpdate()
@@ -56,8 +46,7 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
             return;
         }
 
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
+        transform.position += (Vector3)(dir * speed * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

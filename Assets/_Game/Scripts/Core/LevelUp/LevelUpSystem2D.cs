@@ -44,6 +44,11 @@ public sealed class LevelUpSystem2D : MonoBehaviour
     [SerializeField] private int weaponWeightMultiplier = 1;
     [SerializeField] private int commonSkillWeightMultiplier = 10;
 
+    [Header("충돌 방지")]
+    [Tooltip("씬에 PlayerSkillUpgradeSystem이 존재하면 이 시스템을 비활성화.\n" +
+             "두 시스템이 동시에 레벨업 이벤트를 받으면 timeScale이 꼬여 먹통이 됩니다.")]
+    [SerializeField] private bool disableIfPlayerSkillUpgradeSystemPresent = true;
+
     // ----------------------------
     // 내부 상태
     // ----------------------------
@@ -80,6 +85,21 @@ public sealed class LevelUpSystem2D : MonoBehaviour
 
     private void Start()
     {
+        // [Issue 2 수정] PlayerSkillUpgradeSystem이 활성화되어 있으면 이 시스템 비활성화.
+        // 두 시스템이 동시에 PlayerExp.OnLevelUp을 받으면 timeScale 충돌로 먹통 발생.
+        if (disableIfPlayerSkillUpgradeSystemPresent)
+        {
+            var psus = FindFirstObjectByType<PlayerSkillUpgradeSystem>();
+            if (psus != null && psus.enabled)
+            {
+                Debug.Log(
+                    "[LevelUpSystem2D] PlayerSkillUpgradeSystem 발견 → 이 컴포넌트를 비활성화합니다. " +
+                    "(씬에서 하나만 활성화하도록 설계 변경을 권장합니다.)", this);
+                enabled = false;
+                return;
+            }
+        }
+
         ResolveReferencesFromRoot();
         SeedWeaponLevelsFromShooter();
 
@@ -310,7 +330,10 @@ public sealed class LevelUpSystem2D : MonoBehaviour
     {
         if (_pausedByMe) return;
 
-        _prevTimeScale = Time.timeScale;
+        // [Issue 2 수정] PlayerSkillUpgradeSystem 등 다른 시스템이 이미 timeScale=0으로
+        // 정지시킨 경우, _prevTimeScale=0을 저장하면 ResumeGame()이 영구 freeze를 유발.
+        // 안전장치: 이미 0이면 기준값을 1f로 고정.
+        _prevTimeScale = (Time.timeScale > 0f) ? Time.timeScale : 1f;
         Time.timeScale = 0f;
         _pausedByMe = true;
     }
@@ -319,7 +342,9 @@ public sealed class LevelUpSystem2D : MonoBehaviour
     {
         if (!_pausedByMe) return;
 
-        Time.timeScale = _prevTimeScale;
+        // 0 복구 방지 2중 안전장치
+        float restore = (_prevTimeScale > 0f) ? _prevTimeScale : 1f;
+        Time.timeScale = restore;
         _pausedByMe = false;
     }
 

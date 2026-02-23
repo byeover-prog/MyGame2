@@ -99,13 +99,21 @@ public sealed class CommonSkillManager2D : MonoBehaviour
                 go.transform.position = owner.position;
             }
 
-            var weapon = go.GetComponent<CommonSkillWeapon2D>();
+            // GetComponentInChildren(true): 루트뿐 아니라 자식 오브젝트도 탐색
+            // → 프리팹 루트가 아닌 자식에 CommonSkillWeapon2D가 붙어있어도 찾음
+            var weapon = go.GetComponentInChildren<CommonSkillWeapon2D>(true);
             if (weapon == null)
             {
-                Debug.LogWarning($"[CommonSkillManager2D] weaponPrefab에 CommonSkillWeapon2D가 없습니다: {skill.weaponPrefab.name}", this);
+                Debug.LogWarning(
+                    $"[CommonSkillManager2D] weaponPrefab 루트/자식 어디에도 CommonSkillWeapon2D 없음: {skill.weaponPrefab.name}" +
+                    $" → 프리팹에 스크립트가 있는지 확인하세요.", this);
                 Destroy(go);
                 return;
             }
+
+            Debug.Log(
+                $"[CommonSkillManager2D] 스킬 획득: {skill.kind} (weaponObj={weapon.gameObject.name}, prefab루트={go.name})",
+                this);
 
             weapon.Initialize(skill, owner, next);
             _weapons[idx] = weapon;

@@ -4,8 +4,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class PiercingBulletProjectile2D : PooledObject2D
 {
-    [SerializeField] private Rigidbody2D rb;
-
     private LayerMask enemyMask;
     private int damage;
     private float speed;
@@ -14,11 +12,6 @@ public sealed class PiercingBulletProjectile2D : PooledObject2D
     private Vector2 dir;
 
     private readonly HashSet<int> hitSet = new HashSet<int>(64);
-
-    private void Awake()
-    {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
-    }
 
     public void Init(LayerMask mask, int dmg, float spd, float lifeSeconds, Vector2 direction)
     {
@@ -30,19 +23,18 @@ public sealed class PiercingBulletProjectile2D : PooledObject2D
         age = 0f;
         dir = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right;
         hitSet.Clear();
-
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
     }
 
     private void FixedUpdate()
     {
         age += Time.fixedDeltaTime;
         if (age >= life)
+        {
             ReturnToPool();
+            return;
+        }
 
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
+        transform.position += (Vector3)(dir * speed * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

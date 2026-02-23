@@ -5,32 +5,32 @@ using TMPro;
 
 public sealed class LevelUpPanelController : MonoBehaviour
 {
-    [Header("공통 스킬(11 스킬 중 8개)")]
+    [Header("Common Skills")]
     [SerializeField] private CommonSkillCatalogSO commonSkillCatalog;
     [SerializeField] private CommonSkillManager2D commonSkillManager;
 
-    [Header("패시브(8개)")]
+    [Header("Passives")]
     [SerializeField] private PassiveCatalogSO passiveCatalog;
     [SerializeField] private PassiveManager2D passiveManager;
 
-    [Header("슬롯 제한(결정 전이니 인스펙터로 바꿀 수 있게)")]
+    [Header("Slot Limits")]
     [SerializeField] private int maxSkillSlots = 8;
     [SerializeField] private int maxPassiveSlots = 8;
     [SerializeField] private bool useTotalSlotCap = true;
     [SerializeField] private int maxTotalSlots = 16;
 
-    [Header("패널 루트(없으면 자기 자신)")]
+    [Header("Panel Root")]
     [SerializeField] private GameObject panelRoot;
 
-    [Header("카드 3장")]
+    [Header("Cards")]
     [SerializeField] private SkillCardView cardA;
     [SerializeField] private SkillCardView cardB;
     [SerializeField] private SkillCardView cardC;
 
-    [Header("시간 정지")]
+    [Header("Time")]
     [SerializeField] private bool pauseTimeWhenOpen = true;
 
-    [Header("리롤(새로고침)")]
+    [Header("Reroll")]
     [SerializeField] private Button rerollButton;
     [SerializeField] private TextMeshProUGUI rerollCountText;
     [SerializeField, Min(0)] private int rerollMaxCount = 100;
@@ -38,7 +38,6 @@ public sealed class LevelUpPanelController : MonoBehaviour
     private int _rerollRemaining;
     private Func<(LevelUpChoice a, LevelUpChoice b, LevelUpChoice c)> _onRerollRequest;
 
-    // TimeScale 복구 안전장치
     private float _prevTimeScale = 1f;
     private bool _didPause = false;
 
@@ -90,6 +89,12 @@ public sealed class LevelUpPanelController : MonoBehaviour
         Action<LevelUpChoice> onPick,
         Func<(LevelUpChoice a, LevelUpChoice b, LevelUpChoice c)> onRerollRequest)
     {
+        if (_isOpen)
+        {
+            Debug.LogWarning("[LevelUpPanelController] Already open, ignoring duplicate Open() call.", this);
+            return;
+        }
+
         _a = a;
         _b = b;
         _c = c;
@@ -103,7 +108,6 @@ public sealed class LevelUpPanelController : MonoBehaviour
 
         if (pauseTimeWhenOpen)
         {
-            // 이미 0이면 “이전 값”이 0으로 덮여 영원히 복구 못 하는 사고 방지
             _prevTimeScale = Time.timeScale;
             if (_prevTimeScale <= 0f) _prevTimeScale = 1f;
 
@@ -151,7 +155,7 @@ public sealed class LevelUpPanelController : MonoBehaviour
     private void RefreshRerollUI()
     {
         if (rerollCountText != null)
-            rerollCountText.text = $"새로고침 {_rerollRemaining}/{rerollMaxCount}";
+            rerollCountText.text = $"Reroll {_rerollRemaining}/{rerollMaxCount}";
 
         if (rerollButton != null)
             rerollButton.interactable = (_isOpen && _rerollRemaining > 0 && _onRerollRequest != null);
@@ -188,7 +192,7 @@ public sealed class LevelUpPanelController : MonoBehaviour
 
         if (choice == null)
         {
-            card.SetData("", "EMPTY", "선택 가능한 업그레이드가 없습니다.", "", null);
+            card.SetData("", "EMPTY", "No upgrades available.", "", null);
             return;
         }
 

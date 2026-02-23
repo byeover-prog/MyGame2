@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 4058634118947462141}
   - component: {fileID: 3809372804871011955}
   - component: {fileID: 3674168569020914249}
-  - component: {fileID: 649418345720359166}
   - component: {fileID: 4020582295785281833}
+  - component: {fileID: 1281644234998683652}
   m_Layer: 0
   m_Name: ArrowProjectile
   m_TagString: Untagged
@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a51a6241cd886a48b37ee0e9fcd24b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArrowProjectile2D
-  rb: {fileID: 649418345720359166}
+  selfCollider: {fileID: 0}
 --- !u!212 &3674168569020914249
 SpriteRenderer:
   serializedVersion: 2
@@ -108,33 +108,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!50 &649418345720359166
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7796759533629522074}
-  m_BodyType: 1
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 0
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
 --- !u!61 &4020582295785281833
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -181,3 +154,30 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.3642694, y: 0.854028}
   m_EdgeRadius: 0
+--- !u!50 &1281644234998683652
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796759533629522074}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0

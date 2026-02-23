@@ -3,8 +3,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class BalsiProjectile2D : PooledObject2D
 {
-    [SerializeField] private Rigidbody2D rb;
-
     [Header("회전(스프라이트 기준 보정)")]
     [Tooltip("스프라이트가 기본으로 바라보는 각도 보정값(도). 기본 0=오른쪽(→)이 전방. 위(↑)가 전방이면 -90 또는 90으로 맞추세요.")]
     [SerializeField] private float spriteForwardAngleOffsetDeg = 0f;
@@ -18,28 +16,9 @@ public sealed class BalsiProjectile2D : PooledObject2D
 
     private int pierceLeft;
 
-    private void Awake()
-    {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
-    }
-
     private void OnEnable()
     {
         age = 0f;
-
-        if (rb != null)
-        {
-            rb.simulated = true;
-
-            if (rb.bodyType != RigidbodyType2D.Dynamic)
-                rb.bodyType = RigidbodyType2D.Dynamic;
-
-            // 충돌로 회전이 틀어지는 건 막되, 우리가 원하는 방향으로는 강제로 맞춘다.
-            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-
-            rb.linearVelocity = Vector2.zero;
-            rb.angularVelocity = 0f;
-        }
     }
 
     public void Init(LayerMask mask, int dmg, float spd, float lifeSeconds, Vector2 direction, int pierceCount)
@@ -53,19 +32,12 @@ public sealed class BalsiProjectile2D : PooledObject2D
         pierceLeft = Mathf.Max(0, pierceCount);
 
         ApplyRotation(dir);
-
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
     }
 
     private void ApplyRotation(Vector2 d)
     {
         float angle = Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg + spriteForwardAngleOffsetDeg;
-
-        if (rb != null)
-            rb.rotation = angle;
-        else
-            transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
     private void FixedUpdate()
@@ -77,14 +49,7 @@ public sealed class BalsiProjectile2D : PooledObject2D
             return;
         }
 
-        if (rb != null)
-        {
-            rb.linearVelocity = dir * speed;
-        }
-        else
-        {
-            transform.position += (Vector3)(dir * speed * Time.fixedDeltaTime);
-        }
+        transform.position += (Vector3)(dir * speed * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

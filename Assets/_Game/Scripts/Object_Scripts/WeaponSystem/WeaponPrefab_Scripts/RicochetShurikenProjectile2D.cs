@@ -4,8 +4,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class RicochetShurikenProjectile2D : PooledObject2D
 {
-    [SerializeField] private Rigidbody2D rb;
-
     private LayerMask enemyMask;
     private int damage;
     private float speed;
@@ -16,11 +14,6 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
     private EnemyRegistryMember2D target;
 
     private readonly HashSet<int> hitSet = new HashSet<int>(64);
-
-    private void Awake()
-    {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
-    }
 
     public void Init(LayerMask mask, int dmg, float spd, float lifeSeconds, int bounces, EnemyRegistryMember2D startTarget)
     {
@@ -60,8 +53,7 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             return;
 
         Vector2 dir = desired.normalized;
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
+        transform.position += (Vector3)(dir * speed * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
