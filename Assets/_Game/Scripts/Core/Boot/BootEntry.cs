@@ -15,7 +15,7 @@ public sealed class BootEntry : MonoBehaviour
     {
         if (log) Debug.Log("[BootEntry] Awake");
 
-        // 프로토타입 안전장치: 시간 스케일이 다른 씬에서 0으로 남아있을 수 있음
-        if (Time.timeScale <= 0f) Time.timeScale = 1f;
+        // timeScale 제어는 게임 루프(예: LevelUpOrchestrator)에서만.
+        // 부트에서 강제 복구를 걸면, 원인 추적이 더 어려워질 수 있음.
     }
 }

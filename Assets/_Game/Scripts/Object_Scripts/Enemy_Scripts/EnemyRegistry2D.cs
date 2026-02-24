@@ -5,6 +5,8 @@ public static class EnemyRegistry2D
 {
     private static readonly List<EnemyRegistryMember2D> _enemies = new List<EnemyRegistryMember2D>(256);
 
+    public static int Count => _enemies.Count;
+
     public static void Register(EnemyRegistryMember2D enemy)
     {
         if (enemy == null) return;

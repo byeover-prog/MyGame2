@@ -6,6 +6,10 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
 {
+    [Header("Legacy LevelUp Flow")]
+    [Tooltip("구 레벨업 시스템(이 스크립트)로 패널을 띄우고 싶을 때만 켜세요.\n신규 구조: LevelUpOpenOnPlayerExp + LevelUpOrchestrator + OfferService + LevelUpOfferPanelView")]
+    [SerializeField] private bool enableLegacyLevelUpFlow = false;
+
     [Header("공통 스킬(카탈로그)")]
     [SerializeField] private CommonSkillCatalogSO commonSkillCatalog;
     [SerializeField] private CommonSkillManager2D commonSkillManager;
@@ -79,12 +83,16 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
 
     private void OnEnable()
     {
+        if (!enableLegacyLevelUpFlow) return;
+
         if (playerExp != null)
             playerExp.OnLevelUp += OnLevelUp;
     }
 
     private void OnDisable()
     {
+        if (!enableLegacyLevelUpFlow) return;
+
         if (playerExp != null)
             playerExp.OnLevelUp -= OnLevelUp;
     }

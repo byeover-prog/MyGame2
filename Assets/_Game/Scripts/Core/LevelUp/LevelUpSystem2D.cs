@@ -18,6 +18,10 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class LevelUpSystem2D : MonoBehaviour
 {
+    [Header("Legacy LevelUp Flow")]
+    [Tooltip("구 레벨업 시스템을 사용할 때만 켜세요.\n신규 구조: LevelUpOpenOnPlayerExp + LevelUpOrchestrator + OfferService + LevelUpOfferPanelView")]
+    [SerializeField] private bool enableLegacyLevelUpFlow = false;
+
     [Header("레벨업 소스")]
     [SerializeField] private PlayerExp playerExp;
 
@@ -85,6 +89,13 @@ public sealed class LevelUpSystem2D : MonoBehaviour
 
     private void Start()
     {
+        if (!enableLegacyLevelUpFlow)
+        {
+            // 씬에 남아 있어도 신규 구조와 충돌하지 않도록 기본은 OFF
+            enabled = false;
+            return;
+        }
+
         // [Issue 2 수정] PlayerSkillUpgradeSystem이 활성화되어 있으면 이 시스템 비활성화.
         // 두 시스템이 동시에 PlayerExp.OnLevelUp을 받으면 timeScale 충돌로 먹통 발생.
         if (disableIfPlayerSkillUpgradeSystemPresent)
@@ -330,11 +341,8 @@ public sealed class LevelUpSystem2D : MonoBehaviour
     {
         if (_pausedByMe) return;
 
-        // [Issue 2 수정] PlayerSkillUpgradeSystem 등 다른 시스템이 이미 timeScale=0으로
-        // 정지시킨 경우, _prevTimeScale=0을 저장하면 ResumeGame()이 영구 freeze를 유발.
-        // 안전장치: 이미 0이면 기준값을 1f로 고정.
-        _prevTimeScale = (Time.timeScale > 0f) ? Time.timeScale : 1f;
-        Time.timeScale = 0f;
+        // 시간 정지는 LevelUpOrchestrator에서만 처리한다.
+        // (이 구 시스템은 프로토타입에서 Disable/대체 대상)
         _pausedByMe = true;
     }
 
@@ -342,9 +350,7 @@ public sealed class LevelUpSystem2D : MonoBehaviour
     {
         if (!_pausedByMe) return;
 
-        // 0 복구 방지 2중 안전장치
-        float restore = (_prevTimeScale > 0f) ? _prevTimeScale : 1f;
-        Time.timeScale = restore;
+        // 시간 정지는 LevelUpOrchestrator에서만 처리한다.
         _pausedByMe = false;
     }
 

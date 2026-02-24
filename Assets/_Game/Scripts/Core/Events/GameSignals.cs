@@ -12,6 +12,9 @@ public static class GameSignals
     // 유저가 카드 선택(UI -> 오케스트레이터)
     public static event Action<Offer> OfferPicked;
 
+    // 리롤 요청(UI -> 오퍼서비스)
+    public static event Action RerollRequested;
+
     // 레벨업 종료(오케스트레이터 -> UI/게임)
     public static event Action LevelUpClosed;
 
@@ -21,16 +24,7 @@ public static class GameSignals
     public static void RaiseLevelUpOpenRequested() => LevelUpOpenRequested?.Invoke();
     public static void RaiseOffersReady(Offer[] offers) => OffersReady?.Invoke(offers);
     public static void RaiseOfferPicked(Offer offer) => OfferPicked?.Invoke(offer);
+    public static void RaiseRerollRequested() => RerollRequested?.Invoke();
     public static void RaiseLevelUpClosed() => LevelUpClosed?.Invoke();
     public static void RaiseSkillLevelChanged(string id, int level) => SkillLevelChanged?.Invoke(id, level);
-}
-
-[Serializable]
-public struct Offer
-{
-    public string id;
-    public Sprite icon;
-    public string titleKorean;
-    [TextArea] public string descKorean;
-    public GameObject skillPrefab;
 }

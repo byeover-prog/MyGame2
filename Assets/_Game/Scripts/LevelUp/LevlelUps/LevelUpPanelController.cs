@@ -106,14 +106,8 @@ public sealed class LevelUpPanelController : MonoBehaviour
 
         _isOpen = true;
 
-        if (pauseTimeWhenOpen)
-        {
-            _prevTimeScale = Time.timeScale;
-            if (_prevTimeScale <= 0f) _prevTimeScale = 1f;
-
-            Time.timeScale = 0f;
-            _didPause = true;
-        }
+        // 시간 정지는 LevelUpOrchestrator에서만 처리한다.
+        // (이 패널 컨트롤러는 구 구조이며, 프로토타입에서는 Disable/대체 대상)
 
         if (panelRoot != null) panelRoot.SetActive(true);
 
@@ -145,10 +139,7 @@ public sealed class LevelUpPanelController : MonoBehaviour
 
     private void RestoreTimeScaleIfNeeded()
     {
-        if (!pauseTimeWhenOpen) return;
-        if (!_didPause) return;
-
-        Time.timeScale = (_prevTimeScale <= 0f) ? 1f : _prevTimeScale;
+        // 시간 정지는 LevelUpOrchestrator에서만 처리한다.
         _didPause = false;
     }
 

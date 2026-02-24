@@ -1,30 +1,103 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 런타임 상태만 관리.
+/// - id -> level (Dictionary)
+/// - 스킬/패시브 슬롯 제한
+/// - 데이터(SO/JSON)나 프리팹 로딩 책임 없음
+/// </summary>
+[DisallowMultipleComponent]
 public sealed class SkillRuntimeState : MonoBehaviour
 {
-    // skillId -> level
-    private readonly Dictionary<string, int> _levels = new Dictionary<string, int>(32);
+    [Header("슬롯 제한(기본값은 4/4/8)")]
+    [SerializeField, Min(0)] private int maxSkillSlots = 4;
+    [SerializeField, Min(0)] private int maxPassiveSlots = 4;
 
-    public bool HasSkill(string skillId) => _levels.ContainsKey(skillId);
+    [SerializeField] private bool useTotalSlotCap = true;
+    [SerializeField, Min(0)] private int maxTotalSlots = 8;
 
-    public int GetLevel(string skillId)
+    // id -> level
+    private readonly Dictionary<string, int> _skillLevels = new Dictionary<string, int>(32);
+    private readonly Dictionary<string, int> _passiveLevels = new Dictionary<string, int>(32);
+
+    public int SkillCount => _skillLevels.Count;
+    public int PassiveCount => _passiveLevels.Count;
+    public int TotalCount => _skillLevels.Count + _passiveLevels.Count;
+
+    public bool Has(OfferKind kind, string id)
     {
-        return _levels.TryGetValue(skillId, out int lv) ? lv : 0;
+        if (string.IsNullOrWhiteSpace(id)) return false;
+
+        return kind switch
+        {
+            OfferKind.Skill => _skillLevels.ContainsKey(id),
+            OfferKind.Passive => _passiveLevels.ContainsKey(id),
+            _ => false
+        };
     }
 
-    public int GrantOrLevelUp(string skillId)
+    public int GetLevel(OfferKind kind, string id)
     {
-        if (_levels.TryGetValue(skillId, out int lv))
+        if (string.IsNullOrWhiteSpace(id)) return 0;
+
+        return kind switch
+        {
+            OfferKind.Skill => _skillLevels.TryGetValue(id, out int lvS) ? lvS : 0,
+            OfferKind.Passive => _passiveLevels.TryGetValue(id, out int lvP) ? lvP : 0,
+            _ => 0
+        };
+    }
+
+    public bool CanAcquire(OfferKind kind)
+    {
+        // 0이면 "획득 금지"로 취급
+        int total = TotalCount;
+
+        if (useTotalSlotCap && maxTotalSlots > 0 && total >= maxTotalSlots)
+            return false;
+
+        return kind switch
+        {
+            OfferKind.Skill => maxSkillSlots <= 0 ? false : _skillLevels.Count < maxSkillSlots,
+            OfferKind.Passive => maxPassiveSlots <= 0 ? false : _passiveLevels.Count < maxPassiveSlots,
+            _ => false
+        };
+    }
+
+    /// <summary>
+    /// 상태 갱신: 획득 또는 레벨업
+    /// - 이미 보유면 level++
+    /// - 미보유면 슬롯 제한을 만족할 때만 level=1로 추가
+    /// </summary>
+    public int GrantOrLevelUp(OfferKind kind, string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return 0;
+
+        var map = (kind == OfferKind.Passive) ? _passiveLevels : _skillLevels;
+
+        if (map.TryGetValue(id, out int lv))
         {
             lv++;
-            _levels[skillId] = lv;
+            map[id] = lv;
             return lv;
         }
-        else
+
+        // 신규 획득
+        if (!CanAcquire(kind))
         {
-            _levels.Add(skillId, 1);
-            return 1;
+            Debug.LogWarning($"[SkillRuntimeState] 슬롯이 가득 차서 '{id}'({kind}) 획득 불가");
+            return 0;
         }
+
+        map.Add(id, 1);
+        return 1;
+    }
+
+    public void ClearAll()
+    {
+        _skillLevels.Clear();
+        _passiveLevels.Clear();
     }
 }

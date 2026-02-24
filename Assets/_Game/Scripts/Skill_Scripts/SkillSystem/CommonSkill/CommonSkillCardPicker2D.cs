@@ -56,11 +56,7 @@ public sealed class CommonSkillCardPicker2D : MonoBehaviour
 
         if (panelRoot != null) panelRoot.SetActive(true);
 
-        if (pauseGameWhileOpen)
-        {
-            _prevTimeScale = Time.timeScale;
-            Time.timeScale = 0f;
-        }
+        // 시간 정지는 LevelUpOrchestrator에서만 처리한다.
 
         _isOpen = true;
     }
@@ -69,8 +65,7 @@ public sealed class CommonSkillCardPicker2D : MonoBehaviour
     {
         if (!_isOpen) return;
 
-        if (pauseGameWhileOpen)
-            Time.timeScale = _prevTimeScale;
+        // 시간 정지는 LevelUpOrchestrator에서만 처리한다.
 
         if (panelRoot != null) panelRoot.SetActive(false);
         _isOpen = false;

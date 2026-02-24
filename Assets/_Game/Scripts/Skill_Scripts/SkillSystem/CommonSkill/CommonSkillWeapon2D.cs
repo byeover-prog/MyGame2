@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class CommonSkillWeapon2D : MonoBehaviour
+public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
 {
     [Header("공통")]
     [SerializeField] protected CommonSkillConfigSO config;
@@ -160,5 +160,21 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour
     private void ConsumeCooldown()
     {
         cooldownTimer = Mathf.Max(0.01f, P.cooldown);
+    }
+
+    // ===== SkillRunner 연동(ILevelableSkill) =====
+    public void OnAttached(Transform newOwner)
+    {
+        // 프리팹 인스펙터에 config가 연결돼 있다는 가정.
+        if (config == null)
+            Debug.LogWarning($"[CommonSkillWeapon2D] config가 비어있습니다: {name}", this);
+
+        Initialize(config, newOwner, 1);
+    }
+
+    public void ApplyLevel(int newLevel)
+    {
+        if (newLevel <= 0) return;
+        SetLevel(newLevel);
     }
 }

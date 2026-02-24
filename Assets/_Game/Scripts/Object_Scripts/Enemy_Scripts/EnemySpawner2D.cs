@@ -56,6 +56,14 @@ public sealed class EnemySpawner2D : MonoBehaviour
     // 외부 주입 배율(스포너는 이 값만 믿고 동작)
     private float _spawnRateMultiplier = 1f;
 
+    // === 디버그/HUD용 노출(읽기 전용) ===
+    public int AliveCount => _aliveCount;
+    public int MaxAliveCount => maxAliveEnemies;
+    public float SpawnRateMultiplier => _spawnRateMultiplier;
+    public float BaseSpawnRatePerSec => spawnRatePerSec;
+    public float NextSpawnTime => _nextSpawnTime;
+    public float TimeUntilNextSpawn => Mathf.Max(0f, _nextSpawnTime - Time.time);
+
     private void Awake()
     {
         if (autoFindMonsterRootByName && monsterRoot == null)
