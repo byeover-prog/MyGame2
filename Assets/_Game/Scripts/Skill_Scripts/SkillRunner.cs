@@ -26,8 +26,6 @@ public sealed class SkillRunner : MonoBehaviour
     {
         if (owner == null)
         {
-            // 가장 흔한 실수: SkillRunner를 Systems 오브젝트에 붙이고 owner를 안 넣는 경우.
-            // PlayerExp를 기준으로 자동 탐색을 한 번 시도한다.
             var pe = FindFirstObjectByType<PlayerExp>();
             owner = pe != null ? pe.transform : transform;
         }
@@ -38,7 +36,6 @@ public sealed class SkillRunner : MonoBehaviour
     {
         if (mount != null) return;
 
-        // 1) 이름으로 탐색
         var found = owner != null ? owner.Find("SkillMount") : null;
         if (found != null)
         {
@@ -46,7 +43,6 @@ public sealed class SkillRunner : MonoBehaviour
             return;
         }
 
-        // 2) 자동 생성
         if (!autoCreateMount || owner == null) return;
 
         var go = new GameObject("SkillMount");
@@ -82,14 +78,32 @@ public sealed class SkillRunner : MonoBehaviour
         go.transform.localRotation = Quaternion.identity;
         go.transform.localScale = Vector3.one;
 
-        // 루트가 아니라 "자식까지" 검색(프리팹 구조가 제각각이라 이게 안전)
-        var levelable = go.GetComponentInChildren<ILevelableSkill>(true);
+        var all = go.GetComponentsInChildren<MonoBehaviour>(true);
+        ILevelableSkill levelable = null;
+
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] is ILevelableSkill s)
+            {
+                // 1) 루트에 붙은 게 있으면 그게 1순위
+                if (all[i].gameObject == go)
+                {
+                    levelable = s;
+                    break;
+                }
+
+                // 2) 루트가 없으면 첫 번째를 임시로 잡되, 계속 탐색은 해서 개수 카운트
+                if (levelable == null) levelable = s;
+            }
+        }
+
         if (levelable == null)
         {
-            Debug.LogError($"[SkillRunner] ILevelableSkill 없음: {id} (루트/자식 포함 검색 실패)", go);
+            Debug.LogError($"[SkillRunner] ILevelableSkill 없음: {id} (루트/자식 검색 실패)", go);
             Destroy(go);
             return;
         }
+        Debug.Log($"[SkillRunner] ILevelableSkill 선택됨: {id} => {levelable.GetType().Name}", go);
 
         _instances.Add(id, levelable);
         levelable.OnAttached(owner);
@@ -114,10 +128,4 @@ public sealed class SkillRunner : MonoBehaviour
     }
 
     public bool IsAttached(string id) => !string.IsNullOrWhiteSpace(id) && _instances.ContainsKey(id);
-}
-
-public interface ILevelableSkill
-{
-    void OnAttached(Transform owner);
-    void ApplyLevel(int level);
 }

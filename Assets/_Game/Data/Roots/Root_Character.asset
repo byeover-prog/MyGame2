@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5163b0b66255ff439d7640486ac4ff7, type: 3}
   m_Name: Root_Character
   m_EditorClassIdentifier: Assembly-CSharp::CharacterRootSO
-  catalog: {fileID: 0}
+  catalog: {fileID: 11400000, guid: 6a4332e066ce2da47bee0a32fb63c1e7, type: 2}

@@ -1,3 +1,4 @@
+// UTF-8
 using UnityEngine;
 
 /// <summary>
@@ -22,10 +23,20 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
     [SerializeField] private bool enableLogs = true;
 
     private bool _isOpen;
+    private bool _isPicking;
     private float _prevTimeScale = 1f;
+
+    private void Awake()
+    {
+        // 실수 방지: 인스펙터 누락 시 자동 탐색
+        if (offerService == null) offerService = FindFirstObjectByType<OfferService>();
+        if (runtimeState == null) runtimeState = FindFirstObjectByType<SkillRuntimeState>();
+        if (skillRunner == null) skillRunner = FindFirstObjectByType<SkillRunner>();
+    }
 
     private void OnEnable()
     {
+        // GameSignals 이벤트 이름은 네 코드에 맞춰 이미 확정된 상태
         GameSignals.LevelUpOpenRequested += HandleOpen;
         GameSignals.OfferPicked += HandleOfferPicked;
         GameSignals.OffersReady += HandleOffersReady;
@@ -43,9 +54,11 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
         if (_isOpen) return;
 
         _isOpen = true;
+        _isPicking = false;
 
         if (pauseTime)
         {
+            // 이미 0이면 원래 값이 무엇이었는지 알 수 없으니 1로 가정
             _prevTimeScale = (Time.timeScale > 0f) ? Time.timeScale : 1f;
             Time.timeScale = 0f;
         }
@@ -53,28 +66,44 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
         if (enableLogs)
             Debug.Log("[LevelUp] OpenRequested", this);
 
-        if (offerService != null) offerService.Bind(runtimeState);
-        if (offerService != null) offerService.RequestOffers();
-        else Debug.LogError("[LevelUp] OfferService 참조가 없습니다.", this);
+        if (offerService == null)
+        {
+            Debug.LogError("[LevelUp] OfferService 참조가 없습니다.", this);
+            Close(); // 멈춤 방지
+            return;
+        }
+
+        // 오퍼 생성 서비스에 상태 연결 후 요청
+        offerService.Bind(runtimeState);
+        offerService.RequestOffers();
     }
 
     private void HandleOffersReady(Offer[] offers)
     {
-        // 후보가 없어서 OffersReady([])가 왔으면, 게임이 멈춘 채로 남지 않게 즉시 닫는다.
         if (!_isOpen) return;
 
+        // 후보가 없으면 즉시 닫아서 TimeScale이 남지 않게 한다.
         if (offers == null || offers.Length <= 0)
         {
             if (enableLogs)
                 Debug.Log("[LevelUp] OffersReady(0) => Close", this);
 
             Close();
+            return;
         }
+
+        // offers > 0 인 경우:
+        // - 패널 표시/카드 바인딩은 LevelUpPanelController/OfferPanelView가 처리(신호 기반)한다고 가정
+        // - 여기서는 닫지 않는다.
+        if (enableLogs)
+            Debug.Log($"[LevelUp] OffersReady => {offers.Length}장", this);
     }
 
     private void HandleOfferPicked(Offer picked)
     {
         if (!_isOpen) return;
+        if (_isPicking) return; // 중복 클릭 방지
+        _isPicking = true;
 
         try
         {
@@ -85,9 +114,10 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
             }
 
             // 1) 런타임 상태 +1 (첫 획득이면 1)
-            int newLv = (runtimeState != null)
-                ? runtimeState.GrantOrLevelUp(picked.kind, picked.id)
-                : 0;
+            // runtimeState가 없다면 최소 동작 보장: 첫 장착 레벨=1로 처리
+            int newLv = 1;
+            if (runtimeState != null)
+                newLv = runtimeState.GrantOrLevelUp(picked.kind, picked.id);
 
             GameSignals.RaiseSkillLevelChanged(picked.id, newLv);
 
@@ -110,10 +140,15 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
             if (enableLogs)
                 Debug.Log($"[LevelUp] ApplyLevel '{picked.id}' => Lv.{newLv}", this);
         }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[LevelUp] HandleOfferPicked 예외: {e.Message}\n{e.StackTrace}", this);
+        }
         finally
         {
             // 어떤 실패/예외가 있어도 timeScale 복구 + 패널 닫힘 보장
             Close();
+            _isPicking = false;
         }
     }
 

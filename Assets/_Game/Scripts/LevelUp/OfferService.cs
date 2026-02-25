@@ -10,6 +10,10 @@ using UnityEngine;
 ///   - 보유 중이면 업그레이드 카드(다음 레벨=현재+1)
 ///   - maxLevel 도달 시 후보 제외
 ///   - 슬롯 제한 초과 시(미보유 획득) 후보 제외
+///
+/// 디버그(enableLogs=true) 시:
+/// - 각 항목이 후보에서 빠지는 이유(SKIP reason=...)를 남겨서
+///   "왜 Bullet이 안 뜨는지" 같은 문제를 즉시 확정한다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class OfferService : MonoBehaviour
@@ -18,22 +22,30 @@ public sealed class OfferService : MonoBehaviour
     public struct OfferCatalogItem
     {
         [Header("식별")]
+        [Tooltip("고유 ID(중복 금지). 비우면 prefab.name으로 자동 채움(OnValidate).")]
         public string id;
+
+        [Tooltip("카드 종류(무기/패시브 등)")]
         public OfferKind kind;
 
         [Header("카드 표시")]
         public Sprite icon;
+
+        [Tooltip("카드 제목(한글). 비우면 id로 표시됨.")]
         public string titleKr;
+
+        [Tooltip("카드 태그(한글). 예) 공격/방어/유틸")]
         public string tagKr;
 
         [Header("프리팹")]
+        [Tooltip("실제 스킬/패시브 프리팹(런타임에서 Spawn/Attach 대상).")]
         public GameObject prefab;
 
         [Header("정책")]
         [Tooltip("런타임 카드 후보에 포함할지")]
         public bool showInRunOffers;
 
-        [Tooltip("이 스킬/패시브의 최대 레벨(0이면 8으로 간주)")]
+        [Tooltip("이 스킬/패시브의 최대 레벨(0이면 8로 간주)")]
         [Range(0, 8)]
         public int maxLevel;
 
@@ -104,6 +116,7 @@ public sealed class OfferService : MonoBehaviour
     [SerializeField, Min(1)] private int offerCount = 3;
 
     [Header("디버그")]
+    [Tooltip("켜면 후보 필터링(Skip) 이유를 로그로 출력합니다.")]
     [SerializeField] private bool enableLogs = false;
 
     private SkillRuntimeState _state;
@@ -144,31 +157,56 @@ public sealed class OfferService : MonoBehaviour
         for (int i = 0; i < catalog.Length; i++)
         {
             var def = catalog[i];
-            if (!def.showInRunOffers) continue;
+
+            if (!def.showInRunOffers)
+            {
+                LogSkip(def, "showInRunOffers=false");
+                continue;
+            }
 
             if (string.IsNullOrWhiteSpace(def.id))
+            {
+                LogSkip(def, "id empty");
                 continue;
+            }
+
+            if (def.prefab == null)
+            {
+                LogSkip(def, "prefab null");
+                continue;
+            }
 
             // 같은 id가 카탈로그에 중복으로 들어가면(실수) 1개만 살린다.
             if (!_dedupIds.Add(def.id))
+            {
+                LogSkip(def, "duplicate id in catalog");
                 continue;
+            }
 
             int max = def.GetMaxLevelOrDefault();
             int cur = _state.GetLevel(def.kind, def.id);
+
             if (cur >= max)
+            {
+                LogSkip(def, $"maxLevel (cur={cur}, max={max})");
                 continue;
+            }
 
             // 미보유 획득은 슬롯 제한 체크
             if (cur <= 0 && !_state.CanAcquire(def.kind))
+            {
+                LogSkip(def, "slot full (cannot acquire new)");
                 continue;
+            }
 
             _candidateIndices.Add(i);
+            LogPass(def, $"candidate ok (cur={cur}, max={max})");
         }
 
         if (_candidateIndices.Count <= 0)
         {
             if (enableLogs)
-                Debug.Log("[OfferService] 후보가 없습니다(모두 maxLevel or 슬롯 full).", this);
+                Debug.Log("[OfferService] 후보가 없습니다(모두 maxLevel or 슬롯 full or 입력실수).", this);
 
             return Array.Empty<Offer>();
         }
@@ -180,7 +218,7 @@ public sealed class OfferService : MonoBehaviour
         for (int i = 0; i < take; i++)
         {
             int j = UnityEngine.Random.Range(i, _candidateIndices.Count);
-            ( _candidateIndices[i], _candidateIndices[j] ) = ( _candidateIndices[j], _candidateIndices[i] );
+            (_candidateIndices[i], _candidateIndices[j]) = (_candidateIndices[j], _candidateIndices[i]);
 
             int idx = _candidateIndices[i];
             var def = catalog[idx];
@@ -199,6 +237,9 @@ public sealed class OfferService : MonoBehaviour
                 prefab = def.prefab,
                 previewLevel = next
             };
+
+            if (enableLogs)
+                Debug.Log($"[OfferService] PICK id={def.id} kind={def.kind} nextLv={next}", this);
         }
 
         return result;
@@ -220,6 +261,22 @@ public sealed class OfferService : MonoBehaviour
         RequestOffers();
     }
 
+    private void LogSkip(OfferCatalogItem item, string reason)
+    {
+        if (!enableLogs) return;
+
+        string id = string.IsNullOrWhiteSpace(item.id) ? "(empty)" : item.id;
+        Debug.Log($"[OfferService] SKIP id={id} kind={item.kind} reason={reason}", this);
+    }
+
+    private void LogPass(OfferCatalogItem item, string note)
+    {
+        if (!enableLogs) return;
+
+        string id = string.IsNullOrWhiteSpace(item.id) ? "(empty)" : item.id;
+        Debug.Log($"[OfferService] PASS id={id} kind={item.kind} note={note}", this);
+    }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {
@@ -230,6 +287,7 @@ public sealed class OfferService : MonoBehaviour
         {
             var def = catalog[i];
 
+            // id 비었으면 prefab 이름으로 자동 채움
             if (string.IsNullOrWhiteSpace(def.id) && def.prefab != null)
                 def.id = def.prefab.name;
 

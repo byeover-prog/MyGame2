@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Pool_CommonSkillLevelUpCards
   m_EditorClassIdentifier: Assembly-CSharp::CommonSkillCardPoolSO
   cards:
-  - {fileID: 11400000, guid: c12adcf37b083fb4ba1329120015d462, type: 2}
-  - {fileID: 11400000, guid: 463a3cf941f8ed94d88fd3efdc9824e1, type: 2}
-  - {fileID: 11400000, guid: 7d93cb53bb469aa42b8aae9de9821182, type: 2}
-  - {fileID: 11400000, guid: 24ef83361ffc8e347a86c9bd4fb207b4, type: 2}
-  - {fileID: 11400000, guid: a5e28b13de7ba9643b5aff1539ba1c07, type: 2}
-  - {fileID: 11400000, guid: 28c643c971b2e00469db23d77332927a, type: 2}
-  - {fileID: 11400000, guid: 12659ced7d46c11428931ad8e863f03a, type: 2}
-  - {fileID: 11400000, guid: dd0bc053ad1e77e44a1e98cca518b592, type: 2}
+  - {fileID: 11400000, guid: 06ca45a2f23eb844fafecce67a108176, type: 2}
+  - {fileID: 11400000, guid: dbf5b264b3e098a4cbcb94afab8a38eb, type: 2}
+  - {fileID: 11400000, guid: 442943d13426e754bb16227e97e7b70c, type: 2}
+  - {fileID: 11400000, guid: a96aae32bf96dc54bb9d24accfb7db84, type: 2}
+  - {fileID: 11400000, guid: eba46066b39bd0c428e123eba09da9b9, type: 2}
+  - {fileID: 11400000, guid: 3f9b67d6b45e33c4aa81372d04711f6a, type: 2}
+  - {fileID: 11400000, guid: af86bc854d6f81249970c1f92b23e0ad, type: 2}
+  - {fileID: 11400000, guid: 0b301dc4cac72ae419c69e7b5fae15e5, type: 2}

@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 7356455914434238269}
   - component: {fileID: 352200905192923142}
   - component: {fileID: -6296528407078833480}
+  - component: {fileID: -6726285706623136437}
+  - component: {fileID: -5842252964617863460}
   m_Layer: 15
   m_Name: HomingOrb
   m_TagString: Untagged
@@ -186,3 +188,47 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &-6726285706623136437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8561632100752635023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
+  debugSkillId: 
+  maxLevel: 8
+  level: 0
+  forwardLevelToChildren: 1
+  forwardMethodNames:
+  - ApplyLevel
+  - SetLevel
+  - SetSkillLevel
+  - UpgradeLevel
+  - OnLevelChanged
+  log: 1
+--- !u!114 &-5842252964617863460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8561632100752635023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
+  col: {fileID: 3964394486746800233}
+  ignoreOwnerCollision: 1
+  mode: 1
+  homingTurnSpeed: 720
+  homingRange: 30
+  ricochetCount: 0
+  ricochetRange: 0
+  pierce: 0
+  destroyOnHit: 1

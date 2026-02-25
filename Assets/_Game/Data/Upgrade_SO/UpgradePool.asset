@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56788c8954e190646a3b162acf30fc52, type: 3}
+  m_Name: UpgradePool
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponUpgradePoolSO
+  cards:
+  - {fileID: 11400000, guid: 66bdd3dfa8493844a8928c18605f3c0c, type: 2}
+  - {fileID: 11400000, guid: 311aa21c54fa73e45b7c7d88b1003574, type: 2}
+  - {fileID: 11400000, guid: 730b5c5631ec1324391fabee6305ed75, type: 2}
+  - {fileID: 11400000, guid: 765dfa2d25dc7b2449d5f2ccdf85e65a, type: 2}
+  - {fileID: 11400000, guid: 64efd49553afea24aabec5f001b98896, type: 2}
+  - {fileID: 11400000, guid: 6f733d8571b9f4e41852417da10f3f8e, type: 2}
+  - {fileID: 11400000, guid: 08db56fb7f87db042a0c6432041ab377, type: 2}
+  - {fileID: 11400000, guid: f4db27ecb08381a4b85a71844f3a1612, type: 2}

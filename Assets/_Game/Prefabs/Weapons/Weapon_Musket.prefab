@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4973da556a22a547b8de2b8e991d0c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PiercingBulletWeapon2D
-  config: {fileID: 11400000, guid: 827eaba4d3734724494242d8ee0707e9, type: 2}
+  config: {fileID: 11400000, guid: fd072ae5006e1554aa3b6596f0693f7d, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 8192
@@ -71,8 +71,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectilePool2D
   prefab: {fileID: 4210520205365246454, guid: 069497d131db4804f822e79cc494aa17, type: 3}
-  prewarmCount: 20
-  maxCount: 200
 --- !u!1 &7326993454177472215
 GameObject:
   m_ObjectHideFlags: 0

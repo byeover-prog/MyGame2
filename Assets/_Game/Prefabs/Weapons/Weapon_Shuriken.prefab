@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf50f4caf310bd94d9e9c05a371408e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RicochetShurikenWeapon2D
-  config: {fileID: 11400000, guid: 524161ed9a667ab4c9e495b680c2b9b5, type: 2}
+  config: {fileID: 11400000, guid: e5ca376f06625e548878b7c31c14bc07, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 8192
@@ -90,6 +90,7 @@ MonoBehaviour:
   shurikenProjectilePrefab: {fileID: 5000209898010349714, guid: 7935c7cec6de13948ad780e1512bee6f,
     type: 3}
   detectRange: 10
+  firePivot: {fileID: 244080834077732029}
 --- !u!114 &1712747281440605854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -103,5 +104,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectilePool2D
   prefab: {fileID: 7175219620819757290, guid: 7935c7cec6de13948ad780e1512bee6f, type: 3}
-  prewarmCount: 20
-  maxCount: 200

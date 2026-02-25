@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 3674168569020914249}
   - component: {fileID: 4020582295785281833}
   - component: {fileID: 1281644234998683652}
+  - component: {fileID: 1534040017305913308}
+  - component: {fileID: -860772033551373037}
   m_Layer: 0
   m_Name: ArrowProjectile
   m_TagString: Untagged
@@ -47,7 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a51a6241cd886a48b37ee0e9fcd24b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArrowProjectile2D
-  selfCollider: {fileID: 0}
+  selfCollider: {fileID: 4020582295785281833}
 --- !u!212 &3674168569020914249
 SpriteRenderer:
   serializedVersion: 2
@@ -181,3 +183,40 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &1534040017305913308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796759533629522074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
+  debugSkillId: 
+  maxLevel: 8
+  level: 0
+  log: 1
+--- !u!114 &-860772033551373037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796759533629522074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
+  col: {fileID: 4020582295785281833}
+  ignoreOwnerCollision: 1
+  mode: 0
+  homingTurnSpeed: 0
+  homingRange: 0
+  ricochetCount: 0
+  ricochetRange: 0
+  pierce: 0
+  destroyOnHit: 1

@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 1081094156054933996}
   - component: {fileID: 6300340382264474135}
   - component: {fileID: 6754508966770860860}
-  - component: {fileID: 4936022068496991512}
-  - component: {fileID: -2952939611202965268}
   - component: {fileID: 151329374544690741}
+  - component: {fileID: 4936022068496991512}
+  - component: {fileID: 6698356803984456033}
+  - component: {fileID: -134575363894471975}
   m_Layer: 15
   m_Name: DarkOrb
   m_TagString: Untagged
@@ -132,31 +133,6 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: -0.07030621}
   m_Radius: 1.5358757
---- !u!114 &4936022068496991512
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3132555082536606338}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d2259f251b6d924f83db3523eb5cd20, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DarkOrbProjectile2D
-  sr: {fileID: 6300340382264474135}
---- !u!114 &-2952939611202965268
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3132555082536606338}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e230d8d4369d03b439bc2ff8e917e2f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DarkOrbSplitProjectile2D
 --- !u!50 &151329374544690741
 Rigidbody2D:
   serializedVersion: 5
@@ -165,7 +141,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3132555082536606338}
-  m_BodyType: 1
+  m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -182,5 +158,72 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
+  m_CollisionDetection: 1
+  m_Constraints: 4
+--- !u!114 &4936022068496991512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3132555082536606338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d2259f251b6d924f83db3523eb5cd20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DarkOrbProjectile2D
+  rb: {fileID: 151329374544690741}
+  col: {fileID: 6754508966770860860}
+  lifeSeconds: 1
+  splitDistance: 4
+  explosionRadius: 1
+  splitAngle: 30
+  splitDepth: 0
+  maxFragmentsBudget: 64
+  splitSpeedMultiplier: 0.9
+  ownerIgnoreSeconds: 0.08
+  log: 0
+--- !u!114 &6698356803984456033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3132555082536606338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
+  debugSkillId: 
+  maxLevel: 8
+  level: 0
+  forwardLevelToChildren: 1
+  forwardMethodNames:
+  - ApplyLevel
+  - SetLevel
+  - SetSkillLevel
+  - UpgradeLevel
+  - OnLevelChanged
+  log: 1
+--- !u!114 &-134575363894471975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3132555082536606338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
+  col: {fileID: 6754508966770860860}
+  ignoreOwnerCollision: 1
+  mode: 0
+  homingTurnSpeed: 0
+  homingRange: 0
+  ricochetCount: 0
+  ricochetRange: 0
+  pierce: 0
+  destroyOnHit: 1

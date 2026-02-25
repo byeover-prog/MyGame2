@@ -1,10 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 유도 투사체(WeaponShooterSystem2D 파이프라인 통일)
-/// - IPooledProjectile2D 계약 구현
-/// - 풀/원본 프리팹을 저장해 반납 가능
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class HomingProjectile2D : MonoBehaviour, IPooledProjectile2D
 {
@@ -24,24 +19,26 @@ public sealed class HomingProjectile2D : MonoBehaviour, IPooledProjectile2D
     private Transform _target;
 
     private float _dieAt;
+    private bool _launched; // Launch 호출 여부
 
-    // 풀링 계약용
     private ProjectilePool _pool;
     private GameObject _originPrefab;
 
-    // ===== IPooledProjectile2D 필수 구현 =====
-    public void SetOriginPrefab(GameObject prefab)
-    {
-        _originPrefab = prefab;
-    }
+    public void SetOriginPrefab(GameObject prefab) => _originPrefab = prefab;
+    public void SetPool(ProjectilePool pool) => _pool = pool;
 
-    public void SetPool(ProjectilePool pool)
+    private void OnEnable()
     {
-        _pool = pool;
+        // 풀에서 꺼낼 때 기본값 방어 (Launch 전 즉사 방지)
+        _launched = false;
+        _target = null;
+        _dieAt = float.PositiveInfinity;
     }
 
     public void Launch(Vector2 dir, int damage, LayerMask enemyMask)
     {
+        _launched = true;
+
         _velocityDir = (dir.sqrMagnitude < 0.0001f) ? Vector2.right : dir.normalized;
         _damage = Mathf.Max(1, damage);
         _enemyMask = enemyMask;
@@ -51,13 +48,14 @@ public sealed class HomingProjectile2D : MonoBehaviour, IPooledProjectile2D
         _target = null;
         TryAcquireTarget();
 
-        // 방향 회전(+X 전방 기준)
         float angle = Mathf.Atan2(_velocityDir.y, _velocityDir.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
     private void FixedUpdate()
     {
+        if (!_launched) return; // Launch 전엔 아무것도 안 함
+
         if (Time.time >= _dieAt)
         {
             Release();
@@ -131,17 +129,22 @@ public sealed class HomingProjectile2D : MonoBehaviour, IPooledProjectile2D
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (!_launched) return;
         if (((1 << other.gameObject.layer) & _enemyMask.value) == 0) return;
 
-        if (other.TryGetComponent(out EnemyHealth2D hp))
-            hp.TakeDamage(_damage);
+        // 공통 데미지 파이프라인 우선
+        if (!DamageUtil2D.TryApplyDamage(other, _damage))
+        {
+            // fallback
+            if (other.TryGetComponent(out EnemyHealth2D hp))
+                hp.TakeDamage(_damage);
+        }
 
         Release();
     }
 
     private void Release()
     {
-        // 풀 계약이 들어오면 풀로 반납, 아니면 비활성
         if (_pool != null && _originPrefab != null)
         {
             _pool.Release(_originPrefab, gameObject);

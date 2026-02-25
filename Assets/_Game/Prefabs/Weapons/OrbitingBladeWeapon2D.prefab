@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.4, y: 0.4, z: 1}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4311983617405739038}
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c855bccbe81281b4abd067a0b15fbed2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitingBladeWeapon2D
-  config: {fileID: 11400000, guid: 2c2c5149d283fd048a80283da92a7575, type: 2}
+  config: {fileID: 11400000, guid: 61617d02b1c96f54a8364ccc7d60e2fa, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 8192
@@ -56,7 +56,16 @@ MonoBehaviour:
   fireJitterDelayMax: 0.1
   projectileSortingBase: 0
   projectileSortingStepPerKind: 10
-  bladeTemplate: {fileID: 4090716010337311601}
+  bladeTemplate: {fileID: 7497907493957990343}
+  hitRadius: 1
+  rotateBladeToFaceOutward: 1
+  bladeVisualRotationOffsetDeg: 0
+  useCooldownCycle: 1
+  activeSeconds: 1.5
+  cooldownSeconds: 1.5
+  minOrbitRadius: 1.5
+  minHitInterval: 0.3
+  maxDamagePerHit: 50
 --- !u!50 &4363129624570349765
 Rigidbody2D:
   serializedVersion: 5
@@ -113,7 +122,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.4, y: 0.4, z: 1}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5009966591068051108}

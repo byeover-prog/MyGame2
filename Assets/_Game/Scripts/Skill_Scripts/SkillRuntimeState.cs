@@ -1,3 +1,4 @@
+// UTF-8
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,11 +12,21 @@ using UnityEngine;
 public sealed class SkillRuntimeState : MonoBehaviour
 {
     [Header("슬롯 제한(기본값은 4/4/8)")]
+    [Tooltip("스킬 슬롯 최대 개수(0이면 스킬 획득 금지)")]
     [SerializeField, Min(0)] private int maxSkillSlots = 4;
+
+    [Tooltip("패시브 슬롯 최대 개수(0이면 패시브 획득 금지)")]
     [SerializeField, Min(0)] private int maxPassiveSlots = 4;
 
+    [Tooltip("스킬+패시브 합산 슬롯 제한 사용")]
     [SerializeField] private bool useTotalSlotCap = true;
+
+    [Tooltip("스킬+패시브 합산 슬롯 최대 개수(0이면 합산 제한 미사용)")]
     [SerializeField, Min(0)] private int maxTotalSlots = 8;
+
+    [Header("디버그/운영")]
+    [Tooltip("플레이 시작(Awake) 때 상태를 자동 초기화")]
+    [SerializeField] private bool clearOnAwake = false;
 
     // id -> level
     private readonly Dictionary<string, int> _skillLevels = new Dictionary<string, int>(32);
@@ -24,6 +35,12 @@ public sealed class SkillRuntimeState : MonoBehaviour
     public int SkillCount => _skillLevels.Count;
     public int PassiveCount => _passiveLevels.Count;
     public int TotalCount => _skillLevels.Count + _passiveLevels.Count;
+
+    private void Awake()
+    {
+        if (clearOnAwake)
+            ClearAll();
+    }
 
     public bool Has(OfferKind kind, string id)
     {
@@ -51,7 +68,6 @@ public sealed class SkillRuntimeState : MonoBehaviour
 
     public bool CanAcquire(OfferKind kind)
     {
-        // 0이면 "획득 금지"로 취급
         int total = TotalCount;
 
         if (useTotalSlotCap && maxTotalSlots > 0 && total >= maxTotalSlots)
@@ -84,7 +100,6 @@ public sealed class SkillRuntimeState : MonoBehaviour
             return lv;
         }
 
-        // 신규 획득
         if (!CanAcquire(kind))
         {
             Debug.LogWarning($"[SkillRuntimeState] 슬롯이 가득 차서 '{id}'({kind}) 획득 불가");

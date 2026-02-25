@@ -1,0 +1,10 @@
+id,damage,damageAddPerLevel,cooldown,cooldownAddPerLevel,speed,speedAddPerLevel,life,lifeAddPerLevel,count,countAddPerLevel,hitInterval,hitIntervalAddPerLevel,orbitRadius,orbitRadiusAddPerLevel,orbitSpeed,orbitSpeedAddPerLevel,active,activeAddPerLevel,burstInterval,burstIntervalAddPerLevel,spinDps,spinDpsAddPerLevel,bounceCount,bounceAddPerLevel,chainCount,chainAddPerLevel,splitCount,splitAddPerLevel,explosionRadius,explosionRadiusAddPerLevel,explodeDistance,explodeDistanceAddPerLevel,childSpeed,childSpeedAddPerLevel,slowRate,slowRateAddPerLevel,slowSeconds,slowSecondsAddPerLevel
+weapon_arrow,20,1,0.8,-0.05,9,0.5,1.6,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0
+weapon_boomerang,10,1,1,-0.05,8,0.5,1.6,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0
+weapon_bullet,20,1,1,-0.05,8,0.5,1.6,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0
+weapon_blade,5,1,1,-0.05,-1,0,-1,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0
+weapon_shuriken,5,1,0.7,-0.05,8,0.5,1.6,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,2,2,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0
+weapon_darkorb,10,1,1,-0.05,7,0.5,1.6,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,1,1,1.2,1.6,-1,0,-1,0,-1,0,-1,0
+weapon_arrowrain,3,1,1.5,-0.05,-1,0,-1,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0
+weapon_balsi,20,1,0.8,-0.05,9,0.5,1.6,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0
+weapon_homing,30,1,0.8,-0.05,8,0.5,2,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,1,1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0

@@ -1,21 +1,22 @@
+// UTF-8
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public sealed class PlayerMover2D : MonoBehaviour
 {
+    [Header("입력(새 Input System)")]
+    [Tooltip("IA_Player/Player/Move 액션을 넣으세요.")]
+    [SerializeField] private InputActionReference moveAction;
+
+    [Tooltip("IA_Player/Player/Dash 액션을 넣으세요.")]
+    [SerializeField] private InputActionReference dashAction;
+
     [Header("이동")]
     [SerializeField] private float moveSpeed = 4.0f;
 
     [Header("대시")]
-    [Tooltip("스페이스바로 대시합니다.")]
-    [SerializeField] private KeyCode dashKey = KeyCode.Space;
-
-    [Tooltip("대시 거리(대략적으로 이동할 거리)")]
     [SerializeField] private float dashDistance = 2.5f;
-
-    [Tooltip("대시 시간(짧을수록 '툭' 느낌)")]
     [SerializeField] private float dashDuration = 0.12f;
-
-    [Tooltip("대시 쿨타임")]
     [SerializeField] private float dashCooldown = 0.9f;
 
     [Header("참조")]
@@ -38,25 +39,40 @@ public sealed class PlayerMover2D : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
     }
 
+    private void OnEnable()
+    {
+        if (moveAction != null) moveAction.action.Enable();
+        if (dashAction != null) dashAction.action.Enable();
+    }
+
+    private void OnDisable()
+    {
+        if (moveAction != null) moveAction.action.Disable();
+        if (dashAction != null) dashAction.action.Disable();
+    }
+
     private void Update()
     {
-        float x = Input.GetAxisRaw("Horizontal"); // A/D
-        float y = Input.GetAxisRaw("Vertical");   // W/S
+        // 1) 이동 입력
+        Vector2 input = Vector2.zero;
+        if (moveAction != null)
+            input = moveAction.action.ReadValue<Vector2>();
 
-        Vector2 input = new Vector2(x, y);
         if (input.sqrMagnitude > 1f) input.Normalize();
         MoveInput = input;
 
-        // 바라보는 방향 갱신(입력이 있을 때만)
         if (MoveInput.sqrMagnitude > 0.0001f)
             FacingDir = MoveInput;
 
-        if (Input.GetKeyDown(dashKey))
+        // 2) 대시 입력
+        if (dashAction != null && dashAction.action.WasPressedThisFrame())
             TryDash();
     }
 
     private void FixedUpdate()
     {
+        if (rb == null) return;
+
         if (Time.time < _dashEndTime)
         {
             rb.linearVelocity = _dashVelocity;

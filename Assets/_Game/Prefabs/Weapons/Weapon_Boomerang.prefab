@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1938164918080500034}
   - component: {fileID: 5458553468968232858}
   - component: {fileID: 3347461500216058642}
+  - component: {fileID: -8192340079351167451}
   m_Layer: 0
   m_Name: Weapon_Boomerang
   m_TagString: Untagged
@@ -46,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8a836e46f7af304aa416a5bf0c54aab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoomerangWeapon2D
-  config: {fileID: 11400000, guid: af7e3ede66bc316489b8fe82b161eaf5, type: 2}
+  config: {fileID: 11400000, guid: c9e78ec0683c84c41846cca48d335aad, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 8192
@@ -71,8 +72,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectilePool2D
   prefab: {fileID: 4084445079568018521, guid: 2a52c00a4cda31e4caad668f652da241, type: 3}
-  prewarmCount: 20
-  maxCount: 200
+--- !u!114 &-8192340079351167451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1771662915146988037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
+  debugSkillId: Weapon_Boomerang
+  maxLevel: 8
+  level: 0
+  forwardLevelToChildren: 1
+  forwardMethodNames:
+  - ApplyLevel
+  - SetLevel
+  - SetSkillLevel
+  - UpgradeLevel
+  - OnLevelChanged
+  log: 1
 --- !u!1 &9063805512732134403
 GameObject:
   m_ObjectHideFlags: 0

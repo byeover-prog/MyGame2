@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 5767354764339404154}
   - component: {fileID: 4084445079568018521}
   - component: {fileID: 735654324422084155}
+  - component: {fileID: 1121678731948288416}
+  - component: {fileID: 5223043172017737808}
   m_Layer: 15
   m_Name: BoomerangProjectile
   m_TagString: Untagged
@@ -170,3 +172,40 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &1121678731948288416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6195577076014076753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
+  debugSkillId: 
+  maxLevel: 8
+  level: 0
+  log: 1
+--- !u!114 &5223043172017737808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6195577076014076753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
+  col: {fileID: 5767354764339404154}
+  ignoreOwnerCollision: 1
+  mode: 0
+  homingTurnSpeed: 0
+  homingRange: 0
+  ricochetCount: 0
+  ricochetRange: 0
+  pierce: 1
+  destroyOnHit: 1

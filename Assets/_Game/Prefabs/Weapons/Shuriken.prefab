@@ -11,8 +11,10 @@ GameObject:
   - component: {fileID: 2353353039855137168}
   - component: {fileID: 7216533092855415434}
   - component: {fileID: 8302948109149489263}
-  - component: {fileID: 7175219620819757290}
   - component: {fileID: 1812472226960930024}
+  - component: {fileID: 7175219620819757290}
+  - component: {fileID: -3088633970849079980}
+  - component: {fileID: 7201039809396505315}
   m_Layer: 15
   m_Name: Shuriken
   m_TagString: Untagged
@@ -141,18 +143,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4.714507, y: 4.739117}
   m_EdgeRadius: 0
---- !u!114 &7175219620819757290
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5000209898010349714}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d3b96f56c50d2f4a8af102613e8c2cf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RicochetShurikenProjectile2D
 --- !u!50 &1812472226960930024
 Rigidbody2D:
   serializedVersion: 5
@@ -180,3 +170,59 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &7175219620819757290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5000209898010349714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d3b96f56c50d2f4a8af102613e8c2cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RicochetShurikenProjectile2D
+--- !u!114 &-3088633970849079980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5000209898010349714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
+  debugSkillId: 
+  maxLevel: 8
+  level: 0
+  forwardLevelToChildren: 1
+  forwardMethodNames:
+  - ApplyLevel
+  - SetLevel
+  - SetSkillLevel
+  - UpgradeLevel
+  - OnLevelChanged
+  log: 1
+--- !u!114 &7201039809396505315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5000209898010349714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
+  col: {fileID: 8302948109149489263}
+  ignoreOwnerCollision: 1
+  mode: 2
+  homingTurnSpeed: 0
+  homingRange: 0
+  ricochetCount: 0
+  ricochetRange: 18
+  pierce: 0
+  destroyOnHit: 1

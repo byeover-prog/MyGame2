@@ -13,12 +13,33 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
     private int remainingBounces;
     private EnemyRegistryMember2D target;
 
+    private bool _initialized; // Init 호출 보장 체크
+    private bool _loggedInitError;
+
     private readonly HashSet<int> hitSet = new HashSet<int>(64);
+
+    private void OnEnable()
+    {
+        // 풀 재사용 시 상태 오염 방지
+        age = 0f;
+        enemyMask = 0;
+        damage = 0;
+        speed = 0f;
+        life = 0f;
+
+        remainingBounces = 0;
+        target = null;
+
+        hitSet.Clear();
+
+        _initialized = false;
+        _loggedInitError = false;
+    }
 
     public void Init(LayerMask mask, int dmg, float spd, float lifeSeconds, int bounces, EnemyRegistryMember2D startTarget)
     {
         enemyMask = mask;
-        damage = dmg;
+        damage = Mathf.Max(1, dmg);
         speed = Mathf.Max(0.1f, spd);
         life = Mathf.Max(0.1f, lifeSeconds);
         age = 0f;
@@ -27,10 +48,24 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         target = startTarget;
 
         hitSet.Clear();
+
+        _initialized = true;
+        _loggedInitError = false;
     }
 
     private void FixedUpdate()
     {
+        if (!_initialized)
+        {
+            if (!_loggedInitError)
+            {
+                _loggedInitError = true;
+                Debug.LogError("[RicochetShurikenProjectile2D] Init()이 호출되지 않았습니다. (무기 발사 로직에서 Init/startTarget 누락 가능)", this);
+            }
+            ReturnToPool();
+            return;
+        }
+
         age += Time.fixedDeltaTime;
         if (age >= life)
         {
@@ -43,7 +78,7 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
 
         if (target == null)
         {
-            // 타겟이 없으면 직진 유지 대신 종료(화면 난사 방지)
+            // 정책: 타겟이 없으면 종료(난사 방지)
             ReturnToPool();
             return;
         }
@@ -58,6 +93,7 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (!_initialized) return;
         if (other == null) return;
         if (!DamageUtil2D.IsInLayerMask(other.gameObject.layer, enemyMask)) return;
 

@@ -15,4 +15,18 @@ MonoBehaviour:
   commonSkillCatalog: {fileID: 11400000, guid: 12945b625e709fc4ea11957cc322ecfa, type: 2}
   commonSkillCardPool: {fileID: 11400000, guid: a0047d1ed61ad814eb345cc1496aaa2c,
     type: 2}
-  weaponSkillTracks: []
+  weaponSkillTracks:
+  - {fileID: 11400000, guid: 5171e89c405d80548a61f47211ca8d42, type: 2}
+  - {fileID: 11400000, guid: 5171e89c405d80548a61f47211ca8d42, type: 2}
+  - {fileID: 11400000, guid: 6e12725f13cb0774597f2282e46f54e9, type: 2}
+  - {fileID: 11400000, guid: e3627545ff3415b468b9aca95b1c594c, type: 2}
+  - {fileID: 11400000, guid: e3627545ff3415b468b9aca95b1c594c, type: 2}
+  - {fileID: 11400000, guid: fa3ce42a95a74f5479d8164db82c9a94, type: 2}
+  - {fileID: 11400000, guid: c03d26a6b1f6b3e42b0ab8daa3c04918, type: 2}
+  - {fileID: 11400000, guid: c03d26a6b1f6b3e42b0ab8daa3c04918, type: 2}
+  - {fileID: 11400000, guid: 4ee21c3ff8084e64d97ae3b0921580dc, type: 2}
+  - {fileID: 11400000, guid: abd3d8eca7ccf52468531f0c741dd513, type: 2}
+  - {fileID: 11400000, guid: fcc03d84f7a15464f8bedf51a908c013, type: 2}
+  - {fileID: 11400000, guid: a6e0b4ff26bd3524f9f5b005e241c4cf, type: 2}
+  - {fileID: 11400000, guid: bdf09459e49bc734db64bfac226a6610, type: 2}
+  - {fileID: 11400000, guid: bdf09459e49bc734db64bfac226a6610, type: 2}
