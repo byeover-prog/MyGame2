@@ -58,6 +58,12 @@ public sealed class PiercingBulletWeapon2D : CommonSkillWeapon2D
             var proj = pool.Get<PiercingBulletProjectile2D>(origin, Quaternion.identity);
             ApplyProjectileSorting(proj.gameObject);
 
+<<<<<<< HEAD
+=======
+            // (중요) 스케일은 JSON에서 제거했으므로 여기서 건드리지 않는다.
+            // 크기(시각)는 투사체 프리팹 Transform Scale로만 관리한다.
+
+>>>>>>> a6f52cbcabc756b5c337ba64f4219959c34ce889
             proj.Init(enemyMask, damage, speed, life, d);
         }
     }
