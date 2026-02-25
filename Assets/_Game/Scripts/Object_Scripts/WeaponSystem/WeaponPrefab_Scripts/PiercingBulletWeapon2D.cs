@@ -38,7 +38,7 @@ public sealed class PiercingBulletWeapon2D : CommonSkillWeapon2D
     {
         if (pool == null || owner == null) return;
 
-        // 핵심: 최종 수치는 이미 베이스(CommonSkillWeapon2D)가 JSON/SO/레벨을 합쳐서 P에 만들어 둠
+        // 최종 수치는 CommonSkillWeapon2D 베이스가 JSON/SO/레벨을 합쳐 P에 준비해둠
         Vector2 origin = GetSpawnOrigin(spawnPoint);
         Vector2 dir = (target != null) ? (target.Position - origin).normalized : Vector2.right;
 
