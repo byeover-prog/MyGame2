@@ -36,6 +36,7 @@ namespace _Game.Scripts.Core.Balance
 
         private void Awake()
         {
+            Debug.Log($"[SkillBalanceBootstrap2D] JsonManager Instance={(JsonManager2D.Instance? JsonManager2D.Instance.name : "null")}", this);
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);

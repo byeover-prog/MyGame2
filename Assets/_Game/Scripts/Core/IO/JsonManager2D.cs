@@ -125,6 +125,7 @@ public sealed class JsonManager2D : MonoBehaviour
         }
 
         Debug.Log($"[JsonManager2D] override 파일 생성 완료: {path}", this);
+        Debug.Log($"[JsonManager2D] Awake => name={gameObject.name}, scene={gameObject.scene.name}, defaultNull={(defaultSkillBalanceJson==null)}, len={(defaultSkillBalanceJson? defaultSkillBalanceJson.text.Length : -1)}", this);
     }
 
     // ----------------------------

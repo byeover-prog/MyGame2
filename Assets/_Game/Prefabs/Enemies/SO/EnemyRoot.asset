@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6040d125bffdf4c41aac90008d93d104, type: 3}
+  m_Name: EnemyRoot
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyRootSO
+  Enemies:
+  - Id: armyghsot
+    Prefab: {fileID: 1554796069673931401, guid: 566eed40b2e18fc47a2ee031b5193545,
+      type: 3}
+    Weight: 0
+    BaseHP: 100
+    BaseMoveSpeed: 2
+    BaseContactDamage: 20
+  - Id: bachelorghost
+    Prefab: {fileID: 6443360005750160922, guid: fedb2b5b8aa45e2439642dc6d815106a,
+      type: 3}
+    Weight: 0
+    BaseHP: 80
+    BaseMoveSpeed: 2.5
+    BaseContactDamage: 15
+  - Id: juniordokebi
+    Prefab: {fileID: 8631782084765833956, guid: 2a651e53ef8b53340aeed7265f0a8109,
+      type: 3}
+    Weight: 0
+    BaseHP: 120
+    BaseMoveSpeed: 2
+    BaseContactDamage: 20
+  - Id: raven
+    Prefab: {fileID: 3662659987458662973, guid: da70d30e188a3b94c8299716cb1a1984,
+      type: 3}
+    Weight: 0
+    BaseHP: 20
+    BaseMoveSpeed: 3
+    BaseContactDamage: 5
+  - Id: stoneghost
+    Prefab: {fileID: 2743356310932358167, guid: c3e2089f978e3614dbddcea59aa6202f,
+      type: 3}
+    Weight: 0
+    BaseHP: 60
+    BaseMoveSpeed: 2
+    BaseContactDamage: 10
+  - Id: virginghost
+    Prefab: {fileID: 4124033409632063827, guid: 958e5ef4d0554634f951a002fa4f1f20,
+      type: 3}
+    Weight: 0
+    BaseHP: 60
+    BaseMoveSpeed: 2.5
+    BaseContactDamage: 15
+  - Id: wolf
+    Prefab: {fileID: 5418424573138721060, guid: 1968a984a889590409bde9298e66d4c8,
+      type: 3}
+    Weight: 0
+    BaseHP: 40
+    BaseMoveSpeed: 3
+    BaseContactDamage: 5

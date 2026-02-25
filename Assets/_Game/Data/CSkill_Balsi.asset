@@ -20,11 +20,11 @@ MonoBehaviour:
     type: 3}
   maxLevel: 8
   levels:
-  - cooldown: 0.9
-    damage: 20
+  - cooldown: 1
+    damage: 40
     projectileCount: 0
-    projectileSpeed: 16
-    lifeSeconds: 1.1
+    projectileSpeed: 14
+    lifeSeconds: 2
     maxDistance: 0
     spreadAngleDeg: 0
     bounceCount: 0
