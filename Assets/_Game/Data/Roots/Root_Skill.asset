@@ -16,17 +16,16 @@ MonoBehaviour:
   commonSkillCardPool: {fileID: 11400000, guid: a0047d1ed61ad814eb345cc1496aaa2c,
     type: 2}
   weaponSkillTracks:
-  - {fileID: 11400000, guid: 5171e89c405d80548a61f47211ca8d42, type: 2}
-  - {fileID: 11400000, guid: 5171e89c405d80548a61f47211ca8d42, type: 2}
-  - {fileID: 11400000, guid: 6e12725f13cb0774597f2282e46f54e9, type: 2}
-  - {fileID: 11400000, guid: e3627545ff3415b468b9aca95b1c594c, type: 2}
-  - {fileID: 11400000, guid: e3627545ff3415b468b9aca95b1c594c, type: 2}
-  - {fileID: 11400000, guid: fa3ce42a95a74f5479d8164db82c9a94, type: 2}
-  - {fileID: 11400000, guid: c03d26a6b1f6b3e42b0ab8daa3c04918, type: 2}
-  - {fileID: 11400000, guid: c03d26a6b1f6b3e42b0ab8daa3c04918, type: 2}
-  - {fileID: 11400000, guid: 4ee21c3ff8084e64d97ae3b0921580dc, type: 2}
-  - {fileID: 11400000, guid: abd3d8eca7ccf52468531f0c741dd513, type: 2}
-  - {fileID: 11400000, guid: fcc03d84f7a15464f8bedf51a908c013, type: 2}
-  - {fileID: 11400000, guid: a6e0b4ff26bd3524f9f5b005e241c4cf, type: 2}
-  - {fileID: 11400000, guid: bdf09459e49bc734db64bfac226a6610, type: 2}
-  - {fileID: 11400000, guid: bdf09459e49bc734db64bfac226a6610, type: 2}
+  - {fileID: 11400000, guid: 218748a7e34ed7640b0d930365f9e363, type: 2}
+  - {fileID: 11400000, guid: 218748a7e34ed7640b0d930365f9e363, type: 2}
+  - {fileID: 11400000, guid: 8ca2fb99eb09bd0428934ebce46f3134, type: 2}
+  - {fileID: 11400000, guid: 599f294bd7b59ac42bfdea645383c842, type: 2}
+  - {fileID: 11400000, guid: 599f294bd7b59ac42bfdea645383c842, type: 2}
+  - {fileID: 11400000, guid: a2ab34269b89c9f47b236e3cc72fe200, type: 2}
+  - {fileID: 11400000, guid: db4c94962a1f6b3438c51aacedc66393, type: 2}
+  - {fileID: 11400000, guid: db4c94962a1f6b3438c51aacedc66393, type: 2}
+  - {fileID: 11400000, guid: f00f925a41fb38647b6f294291f19e6d, type: 2}
+  - {fileID: 11400000, guid: 35838533601e2a74f8ab8192cd626f02, type: 2}
+  - {fileID: 11400000, guid: a8da00e5536155045ba2a9336534ae78, type: 2}
+  - {fileID: 11400000, guid: 8f3980003ff1a944480500cec3f0108b, type: 2}
+  - {fileID: 11400000, guid: 8f3980003ff1a944480500cec3f0108b, type: 2}
