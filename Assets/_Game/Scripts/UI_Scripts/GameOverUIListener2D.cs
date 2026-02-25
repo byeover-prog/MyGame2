@@ -1,30 +1,34 @@
 // UTF-8
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-// [구현 원리 요약]
-// - RunSignals의 PlayerDead 신호를 받으면 게임오버 패널을 즉시 켠다.
-// - Time.timeScale이 0이어도 SetActive는 동작하므로 "UI가 안 뜨는" 문제를 강제로 차단한다.
 [DisallowMultipleComponent]
 public sealed class GameOverUIListener2D : MonoBehaviour
 {
-    [Header("게임오버 패널(필수)")]
-    [Tooltip("Canvas 아래 GameOverPanel 오브젝트를 넣으세요(비활성 상태여도 됨).")]
+    [Header("필수")]
+    [Tooltip("GAME OVER 패널 루트 오브젝트(비활성이어도 됨)")]
     [SerializeField] private GameObject gameOverPanel;
+
+    [Tooltip("다시하기 버튼(첫 선택) - 없어도 동작은 함")]
+    [SerializeField] private GameObject firstSelect;
 
     [Header("옵션")]
     [Tooltip("게임오버 시 게임을 멈출지")]
     [SerializeField] private bool pauseOnGameOver = true;
 
+    private bool _shown;
+
     private void Awake()
     {
+        _shown = false;
+
+        // 시작 시 숨김(씬 저장 상태가 어찌됐든 통일)
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
     }
 
     private void OnEnable()
     {
-        // RunSignals 이벤트 이름이 다르면 여기서 컴파일 에러가 납니다.
-        // 그 경우 RunSignals.cs를 열어서 'PlayerDead' 이벤트 이름을 확인 후 아래 줄을 맞추세요.
         RunSignals.PlayerDead += OnPlayerDead;
     }
 
@@ -35,10 +39,27 @@ public sealed class GameOverUIListener2D : MonoBehaviour
 
     private void OnPlayerDead()
     {
+        if (_shown) return;
+        _shown = true;
+
+        // 1) UI 먼저 켠다 (timescale 0이어도 SetActive는 정상 동작)
         if (gameOverPanel != null)
             gameOverPanel.SetActive(true);
 
+        // 2) 버튼 선택(패드/키보드 대응). EventSystem이 씬에 있어야 함.
+        if (firstSelect != null && EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(firstSelect);
+
+        // 3) 그 다음 멈춘다
         if (pauseOnGameOver)
             Time.timeScale = 0f;
+    }
+
+    // (선택) 재시작 시 호출용
+    public void HideAndResume()
+    {
+        _shown = false;
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        Time.timeScale = 1f;
     }
 }

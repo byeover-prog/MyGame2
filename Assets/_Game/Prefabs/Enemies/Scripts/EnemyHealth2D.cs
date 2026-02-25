@@ -42,6 +42,7 @@ public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
     public int MaxHp => maxHp;
     public int CurrentHp => currentHp;
     public bool IsDead => _isDead;
+    public bool _IsDead => currentHp <= 0;
 
     private bool _isDead;
 

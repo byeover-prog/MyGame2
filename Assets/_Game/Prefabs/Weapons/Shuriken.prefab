@@ -182,6 +182,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d3b96f56c50d2f4a8af102613e8c2cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RicochetShurikenProjectile2D
+  rotateDegPerSec: 1080
+  exitKickSeconds: 0.06
+  exitKickSpeedMul: 1.2
 --- !u!114 &-3088633970849079980
 MonoBehaviour:
   m_ObjectHideFlags: 0

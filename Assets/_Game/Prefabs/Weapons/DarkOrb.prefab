@@ -10,8 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1081094156054933996}
   - component: {fileID: 6300340382264474135}
-  - component: {fileID: 6754508966770860860}
-  - component: {fileID: 151329374544690741}
   - component: {fileID: 4936022068496991512}
   - component: {fileID: 6698356803984456033}
   - component: {fileID: -134575363894471975}
@@ -97,69 +95,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!58 &6754508966770860860
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3132555082536606338}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.07030621}
-  m_Radius: 1.5358757
---- !u!50 &151329374544690741
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3132555082536606338}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 0
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 1
-  m_Constraints: 4
 --- !u!114 &4936022068496991512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,15 +107,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d2259f251b6d924f83db3523eb5cd20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DarkOrbProjectile2D
-  rb: {fileID: 151329374544690741}
-  col: {fileID: 6754508966770860860}
+  rb: {fileID: 0}
+  col: {fileID: 0}
   lifeSeconds: 1
   splitDistance: 4
   explosionRadius: 1
   splitAngle: 30
-  splitDepth: 0
-  maxFragmentsBudget: 64
   splitSpeedMultiplier: 0.9
+  maxFragmentsBudget: 64
   ownerIgnoreSeconds: 0.08
   log: 0
 --- !u!114 &6698356803984456033
@@ -218,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
-  col: {fileID: 6754508966770860860}
+  col: {fileID: 0}
   ignoreOwnerCollision: 1
   mode: 0
   homingTurnSpeed: 0

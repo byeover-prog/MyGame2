@@ -8,6 +8,7 @@ namespace _Game.Scripts.Core.Session
     // - 세션(한 판)의 상태를 enum FSM으로 단일 관리한다.
     // - TimeScale, 입력 허용, 스폰 허용 같은 "전역 정책"은 오직 여기서만 결정한다.
     // - 다른 시스템은 "현재 상태 조회" 또는 "상태 변경 요청"만 한다(직접 TimeScale 만지지 않는다).
+    // - 첫 스폰 지연(예: 3초)도 여기서만 결정한다(스폰 시스템이 자체 타이머를 갖지 않게).
     public enum SessionState
     {
         Boot,           // 초기화 중
@@ -31,6 +32,10 @@ namespace _Game.Scripts.Core.Session
         [Tooltip("세션 진행 시간(초)입니다. Playing에서만 증가합니다.")]
         [SerializeField] private float sessionTime;
 
+        [Tooltip("첫 적 스폰을 지연할 시간(초).\n예) 3이면 게임 시작 후 3초부터 스폰 허용.")]
+        [Min(0f)]
+        [SerializeField] private float firstSpawnDelay = 3f;
+
         [Tooltip("보스 등장 시간(초). 예: 20분=1200")]
         [Min(0f)]
         [SerializeField] private float bossSpawnTime = 1200f;
@@ -39,7 +44,7 @@ namespace _Game.Scripts.Core.Session
         [Tooltip("입력 허용 여부(자동 계산).")]
         [SerializeField] private bool allowPlayerInput = true;
 
-        [Tooltip("적 스폰 허용 여부(자동 계산).")]
+        [Tooltip("적 스폰 허용 여부(자동 계산).\nPlaying 상태여도 firstSpawnDelay 전에는 false입니다.")]
         [SerializeField] private bool allowEnemySpawn = true;
 
         [Tooltip("전투 로직(무기/투사체 등) 업데이트 허용 여부(자동 계산).")]
@@ -76,10 +81,13 @@ namespace _Game.Scripts.Core.Session
 
         private void Update()
         {
-            // Playing에서만 시간 진행
+            // Playing에서만 시간 진행 + 동적 정책 갱신
             if (currentState == SessionState.Playing)
             {
                 sessionTime += Time.deltaTime;
+
+                // 첫 스폰 지연: sessionTime 기준으로 스폰 허용을 갱신
+                allowEnemySpawn = (sessionTime >= firstSpawnDelay);
 
                 if (!_bossEventFired && sessionTime >= bossSpawnTime)
                 {
@@ -97,6 +105,9 @@ namespace _Game.Scripts.Core.Session
         {
             sessionTime = 0f;
             _bossEventFired = false;
+
+            // StartSession 직후에는 firstSpawnDelay가 적용되어야 하므로
+            // Playing으로 전환 후 Update에서 allowEnemySpawn이 자동 갱신되게 한다.
             SetState(SessionState.Playing);
         }
 
@@ -166,7 +177,11 @@ namespace _Game.Scripts.Core.Session
                 case SessionState.Playing:
                     Time.timeScale = 1f;
                     allowPlayerInput = true;
-                    allowEnemySpawn = true;
+
+                    // Playing이라도 첫 스폰 지연이 있을 수 있으니
+                    // 여기서 true로 고정하지 않고, Update에서 sessionTime 기반으로 갱신한다.
+                    allowEnemySpawn = (sessionTime >= firstSpawnDelay);
+
                     allowCombatUpdate = true;
                     break;
 
