@@ -21,10 +21,10 @@ TagManager:
   - 
   - 
   - Player
-  - Enemy
+  - SkillFX
   - Boss
   - Projectile
-  - 
+  - Enemy
   - 
   - 
   - 
@@ -52,6 +52,12 @@ TagManager:
     locked: 0
   - name: Layer 3
     uniqueID: 4189426099
+    locked: 0
+  - name: SkillFx
+    uniqueID: 1420497153
+    locked: 0
+  - name: Enemy
+    uniqueID: 2025156555
     locked: 0
   m_RenderingLayers:
   - Default

@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca74c0eec08d6914cbe3da41c59a0304, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BalsiProjectile2D
-  spriteForwardAngleOffsetDeg: 0
+  _spriteForwardAngleOffsetDeg: 1
 --- !u!50 &9106754863539150079
 Rigidbody2D:
   serializedVersion: 5

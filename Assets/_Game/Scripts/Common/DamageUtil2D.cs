@@ -2,26 +2,24 @@
 using UnityEngine;
 
 // [구현 원리 요약]
-// - 무기/투사체들이 공통으로 쓰는 "데미지 유틸"을 단일 API로 고정한다.
-// - Collider2D 또는 GameObject에서 IDamageable2D(권장) → 없으면 EnemyHealth2D(구현체) 순으로 찾아 데미지를 적용한다.
-// - GetRootId는 "동일 적 중복 타격 방지(HashSet)"에 쓰이는 안정 키를 만든다(루트 기준).
+// - 프로젝트 전역에서 "데미지 적용"과 "동일 적 판정용 ID"를 통일한다.
+// - 레거시 코드(Targeting2D/Shuriken 등)가 쓰는 함수명(GetRootInstanceId/ApplyDamage 등)을
+//   별칭으로 제공해서 연쇄 컴파일 오류를 끊는다.
 
 public static class DamageUtil2D
 {
-    // 레이어 마스크 판정(빠르고 명확)
+    // 레이어 마스크 판정
     public static bool IsInLayerMask(int layer, LayerMask mask)
     {
         int bit = 1 << layer;
         return (mask.value & bit) != 0;
     }
 
-    // ─────────────────────────────────────────────
-    // RootId: 같은 적 판정용 키
-    // ─────────────────────────────────────────────
+    // --------------------------------------------
+    // Root Instance Id (동일 적 판정용 키)
+    // --------------------------------------------
 
-    // (구버전/호환) int를 받는 코드가 있으면 그대로 통과시키기 위한 오버로드
-    public static int GetRootId(int alreadyId) => alreadyId;
-
+    // 현재 권장
     public static int GetRootId(GameObject go)
     {
         if (go == null) return 0;
@@ -40,10 +38,16 @@ public static class DamageUtil2D
         return col.transform.root.gameObject.GetInstanceID();
     }
 
-    // ─────────────────────────────────────────────
-    // Damage Apply
-    // ─────────────────────────────────────────────
+    // 레거시 별칭: Targeting2D/ShurikenProjectile2D가 이 이름을 씀
+    public static int GetRootInstanceId(GameObject go) => GetRootId(go);
+    public static int GetRootInstanceId(Component c) => GetRootId(c);
+    public static int GetRootInstanceId(Collider2D col) => GetRootId(col);
 
+    // --------------------------------------------
+    // Damage Apply
+    // --------------------------------------------
+
+    // 현재 권장
     public static bool TryApplyDamage(Collider2D hit, int damage)
     {
         if (hit == null) return false;
@@ -64,7 +68,7 @@ public static class DamageUtil2D
             return true;
         }
 
-        // 2) 프로젝트 구현체 fallback
+        // 2) 구현체 fallback
         var hp = hitGo.GetComponentInParent<EnemyHealth2D>();
         if (hp != null)
         {
@@ -76,12 +80,14 @@ public static class DamageUtil2D
         return false;
     }
 
-    // (구버전/호환) 첫 인자가 int로 들어오는 코드가 남아있을 때 컴파일을 살리기 위한 오버로드
-    // - 실제로는 hitGo를 못 찾으면 적용 불가. "컴파일 우선" 방어용.
-    public static bool TryApplyDamage(int targetRootId, int damage)
+    // 레거시 별칭: ApplyDamage(리턴 없는 버전)로 쓰던 코드 호환
+    public static void ApplyDamage(Collider2D hit, int damage)
     {
-        // targetRootId만으로는 대상 GameObject를 역참조할 수 없어서 실패 반환.
-        // 이 오버로드가 호출된다면, 호출부가 "Collider2D/GameObject"를 넘기도록 수정하는 게 정답.
-        return false;
+        TryApplyDamage(hit, damage);
+    }
+
+    public static void ApplyDamage(GameObject hitGo, int damage)
+    {
+        TryApplyDamage(hitGo, damage);
     }
 }

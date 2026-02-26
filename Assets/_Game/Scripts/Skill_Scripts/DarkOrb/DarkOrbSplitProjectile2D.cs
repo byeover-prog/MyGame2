@@ -5,15 +5,16 @@ using UnityEngine;
 
 // <summary>
 // [요약]
-// - 폭발 트리거(충돌 또는 거리 도달) 시 폭발 데미지 적용
-// - 폭발 후, depth < maxDepth 이면= 2개를 = V자(±splitAngleDeg)로 분열
-// - depth/maxDepth 규칙 예:
-//   depth=1,maxDepth=1 => 1개에서 끝
+// - 폭발 트리거(충돌 또는 선택적 거리 도달) 시 폭발 데미지 적용
+// - 폭발 후 depth < maxDepth 이면 V자(±splitAngleDeg)로 2개 분열
+// - 분열은 "항상 현재 투사체의 폭발 위치"에서만 생성된다(플레이어/발사포인트로 되돌아가 분열 금지)
+// - depth/maxDepth 예:
+//   depth=1,maxDepth=1 => 1개
 //   depth=1,maxDepth=2 => 1 -> 2
 //   depth=1,maxDepth=3 => 1 -> 2 -> 4
 //   depth=1,maxDepth=4 => 1 -> 2 -> 4 -> 8
-// - 성능 보호: 트리 전체 공유 예산(budget)으로 최대 파편 수 제한 가능
-// - 자식 생성은 ProjectilePool2D(브릿지) 우선, 없으면 Instantiate 폴백
+// - 성능 보호: 트리 전체 공유 예산(budget)
+// - 자식 생성은 ProjectilePool2D 우선, 없으면 Instantiate 폴백
 // </summary>
 [DisallowMultipleComponent]
 public sealed class DarkOrbSplitProjectile2D : PooledObject2D
@@ -39,6 +40,7 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
     private Vector2 _dir;
     private float _explodeRadius;
 
+    // 0이면 거리 트리거 비활성(충돌로만 폭발/분열)
     private float _splitDistance;
     private float _splitAngleDeg;
 
@@ -49,10 +51,12 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
     private FragmentBudget _budget;         // 공유 예산
     private ProjectilePool2D _splitPool;    // 자식 스폰용(브릿지) (부모 _pool과 이름 분리)
 
+    // "거리 트리거"용 시작 위치: 반드시 Init에서 스폰 위치가 확정된 뒤에 잡아야 함
     private Vector2 _startPos;
 
     private bool _initialized;
     private bool _loggedInitError;
+    private bool _exploding; // 중복 폭발 방지
 
     // “누가 Init 없이 켰는지” 잡는 스폰 스택
     private string _spawnStack;
@@ -63,14 +67,16 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
     private void OnEnable()
     {
         _age = 0f;
+
         _enemyMask = 0;
         _explosionDamage = 0;
         _speed = 0f;
         _life = 0f;
+
         _dir = Vector2.right;
         _explodeRadius = 0f;
 
-        _splitDistance = 0f;
+        _splitDistance = 0f;     // 기본은 비활성(충돌로만 폭발)
         _splitAngleDeg = 40f;
 
         _depth = 1;
@@ -79,10 +85,11 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
         _budget = null;
         _splitPool = null;
 
-        _startPos = transform.position;
+        _startPos = Vector2.zero; // Init에서 다시 잡는다
 
         _initialized = false;
         _loggedInitError = false;
+        _exploding = false;
 
         _hits.Clear();
         _spawnStack = Environment.StackTrace;
@@ -120,11 +127,15 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
         _dir = (direction.sqrMagnitude > 0.0001f) ? direction.normalized : Vector2.right;
         _explodeRadius = Mathf.Max(0f, explosionRadius);
 
-        _splitDistance = Mathf.Max(0.01f, splitDistance);
+        // 0이면 비활성. (네가 원한 “맞으면 분열” 기본값)
+        _splitDistance = Mathf.Max(0f, splitDistance);
         _splitAngleDeg = splitAngleDeg;
 
         _depth = Mathf.Max(1, depth);
         _maxDepth = Mathf.Max(1, maxDepth);
+
+        // 거리 기준 시작점은 "Init 시점의 현재 위치"로 확정
+        _startPos = transform.position;
 
         // 타격 필터
         _enemyFilter = new ContactFilter2D
@@ -154,10 +165,9 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
             _splitPool = null;
         }
 
-        _startPos = transform.position;
-
         _initialized = true;
         _loggedInitError = false;
+        _exploding = false;
     }
 
     private void Update()
@@ -190,11 +200,12 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
         pos += _dir * (_speed * Time.deltaTime);
         transform.position = pos;
 
-        // 거리 도달 시 폭발(미스 방지 용도)
-        float dist = Vector2.Distance(_startPos, pos);
-        if (dist >= _splitDistance)
+        // 선택 기능: 거리 도달 시 폭발(원하면 splitDistance>0일 때만)
+        if (_splitDistance > 0.0001f)
         {
-            ExplodeAndSplit();
+            float dist = Vector2.Distance(_startPos, pos);
+            if (dist >= _splitDistance)
+                ExplodeAndSplit();
         }
     }
 
@@ -202,8 +213,8 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
     {
         if (!_initialized) return;
 
-        // 적 레이어만
-        if (((1 << other.gameObject.layer) & _enemyMask) == 0) return;
+        // 적 레이어만(반드시 value 사용)
+        if (((1 << other.gameObject.layer) & _enemyMask.value) == 0) return;
 
         // 충돌은 "폭발 트리거"만
         ExplodeAndSplit();
@@ -211,6 +222,9 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
 
     private void ExplodeAndSplit()
     {
+        if (_exploding) return; // 중복 방지
+        _exploding = true;
+
         ApplyExplosionDamage();
 
         // depth 기반 분열
@@ -220,8 +234,15 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
             if (TryConsumeBudget(2))
             {
                 Vector2 pos = transform.position;
-                SpawnChild(pos, +_splitAngleDeg, _depth + 1, _maxDepth);
-                SpawnChild(pos, -_splitAngleDeg, _depth + 1, _maxDepth);
+
+                // 즉시 재충돌/겹침 방지로 살짝 앞으로 밀어준다
+                const float spawnEps = 0.05f;
+
+                Vector2 dirA = Rotate(_dir, +_splitAngleDeg).normalized;
+                Vector2 dirB = Rotate(_dir, -_splitAngleDeg).normalized;
+
+                SpawnChild(pos + dirA * spawnEps, dirA, _depth + 1, _maxDepth);
+                SpawnChild(pos + dirB * spawnEps, dirB, _depth + 1, _maxDepth);
             }
         }
 
@@ -260,10 +281,8 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
         return true;
     }
 
-    private void SpawnChild(Vector2 pos, float angleOffsetDeg, int childDepth, int maxDepth)
+    private void SpawnChild(Vector2 pos, Vector2 childDir, int childDepth, int maxDepth)
     {
-        Vector2 childDir = Rotate(_dir, angleOffsetDeg).normalized;
-
         DarkOrbSplitProjectile2D child = null;
 
         // 1) 풀 스폰

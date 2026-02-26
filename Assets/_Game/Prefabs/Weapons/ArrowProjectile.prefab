@@ -15,7 +15,8 @@ GameObject:
   - component: {fileID: 1281644234998683652}
   - component: {fileID: 1534040017305913308}
   - component: {fileID: -860772033551373037}
-  m_Layer: 0
+  - component: {fileID: -3633592114328859660}
+  m_Layer: 15
   m_Name: ArrowProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -95,8 +96,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1420497153
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -8438435414053321817, guid: c162335258a880a43a85181ba3b019a4,
@@ -198,6 +199,13 @@ MonoBehaviour:
   debugSkillId: 
   maxLevel: 8
   level: 0
+  forwardLevelToChildren: 1
+  forwardMethodNames:
+  - ApplyLevel
+  - SetLevel
+  - SetSkillLevel
+  - UpgradeLevel
+  - OnLevelChanged
   log: 1
 --- !u!114 &-860772033551373037
 MonoBehaviour:
@@ -220,3 +228,18 @@ MonoBehaviour:
   ricochetRange: 0
   pierce: 0
   destroyOnHit: 1
+--- !u!114 &-3633592114328859660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796759533629522074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b25534c296ad06245b44d738de394756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoSorting2D
+  sortingLayerName: SkillFX
+  orderInLayer: 50
+  includeChildren: 1

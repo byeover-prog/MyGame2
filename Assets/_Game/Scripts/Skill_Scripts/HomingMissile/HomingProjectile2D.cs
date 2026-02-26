@@ -1,164 +1,143 @@
 // UTF-8
+using System.Collections.Generic;
 using UnityEngine;
 
 // [구현 원리 요약]
-// - 타겟을 계속 유도해서 따라간다.
-// - 적중 시 데미지 + 남은 타격 횟수 감소, 0이면 종료.
-// - 적중 직후 아주 짧게 밀어내어 콜라이더 내부 박힘/중복 판정 꼬임을 줄인다.
+// - Rigidbody2D.linearVelocity로 이동하고, turnSpeedDeg만큼 회전하며 타겟을 추적한다.
+// - hitSet(HashSet<int>)으로 같은 적 중복 타격을 막는다.
+// - chainCount가 남아있으면 다음 타겟을 다시 탐색한다(간단 구현: OverlapCircleAll).
+
 [DisallowMultipleComponent]
-[RequireComponent(typeof(Collider2D))]
 public sealed class HomingMissileProjectile2D : MonoBehaviour
 {
+    [SerializeField] private Rigidbody2D rb;
+
     private LayerMask _enemyMask;
-    private float _searchRadius;
-    private float _damage;
+    private float _seekRadius;
+    private int _damage;
     private float _speed;
     private float _turnSpeedDeg;
-    private int _hitsLeft;
-    private float _lifeTime;
+    private int _remainingChains;
+    private float _life;
+    private float _age;
 
-    private Transform _target;
     private Vector2 _dir;
-    private float _alive;
-    private bool _initialized;
+    private Transform _target;
 
-    private float _postHitTimer;
-    private Vector2 _postHitDir;
-
-    private Collider2D _col;
+    private readonly HashSet<int> _hitSet = new HashSet<int>(64);
 
     private void Awake()
     {
-        _col = GetComponent<Collider2D>();
-        _col.isTrigger = true; // 투사체는 트리거 권장
-    }
-
-    private void OnEnable()
-    {
-        _alive = 0f;
-        _postHitTimer = 0f;
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
     }
 
     public void Init(
         LayerMask enemyMask,
-        float searchRadius,
-        float damage,
+        float seekRadius,
+        int damage,
         float speed,
         float turnSpeedDeg,
-        int totalHits,
-        float lifeTime,
+        int chainCount,
+        float lifeSeconds,
         Vector2 startDir,
-        Transform startTarget)
+        Transform startTarget
+    )
     {
         _enemyMask = enemyMask;
-        _searchRadius = searchRadius;
-        _damage = damage;
-        _speed = speed;
-        _turnSpeedDeg = turnSpeedDeg;
-        _hitsLeft = Mathf.Max(1, totalHits);
-        _lifeTime = Mathf.Max(0.2f, lifeTime);
+        _seekRadius = Mathf.Max(0.1f, seekRadius);
+        _damage = Mathf.Max(1, damage);
+        _speed = Mathf.Max(0.1f, speed);
+        _turnSpeedDeg = Mathf.Max(0f, turnSpeedDeg);
+        _remainingChains = Mathf.Max(0, chainCount);
+        _life = Mathf.Max(0.1f, lifeSeconds);
+        _age = 0f;
 
         _dir = startDir.sqrMagnitude > 0.0001f ? startDir.normalized : Vector2.right;
         _target = startTarget;
 
-        _initialized = true;
+        _hitSet.Clear();
+
+        if (rb != null)
+            rb.linearVelocity = _dir * _speed;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        if (!_initialized) return;
-        if (Time.timeScale <= 0f) return;
-
-        _alive += Time.deltaTime;
-        if (_alive >= _lifeTime)
+        _age += Time.fixedDeltaTime;
+        if (_age >= _life)
         {
             Destroy(gameObject);
             return;
         }
 
-        Vector2 pos = transform.position;
-
-        // 적중 직후 잠깐은 "밀려나기"로 탈출(박힘 방지)
-        if (_postHitTimer > 0f)
-        {
-            _postHitTimer -= Time.deltaTime;
-            transform.position += (Vector3)(_postHitDir * _speed * Time.deltaTime);
-            return;
-        }
-
-        // 타겟이 없으면 재탐색(투사체 기준)
         if (_target == null)
+            TryAcquireTarget();
+
+        if (_target != null)
         {
-            if (!Targeting2D.TryGetClosestEnemy(pos, _searchRadius, _enemyMask, 0, out _target))
+            Vector2 desired = (Vector2)_target.position - (Vector2)transform.position;
+            if (desired.sqrMagnitude > 0.0001f)
             {
-                transform.position += (Vector3)(_dir * _speed * Time.deltaTime);
-                return;
+                desired.Normalize();
+                float maxRad = _turnSpeedDeg * Mathf.Deg2Rad * Time.fixedDeltaTime;
+                Vector3 newDir3 = Vector3.RotateTowards(_dir, desired, maxRad, 0f);
+                _dir = ((Vector2)newDir3).normalized;
             }
         }
 
-        Vector2 desired = (Vector2)_target.position - pos;
-        if (desired.sqrMagnitude > 0.0001f)
-        {
-            desired.Normalize();
-            _dir = Steering2D.TurnTowards(_dir, desired, _turnSpeedDeg, Time.deltaTime);
-        }
-
-        transform.position += (Vector3)(_dir * _speed * Time.deltaTime);
+        if (rb != null)
+            rb.linearVelocity = _dir * _speed;
+        else
+            transform.position += (Vector3)(_dir * (_speed * Time.fixedDeltaTime));
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!_initialized) return;
         if (other == null) return;
+        if (!DamageUtil2D.IsInLayerMask(other.gameObject.layer, _enemyMask)) return;
 
-        // ✅ 레이어마스크 체크(프로젝트 유틸 의존 제거)
-        if (!IsInLayerMask(other.gameObject.layer, _enemyMask))
-            return;
+        int id = DamageUtil2D.GetRootInstanceId(other);
+        if (_hitSet.Contains(id)) return;
 
-        // ✅ 데미지 적용(프로젝트별 Health/TakeDamage 구현 차이 흡수)
-        TryApplyDamage(other.gameObject, _damage);
+        _hitSet.Add(id);
+        DamageUtil2D.ApplyDamage(other, _damage);
 
-        _hitsLeft--;
-        if (_hitsLeft <= 0)
+        if (_remainingChains > 0)
         {
-            Destroy(gameObject);
-            return;
+            _remainingChains--;
+            _target = null;
+            TryAcquireTarget(); // 다음 타겟 시도
+            if (_target != null) return;
         }
 
-        // 적중 직후 탈출(콜라이더 내부 박힘 방지)
-        Vector2 pos = transform.position;
-        Vector2 hitCenter = other.bounds.center;
-        Vector2 away = pos - hitCenter;
-        if (away.sqrMagnitude < 0.0001f) away = -_dir;
-
-        _postHitDir = away.normalized;
-        _postHitTimer = 0.06f;
-
-        // 다음 타겟(투사체 기준 가장 가까운 적)
-        Targeting2D.TryGetClosestEnemy(pos, _searchRadius, _enemyMask, 0, out _target);
+        Destroy(gameObject);
     }
 
-    // ----------------------------
-    // 내부 유틸(외부 DamageUtil2D 의존 제거)
-    // ----------------------------
-    private static bool IsInLayerMask(int layer, LayerMask mask)
+    private void TryAcquireTarget()
     {
-        int bit = 1 << layer;
-        return (mask.value & bit) != 0;
-    }
+        var hits = Physics2D.OverlapCircleAll(transform.position, _seekRadius, _enemyMask);
+        if (hits == null || hits.Length == 0) return;
 
-    private static void TryApplyDamage(GameObject target, float damage)
-    {
-        if (target == null) return;
+        float best = float.MaxValue;
+        Transform bestT = null;
 
-        // 1) 흔한 패턴: TakeDamage(int)
-        target.SendMessage("TakeDamage", Mathf.RoundToInt(damage), SendMessageOptions.DontRequireReceiver);
+        Vector2 o = transform.position;
+        for (int i = 0; i < hits.Length; i++)
+        {
+            var c = hits[i];
+            if (c == null) continue;
 
-        // 2) 흔한 패턴: TakeDamage(float)
-        target.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+            int id = DamageUtil2D.GetRootInstanceId(c);
+            if (_hitSet.Contains(id)) continue;
 
-        // 3) 다른 이름 패턴도 최소 커버(프로젝트마다 다름)
-        target.SendMessage("ApplyDamage", Mathf.RoundToInt(damage), SendMessageOptions.DontRequireReceiver);
-        target.SendMessage("ApplyDamage", damage, SendMessageOptions.DontRequireReceiver);
+            float d = ((Vector2)c.transform.position - o).sqrMagnitude;
+            if (d < best)
+            {
+                best = d;
+                bestT = c.transform;
+            }
+        }
+
+        _target = bestT;
     }
 }

@@ -47,16 +47,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DarkOrbWeapon2D
   projectilePrefab: {fileID: 4936022068496991512, guid: 51dac0e13e34d404db1bf644139c5bef,
     type: 3}
+  splitPool: {fileID: 0}
   enemyMask:
     serializedVersion: 2
-    m_Bits: 8192
+    m_Bits: 65536
   aimRange: 25
   cooldown: 1.2
-  projectileSpeed: 12
+  projectileSpeed: 4
   projectileLifeSeconds: 0.8
   explosionRadius: 1
-  baseDamage: 12
-  maxFragmentsBudget: 64
+  baseExplosionDamage: 20
+  bonusDamagePerLevelFrom5: 6
+  useSimpleSplitRule: 1
+  splitSpeed: 4
+  splitLifeSeconds: 0.6
+  splitDamage: 0
+  orbAlpha: 0.55
   log: 0
 --- !u!1 &7067013810493476816
 GameObject:

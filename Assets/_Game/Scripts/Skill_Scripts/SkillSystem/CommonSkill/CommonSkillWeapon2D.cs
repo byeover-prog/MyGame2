@@ -1,3 +1,4 @@
+// UTF-8
 using System;
 using System.Collections;
 using UnityEngine;
@@ -84,7 +85,6 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
 
         // 1) SO 기본값
         _runtimeP = (config != null) ? config.GetLevelParams(level) : default;
-        // 스케일은 JSON에서 제거(프리팹/아트에서만 관리)
 
         // 2) JSON 오버라이드
         string id = GetBalanceId();
@@ -98,9 +98,6 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
         }
     }
 
-    // 핵심: (SO값을 이미 _runtimeP에 넣은 상태)에서
-    // - JSON 기본값 덮어쓰기
-    // - AddPerLevel 누적 적용
     private static void ApplyBalanceRow(SkillBalanceDB2D.SkillRow2D row, int level, ref CommonSkillLevelParams p)
     {
         int lvMinus1 = Mathf.Max(0, level - 1);
@@ -121,16 +118,13 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
         if (row.HasCount()) p.projectileCount = row.count;
         if (row.countAddPerLevel != 0) p.projectileCount = Mathf.Max(1, p.projectileCount + row.countAddPerLevel * lvMinus1);
 
-        // ----- 강화/전용값을 CommonSkillLevelParams에 반영 가능한 것들 -----
-        // 수리검 튕김
+        // ----- 강화/전용값 -----
         if (row.HasBounceCount()) p.bounceCount = row.bounceCount;
         if (row.bounceAddPerLevel != 0) p.bounceCount = Mathf.Max(0, p.bounceCount + row.bounceAddPerLevel * lvMinus1);
 
-        // 호밍 체인
         if (row.HasChainCount()) p.chainCount = row.chainCount;
         if (row.chainAddPerLevel != 0) p.chainCount = Mathf.Max(0, p.chainCount + row.chainAddPerLevel * lvMinus1);
 
-        // 다크오브 분열/폭발/분열체 속도
         if (row.HasSplitCount()) p.splitCount = row.splitCount;
         if (row.splitAddPerLevel != 0) p.splitCount = Mathf.Max(0, p.splitCount + row.splitAddPerLevel * lvMinus1);
 
@@ -140,7 +134,6 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
         if (row.HasChildSpeed()) p.childSpeed = row.childSpeed;
         if (row.childSpeedAddPerLevel != 0f) p.childSpeed = Mathf.Max(0f, p.childSpeed + row.childSpeedAddPerLevel * lvMinus1);
 
-        // 회전검 틱/반경/각속도
         if (row.HasHitInterval()) p.hitInterval = row.hitInterval;
         if (row.hitIntervalAddPerLevel != 0f) p.hitInterval = Mathf.Max(0.01f, p.hitInterval + row.hitIntervalAddPerLevel * lvMinus1);
 
@@ -149,13 +142,8 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
 
         if (row.HasOrbitSpeed()) p.orbitAngularSpeed = row.orbitSpeed;
         if (row.orbitSpeedAddPerLevel != 0f) p.orbitAngularSpeed = p.orbitAngularSpeed + row.orbitSpeedAddPerLevel * lvMinus1;
-
-        // 주의: explodeDistance, slowRate/slowSeconds, burstInterval/spinDps, active 같은 건
-        // CommonSkillLevelParams에 필드가 없거나(혹은 스킬별 로직에서만 쓰는 값)라서
-        // 해당 무기 스크립트에서 TryGetBalanceRow로 직접 꺼내 쓰는 방식이 안전함.
     }
 
-    // 무기 스크립트가 전용값을 JSON에서 읽고 싶을 때 사용
     protected bool TryGetBalanceRow(out SkillBalanceDB2D.SkillRow2D row)
     {
         row = _lastBalanceRow;
@@ -214,7 +202,6 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
         return projectileSortingBase + ((int)Kind * step);
     }
 
-    // 정렬 + 스케일 적용(“이미지 크기 조절” 요구사항 대응)
     protected void ApplyProjectileSorting(GameObject projectileRoot)
     {
         if (projectileRoot == null) return;
@@ -266,6 +253,9 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
     {
         cooldownTimer = Mathf.Max(0.01f, P.cooldown);
     }
+
+    // ILevelableSkill이 요구하는 오타 메서드 호환용(인터페이스가 OnAttaced를 요구하면 이걸로 통과)
+    public void OnAttaced(Transform newOwner) => OnAttached(newOwner);
 
     public void OnAttached(Transform newOwner)
     {

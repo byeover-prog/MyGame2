@@ -39,6 +39,9 @@ public sealed class GenericProjectileWeapon2D : MonoBehaviour, ILevelableSkill
     private int _level;
     private float _nextFireTime;
 
+    // 인터페이스 오타(OnAttaced) 호환용: 컴파일 통과를 위해 반드시 구현
+    public void OnAttaced(Transform owner) => OnAttached(owner);
+
     public void OnAttached(Transform owner)
     {
         _owner = owner;
@@ -76,7 +79,7 @@ public sealed class GenericProjectileWeapon2D : MonoBehaviour, ILevelableSkill
         }
         else
         {
-            dir = Vector2.right; // 타겟 없어도 발사 허용일 때 기본 방향
+            dir = Vector2.right;
         }
 
         int dmg = baseDamage + damageAddPerLevel * Mathf.Max(0, _level - 1);
@@ -84,11 +87,10 @@ public sealed class GenericProjectileWeapon2D : MonoBehaviour, ILevelableSkill
         int shotCount = 1 + extraProjectilesPerLevel * Mathf.Max(0, _level - 1);
         shotCount = Mathf.Clamp(shotCount, 1, 20);
 
-        // 멀티샷은 간단하게 작은 각도 분산
-        float spread = (shotCount <= 1) ? 0f : 10f; // 총 벌어짐 10도(임시)
+        float spread = (shotCount <= 1) ? 0f : 10f;
         for (int i = 0; i < shotCount; i++)
         {
-            float t = (shotCount == 1) ? 0f : (i / (float)(shotCount - 1)) * 2f - 1f; // -1..+1
+            float t = (shotCount == 1) ? 0f : (i / (float)(shotCount - 1)) * 2f - 1f;
             Vector2 d = Rotate(dir, t * (spread * 0.5f));
 
             var go = Instantiate(projectilePrefab, _owner.position, Quaternion.identity);

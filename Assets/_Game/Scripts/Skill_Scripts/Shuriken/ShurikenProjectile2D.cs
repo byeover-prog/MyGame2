@@ -1,151 +1,96 @@
 // UTF-8
+using System.Collections.Generic;
 using UnityEngine;
 
 // [구현 원리 요약]
-// - 유도 이동으로 타겟을 향해 날아가며, 적중 시 "다음 타겟"으로 튕긴다.
-// - 겹침 난리 방지: 직전 타겟은 우선 제외하고 다음 타겟을 찾는다(없으면 예외적으로 허용).
-// - 튕김 횟수(bounceCount)는 "첫 적중 이후 추가로 튕길 수 있는 횟수" 기준이다.
-[RequireComponent(typeof(Collider2D))]
+// - 직선 이동 투사체.
+// - 동일 적 중복 타격 방지: HashSet<int>에 "루트 인스턴스 ID" 저장.
+// - 구버전 스킬이 Init을 많은 인자로 호출해도 컴파일되도록 오버로드를 제공한다.
+
+[DisallowMultipleComponent]
 public sealed class ShurikenProjectile2D : MonoBehaviour
 {
-    [Header("Runtime(ReadOnly)")]
-    [SerializeField] private bool _initialized;
+    [SerializeField] private Rigidbody2D rb;
+
+    [Header("기본값(Init에서 덮어씀)")]
+    [SerializeField] private float defaultSpeed = 12f;
+    [SerializeField] private float defaultLifeSeconds = 2f;
 
     private LayerMask _enemyMask;
-    private float _searchRadius;
-    private float _damage;
+    private int _damage;
     private float _speed;
-    private float _turnSpeedDeg;
-    private int _bouncesLeft;
-    private float _lifeTime;
-
-    private Transform _target;
+    private float _life;
+    private float _age;
     private Vector2 _dir;
-    private float _alive;
 
-    private int _lastHitRootId;
-
-    private Collider2D _col;
+    private readonly HashSet<int> _hitSet = new HashSet<int>(64);
 
     private void Awake()
     {
-        _col = GetComponent<Collider2D>();
-        _col.isTrigger = true;
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
     }
 
-    private void OnEnable()
-    {
-        _alive = 0f;
-        _lastHitRootId = 0;
-    }
-
-    public void Init(
-        LayerMask enemyMask,
-        float searchRadius,
-        float damage,
-        float speed,
-        float turnSpeedDeg,
-        int bounceCount,
-        float lifeTime,
-        Vector2 startDir,
-        Transform startTarget)
+    // 기본 Init(권장)
+    public void Init(LayerMask enemyMask, int damage, float speed, float lifeSeconds, Vector2 dir)
     {
         _enemyMask = enemyMask;
-        _searchRadius = searchRadius;
-        _damage = damage;
-        _speed = speed;
-        _turnSpeedDeg = turnSpeedDeg;
-        _bouncesLeft = Mathf.Max(0, bounceCount);
-        _lifeTime = Mathf.Max(0.1f, lifeTime);
+        _damage = Mathf.Max(1, damage);
+        _speed = Mathf.Max(0.1f, speed > 0f ? speed : defaultSpeed);
+        _life = Mathf.Max(0.05f, lifeSeconds > 0f ? lifeSeconds : defaultLifeSeconds);
+        _age = 0f;
 
-        _dir = startDir.sqrMagnitude > 0.0001f ? startDir.normalized : Vector2.right;
-        _target = startTarget;
+        _dir = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector2.right;
 
-        _initialized = true;
+        _hitSet.Clear();
+
+        if (rb != null)
+            rb.linearVelocity = _dir * _speed;
     }
 
-    private void Update()
+    // 레거시 호환: ShurikenSkill2D가 Init을 9개 인자로 호출하는 경우를 살리기 위한 오버로드
+    // (unused 인자는 무시하고, 핵심 파라미터만 기본 Init으로 연결)
+    public void Init(
+        LayerMask enemyMask,
+        int damage,
+        float speed,
+        float lifeSeconds,
+        Vector2 dir,
+        int bounceCount,
+        int chainCount,
+        float searchRadius,
+        Transform startTarget
+    )
     {
-        if (!_initialized) return;
-        if (Time.timeScale <= 0f) return;
+        Init(enemyMask, damage, speed, lifeSeconds, dir);
+        // bounce/chain/search/startTarget은 이 단순 투사체에선 사용하지 않음(컴파일 호환 목적)
+    }
 
-        _alive += Time.deltaTime;
-        if (_alive >= _lifeTime)
+    private void FixedUpdate()
+    {
+        _age += Time.fixedDeltaTime;
+        if (_age >= _life)
         {
             Destroy(gameObject);
             return;
         }
 
-        Vector2 pos = transform.position;
-
-        // 타겟이 없으면 재탐색
-        if (_target == null)
-        {
-            if (!Targeting2D.TryGetClosestEnemy(pos, _searchRadius, _enemyMask, 0, out _target))
-            {
-                // 적이 없으면 그냥 진행하다가 수명 종료
-                transform.position += (Vector3)(_dir * _speed * Time.deltaTime);
-                return;
-            }
-        }
-
-        Vector2 desired = ((Vector2)_target.position - pos);
-        if (desired.sqrMagnitude > 0.0001f)
-        {
-            desired.Normalize();
-
-            // 회전 보간(도/초)
-            float maxRad = _turnSpeedDeg * Mathf.Deg2Rad * Time.deltaTime;
-            _dir = Vector2.Lerp(_dir, desired, Mathf.Clamp01(maxRad)).normalized;
-        }
-
-        transform.position += (Vector3)(_dir * _speed * Time.deltaTime);
+        if (rb != null)
+            rb.linearVelocity = _dir * _speed;
+        else
+            transform.position += (Vector3)(_dir * (_speed * Time.fixedDeltaTime));
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!_initialized) return;
         if (other == null) return;
+        if (!DamageUtil2D.IsInLayerMask(other.gameObject.layer, _enemyMask)) return;
 
-        if (!DamageUtil2D.IsInLayerMask(other.gameObject, _enemyMask))
-            return;
+        int id = DamageUtil2D.GetRootInstanceId(other);
+        if (_hitSet.Contains(id)) return;
 
-        // 데미지 적용
+        _hitSet.Add(id);
         DamageUtil2D.ApplyDamage(other, _damage);
 
-        // 직전 적 기록(겹침 난리 방지용)
-        _lastHitRootId = DamageUtil2D.GetRootInstanceId(other);
-
-        // 다음 타겟 결정
-        if (_bouncesLeft <= 0)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        _bouncesLeft--;
-
-        Vector2 pos = transform.position;
-
-        // 1) 직전 타겟 제외하고 가장 가까운 적
-        if (!Targeting2D.TryGetClosestEnemy(pos, _searchRadius, _enemyMask, _lastHitRootId, out _target))
-        {
-            // 2) 다른 적이 없으면(보스 1마리 같은 경우) 직전 타겟도 허용
-            if (!Targeting2D.TryGetClosestEnemy(pos, _searchRadius, _enemyMask, 0, out _target))
-            {
-                Destroy(gameObject);
-                return;
-            }
-        }
-
-        // 튕김 시작 방향 갱신(0벡터 방지)
-        Vector2 desired = ((Vector2)_target.position - pos);
-        if (desired.sqrMagnitude < 0.0001f)
-            desired = _dir;
-
-        _dir = desired.normalized;
-
-        // 콜라이더 안에 박혀서 이벤트가 꼬이는 것 방지(살짝 앞으로 빼기)
-        transform.position += (Vector3)(_dir * 0.08f);
+        Destroy(gameObject);
     }
 }

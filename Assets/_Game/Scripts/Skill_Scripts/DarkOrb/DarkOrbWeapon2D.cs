@@ -11,6 +11,10 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     [Tooltip("여기엔 반드시 DarkOrbProjectile2D 프리팹을 넣어야 합니다. (Split 프리팹 금지)")]
     [SerializeField] private DarkOrbProjectile2D projectilePrefab;
 
+    [Header("분열(옵션)")]
+    [Tooltip("분열체를 풀로 찍고 싶을 때만 넣으세요. 없으면 Instantiate 기반으로만 동작합니다.")]
+    [SerializeField] private ProjectilePool2D splitPool;
+
     [Header("타겟")]
     [SerializeField] private LayerMask enemyMask;
     [SerializeField] private float aimRange = 25f;
@@ -20,7 +24,7 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     [SerializeField] private float projectileSpeed = 12f;
     [SerializeField] private float projectileLifeSeconds = 0.8f;
 
-    [Header("폭발(거리 도달 후)")]
+    [Header("폭발")]
     [Tooltip("폭발 반경")]
     [SerializeField] private float explosionRadius = 1.0f;
 
@@ -31,9 +35,22 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     [Tooltip("5레벨부터 레벨당 추가 폭발 데미지 (5~8만 적용)")]
     [SerializeField] private int bonusDamagePerLevelFrom5 = 6;
 
-    [Header("분열/성능")]
-    [Tooltip("한 발에서 생성될 수 있는 총 파편 수 상한(budget)")]
-    [SerializeField] private int maxFragmentsBudget = 64;
+    [Header("분열 규칙")]
+    [Tooltip("레벨에 따른 분열 수(간단 규칙).\nLv1=0, Lv2=2, Lv3=4, Lv4+=8")]
+    [SerializeField] private bool useSimpleSplitRule = true;
+
+    [Tooltip("분열체 속도")]
+    [SerializeField] private float splitSpeed = 10f;
+
+    [Tooltip("분열체 수명")]
+    [SerializeField] private float splitLifeSeconds = 0.6f;
+
+    [Tooltip("분열체 데미지(0이면 메인 데미지와 동일)")]
+    [SerializeField] private int splitDamage = 0;
+
+    [Header("표현")]
+    [Range(0.1f, 1f)]
+    [SerializeField] private float orbAlpha = 0.55f;
 
     [Header("디버그")]
     [SerializeField] private bool log = false;
@@ -41,6 +58,9 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     private Transform _owner;
     private float _nextFireTime;
     private int _level;
+
+    // 인터페이스 오타 대응(필수)
+    public void OnAttaced(Transform owner) => OnAttached(owner);
 
     public void OnAttached(Transform owner)
     {
@@ -92,17 +112,7 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
         if (dir.sqrMagnitude < 0.0001f) dir = Vector2.right;
         dir.Normalize();
 
-        // 레벨 규칙:
-        // Lv1: 0회 / Lv2: 1회 / Lv3: 2회 / Lv4~8: 3회
-        int splitDepth =
-            (_level <= 1) ? 0 :
-            (_level == 2) ? 1 :
-            (_level == 3) ? 2 :
-            3;
-
-        // 폭발 데미지 규칙:
-        // 1~4: baseExplosionDamage
-        // 5~8: 레벨당 추가(bonusDamagePerLevelFrom5)
+        // 폭발 데미지 규칙
         int dmg = Mathf.Max(1, baseExplosionDamage);
         if (_level >= 5)
         {
@@ -117,22 +127,38 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
             if (enemyLayer >= 0) enemyMask = LayerMask.GetMask("Enemy");
         }
 
+        // 간단 분열 규칙(요청 스펙에 맞춰 여기만 바꾸면 됨)
+        int splitCount = 0;
+        if (useSimpleSplitRule)
+        {
+            // Lv1=0, Lv2=2, Lv3=4, Lv4+=8
+            if (_level <= 1) splitCount = 0;
+            else if (_level == 2) splitCount = 2;
+            else if (_level == 3) splitCount = 4;
+            else splitCount = 8;
+        }
+
+        int childDmg = (splitDamage > 0) ? splitDamage : dmg;
+
         var proj = Instantiate(projectilePrefab, _owner.position, Quaternion.identity);
 
-        // Configure는 "분열 깊이, budget, 폭발 반경"만 전달
-        proj.Configure(splitDepth, maxFragmentsBudget, explosionRadius);
-
-        // Launch: dir, 폭발데미지, speed, life, enemyMask, owner
-        proj.Launch(
-            dir,
+        // Init 기반으로 통일: DarkOrbProjectile2D가 Init을 갖고 있어야 함
+        proj.Init(
+            enemyMask,
             dmg,
             projectileSpeed,
             Mathf.Max(0.2f, projectileLifeSeconds),
-            enemyMask,
-            _owner
+            dir,
+            Mathf.Max(0.1f, explosionRadius),
+            Mathf.Max(0, splitCount),
+            Mathf.Max(0.1f, splitSpeed),
+            Mathf.Max(0.1f, splitLifeSeconds),
+            Mathf.Max(0, childDmg),
+            splitPool,
+            orbAlpha
         );
 
-        if (log) Debug.Log($"[DarkOrbWeapon2D] Fire => dir={dir} dmg={dmg} splitDepth={splitDepth}", this);
+        if (log) Debug.Log($"[DarkOrbWeapon2D] Fire => dmg={dmg} splitCount={splitCount}", this);
     }
 
     private Transform FindNearestEnemy()
@@ -145,12 +171,13 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
         float best = float.PositiveInfinity;
         Transform bestT = null;
 
+        Vector2 o = _owner.position;
         for (int i = 0; i < hits.Length; i++)
         {
             var h = hits[i];
             if (h == null) continue;
 
-            float d = ((Vector2)h.transform.position - (Vector2)_owner.position).sqrMagnitude;
+            float d = ((Vector2)h.transform.position - o).sqrMagnitude;
             if (d < best)
             {
                 best = d;

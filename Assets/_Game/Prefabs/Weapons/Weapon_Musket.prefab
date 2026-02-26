@@ -49,8 +49,9 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: fd072ae5006e1554aa3b6596f0693f7d, type: 2}
   enemyMask:
     serializedVersion: 2
-    m_Bits: 8192
+    m_Bits: 65536
   requireTargetToFire: 1
+  balanceIdOverride: 
   spawnOffsetRadius: 0.25
   fireJitterDelayMin: 0.05
   fireJitterDelayMax: 0.1

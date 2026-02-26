@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 7175219620819757290}
   - component: {fileID: -3088633970849079980}
   - component: {fileID: 7201039809396505315}
+  - component: {fileID: 4515872247168851136}
+  - component: {fileID: 3055583682451337841}
   m_Layer: 15
   m_Name: Shuriken
   m_TagString: Untagged
@@ -82,8 +84,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1420497153
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7765474139541862038, guid: 6f3a2dc3b8c39044ea36eccc87dffac0,
@@ -229,3 +231,33 @@ MonoBehaviour:
   ricochetRange: 18
   pierce: 0
   destroyOnHit: 1
+--- !u!114 &4515872247168851136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5000209898010349714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a0eac2dc8e36274694164d55b8ac244, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShurikenProjectile2D
+  rb: {fileID: 1812472226960930024}
+  defaultSpeed: 12
+  defaultLifeSeconds: 2
+--- !u!114 &3055583682451337841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5000209898010349714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b25534c296ad06245b44d738de394756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoSorting2D
+  sortingLayerName: SkillFX
+  orderInLayer: 50
+  includeChildren: 1

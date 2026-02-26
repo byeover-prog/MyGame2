@@ -1,15 +1,17 @@
+// UTF-8
 using UnityEngine;
 
 // [구현 원리 요약]
 // - 가장 가까운 적(EnemyRegistryMember2D)을 찾는다.
 // - 투사체를 생성한다.
-// - 투사체가 RicochetShurikenProjectile2D면 Init(...)을 반드시 호출한다(필수).
-// - (fallback) ProjectileBase2D만 있으면 Launch(...)를 호출한다.
+// - RicochetShurikenProjectile2D는 루트/자식 어디에 붙어있든 찾아서 Init(...)을 "반드시" 호출한다(필수).
+// - (fallback) ProjectileBase2D도 루트/자식 어디에 붙어있든 찾아 Launch(...)를 호출한다.
+// - 타겟이 없는데 튕김형이 생성되는 케이스는 즉시 정리(난사/에러 방지).
 [DisallowMultipleComponent]
 public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
 {
     [Header("발사 설정")]
-    [Tooltip("수리검 투사체 프리팹 (RicochetShurikenProjectile2D가 붙어있어야 정상 동작)")]
+    [Tooltip("수리검 투사체 프리팹 (RicochetShurikenProjectile2D가 붙어있어야 정상 동작)\n※ 루트가 아니라 '자식'에 붙어 있어도 자동으로 찾아 Init을 호출합니다.")]
     [SerializeField] private GameObject shurikenProjectilePrefab;
 
     [Tooltip("적을 감지할 최대 사거리(반경)")]
@@ -45,6 +47,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
     private void Update()
     {
         if (owner == null || config == null) return;
+
         transform.position = owner.position; // 플레이어 위치 따라가기
 
         _timer += Time.deltaTime;
@@ -70,7 +73,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
             if (requireTargetToFire) return;
         }
 
-        // 2) "첫 타겟"을 EnemyRegistryMember2D로 확보 (RicochetShurikenProjectile2D.Init에 필요)
+        // 2) 첫 타겟 확보(Init에 필요)
         EnemyRegistryMember2D startTarget = null;
         float bestSqr = float.PositiveInfinity;
 
@@ -79,7 +82,6 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
             var hit = _hits[i];
             if (hit == null) continue;
 
-            // 적 루트(또는 상위)에 EnemyRegistryMember2D가 있어야 함
             var member = hit.GetComponentInParent<EnemyRegistryMember2D>();
             if (member == null || !member.IsValidTarget) continue;
 
@@ -99,16 +101,19 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
         {
             GameObject go = Instantiate(shurikenProjectilePrefab, origin, Quaternion.identity);
 
-            // 정렬 order 통일(겹침 방지)
+            // 정렬 order 통일(겹침/가림 방지)
             ApplyProjectileSorting(go);
 
-            // ✅ 1순위: RicochetShurikenProjectile2D면 Init(...)이 필수
-            if (go.TryGetComponent<RicochetShurikenProjectile2D>(out var ricochet))
+            // ✅ 1순위: RicochetShurikenProjectile2D (루트/자식 포함 검색)
+            // - TryGetComponent는 루트만 보므로, 프리팹 구조가 자식에 스크립트가 붙어 있으면 Init이 누락된다.
+            var ricochet = go.GetComponentInChildren<RicochetShurikenProjectile2D>(true);
+            if (ricochet != null)
             {
                 if (startTarget == null)
                 {
-                    // 튕김형은 타겟이 없으면 의미 없음(난사 방지)
-                    ricochet.ReturnToPool();
+                    // 튕김형은 타겟이 없으면 의미 없음(난사/에러 방지)
+                    // 풀 사용 중이면 ReturnToPool, 아니면 Destroy로 안전 처리
+                    SafeDisposeProjectile(go, ricochet);
                     continue;
                 }
 
@@ -124,8 +129,9 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
                 continue;
             }
 
-            // (fallback) 범용 투사체면 Launch로라도 나가게
-            if (go.TryGetComponent<ProjectileBase2D>(out var proj))
+            // (fallback) 범용 투사체(루트/자식 포함 검색)
+            var proj = go.GetComponentInChildren<ProjectileBase2D>(true);
+            if (proj != null)
             {
                 Vector2 dir = (startTarget != null)
                     ? (startTarget.Position - origin).normalized
@@ -139,6 +145,20 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
 
             Debug.LogWarning("[RicochetShurikenWeapon2D] 투사체 프리팹에 RicochetShurikenProjectile2D 또는 ProjectileBase2D가 없습니다!", go);
         }
+    }
+
+    // ✅ 안전 처분: 풀 기반이면 ReturnToPool, 아니면 Destroy
+    private static void SafeDisposeProjectile(GameObject go, RicochetShurikenProjectile2D ricochet)
+    {
+        if (ricochet != null)
+        {
+            // ReturnToPool이 내부에서 SetActive(false) / pool 반환을 한다는 전제로 사용
+            ricochet.ReturnToPool();
+            return;
+        }
+
+        if (go != null)
+            Destroy(go);
     }
 
     private void OnDrawGizmosSelected()

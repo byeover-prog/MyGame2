@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4936022068496991512}
   - component: {fileID: 6698356803984456033}
   - component: {fileID: -134575363894471975}
+  - component: {fileID: 6059447751243691301}
   m_Layer: 15
   m_Name: DarkOrb
   m_TagString: Untagged
@@ -80,8 +81,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1420497153
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 5483859174317454229, guid: 05f490a76fb99b740808d59b96bfa856,
@@ -107,16 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d2259f251b6d924f83db3523eb5cd20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DarkOrbProjectile2D
-  rb: {fileID: 0}
-  col: {fileID: 0}
-  lifeSeconds: 1
-  splitDistance: 4
-  explosionRadius: 1
-  splitAngle: 30
-  splitSpeedMultiplier: 0.9
-  maxFragmentsBudget: 64
-  ownerIgnoreSeconds: 0.08
-  log: 0
+  splitSpawnPrefab: {fileID: 0}
 --- !u!114 &6698356803984456033
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161,3 +153,18 @@ MonoBehaviour:
   ricochetRange: 0
   pierce: 0
   destroyOnHit: 1
+--- !u!114 &6059447751243691301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3132555082536606338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b25534c296ad06245b44d738de394756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoSorting2D
+  sortingLayerName: SkillFX
+  orderInLayer: 50
+  includeChildren: 1

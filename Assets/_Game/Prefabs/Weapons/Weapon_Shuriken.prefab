@@ -80,8 +80,9 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: e5ca376f06625e548878b7c31c14bc07, type: 2}
   enemyMask:
     serializedVersion: 2
-    m_Bits: 8192
+    m_Bits: 65536
   requireTargetToFire: 1
+  balanceIdOverride: 
   spawnOffsetRadius: 0.25
   fireJitterDelayMin: 0.05
   fireJitterDelayMax: 0.1
@@ -90,6 +91,7 @@ MonoBehaviour:
   shurikenProjectilePrefab: {fileID: 5000209898010349714, guid: 7935c7cec6de13948ad780e1512bee6f,
     type: 3}
   detectRange: 10
+  ricochetCount: 2
   firePivot: {fileID: 244080834077732029}
 --- !u!114 &1712747281440605854
 MonoBehaviour:

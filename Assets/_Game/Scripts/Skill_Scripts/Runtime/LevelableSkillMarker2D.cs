@@ -3,7 +3,6 @@
 // - 무기/투사체 어디에 붙어도 "장착됨"을 만족시킴
 // - 옵션으로 하위 컴포넌트에 ApplyLevel을 전달(전용 무기 스크립트가 ApplyLevel/SetLevel 등을 갖고 있으면 자동 호출)
 
-using System;
 using System.Reflection;
 using UnityEngine;
 
@@ -22,7 +21,7 @@ public sealed class LevelableSkillMarker2D : MonoBehaviour, ILevelableSkill
     [SerializeField] private bool forwardLevelToChildren = true;
 
     [Tooltip("전달 대상 메서드 이름 후보(프로젝트 무기 스크립트마다 이름이 다를 수 있어서 여러 개 시도)")]
-    [SerializeField] private string[] forwardMethodNames = new[]
+    [SerializeField] private string[] forwardMethodNames =
     {
         "ApplyLevel", "SetLevel", "SetSkillLevel", "UpgradeLevel", "OnLevelChanged"
     };
@@ -32,6 +31,14 @@ public sealed class LevelableSkillMarker2D : MonoBehaviour, ILevelableSkill
 
     private Transform _owner;
 
+    // 인터페이스가 요구하는(오타) 이름을 "반드시" 구현
+    // - 내부적으로 정상 철자 메서드로 연결해서 코드 가독성 유지
+    public void OnAttaced(Transform owner)
+    {
+        OnAttached(owner);
+    }
+
+    // 사람이 읽기 좋은 정상 철자 버전(프로젝트 내부에서 이걸 쓰는 쪽이 있어도 OK)
     public void OnAttached(Transform owner)
     {
         _owner = owner;
@@ -78,7 +85,10 @@ public sealed class LevelableSkillMarker2D : MonoBehaviour, ILevelableSkill
                         if (log) Debug.Log($"[LevelableSkillMarker2D] Forward => {t.Name}.{m.Name}({lv})", mb);
                         break;
                     }
-                    catch { /* 전달 실패는 무시(스킬은 계속 진행) */ }
+                    catch
+                    {
+                        // 전달 실패는 무시(스킬은 계속 진행)
+                    }
                 }
             }
         }
