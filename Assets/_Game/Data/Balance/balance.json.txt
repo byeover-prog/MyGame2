@@ -1,0 +1,43 @@
+{
+  "skills": [
+    {
+      "id": "Shuriken",
+      "levels": [
+        { "cooldown": 1.80, "damage": 10, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 1, "bounce": 2 },
+        { "cooldown": 1.75, "damage": 10, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 2, "bounce": 2 },
+        { "cooldown": 1.70, "damage": 11, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 2 },
+        { "cooldown": 1.65, "damage": 12, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 3 },
+        { "cooldown": 1.60, "damage": 13, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 4 },
+        { "cooldown": 1.55, "damage": 14, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 5 },
+        { "cooldown": 1.50, "damage": 15, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 6 },
+        { "cooldown": 1.45, "damage": 16, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 6 }
+      ]
+    },
+    {
+      "id": "HomingMissile",
+      "levels": [
+        { "cooldown": 3.00, "damage": 8, "projectileSpeed": 8.5, "turnSpeedDeg": 1080, "hits": 1 },
+        { "cooldown": 2.95, "damage": 8, "projectileSpeed": 8.5, "turnSpeedDeg": 1080, "hits": 2 },
+        { "cooldown": 2.90, "damage": 9, "projectileSpeed": 8.6, "turnSpeedDeg": 1080, "hits": 3 },
+        { "cooldown": 2.85, "damage": 9, "projectileSpeed": 8.6, "turnSpeedDeg": 1080, "hits": 4 },
+        { "cooldown": 2.80, "damage": 10, "projectileSpeed": 8.7, "turnSpeedDeg": 1080, "hits": 5 },
+        { "cooldown": 2.75, "damage": 10, "projectileSpeed": 8.7, "turnSpeedDeg": 1080, "hits": 6 },
+        { "cooldown": 2.70, "damage": 11, "projectileSpeed": 8.8, "turnSpeedDeg": 1080, "hits": 7 },
+        { "cooldown": 2.65, "damage": 11, "projectileSpeed": 8.8, "turnSpeedDeg": 1080, "hits": 8 }
+      ]
+    },
+    {
+      "id": "DarkOrb",
+      "levels": [
+        { "cooldown": 4.00, "damage": 20, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 0 },
+        { "cooldown": 3.95, "damage": 20, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 1 },
+        { "cooldown": 3.90, "damage": 20, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 2 },
+        { "cooldown": 3.85, "damage": 20, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 },
+        { "cooldown": 3.80, "damage": 23, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 },
+        { "cooldown": 3.75, "damage": 26, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 },
+        { "cooldown": 3.70, "damage": 29, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 },
+        { "cooldown": 3.65, "damage": 32, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 }
+      ]
+    }
+  ]
+}

@@ -8,8 +8,9 @@ using UnityEngine;
 /// </summary>
 public enum OfferKind
 {
-    Skill,
-    Passive
+    Weapon = 0,
+    Passive = 1,
+    
 }
 
 [Serializable]

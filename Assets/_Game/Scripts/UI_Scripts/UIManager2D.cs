@@ -1,6 +1,5 @@
 // UTF-8
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 #if ENABLE_INPUT_SYSTEM
@@ -8,37 +7,31 @@ using UnityEngine.InputSystem;
 #endif
 
 // [구현 원리 요약]
-// - 사망 신호/단축키로 GameOver 패널을 "무조건" 켠다.
-// - 입력은 Old(Input.GetKeyDown) + New(InputSystem Keyboard) 둘 다 지원한다.
-// - 패널이 안 보이는 대표 원인(Canvas 비활성, CanvasGroup alpha=0, ScreenSpaceCamera의 worldCamera 미지정, sortingOrder 뒤)
-//   을 강제로 복구해서 "켜졌는데 안 보임"을 막는다.
+// - PlayerDead 이벤트/단축키로 DefeatUIController2D.Open()을 "확정" 호출한다.
+// - Resources.FindObjectsOfTypeAll 같은 에셋 포함 탐색을 피하고, 씬 오브젝트만 대상으로 찾는다.
+// - Canvas가 안 보이는 케이스(ScreenSpaceCamera 카메라 미지정/Sorting 뒤)도 최소한 복구한다.
 [DisallowMultipleComponent]
 public sealed class UIManager2D : MonoBehaviour
 {
     public static UIManager2D Instance { get; private set; }
 
-    [Header("게임오버 패널")]
-    [Tooltip("가장 확실한 방법: Hierarchy의 패널 루트를 여기로 드래그해서 직접 연결하세요.\n(예: DefeatPanel 또는 GameOverPanel)")]
-    [SerializeField] private GameObject gameOverPanel;
+    [Header("Defeat UI")]
+    [Tooltip("가장 확실: Hierarchy(씬) 안의 DefeatPanel을 드래그로 연결하세요(프리팹 에셋 X).")]
+    [SerializeField] private DefeatUIController2D defeatUI;
 
-    [Tooltip("직접 연결이 비어있을 때만 사용되는 자동 탐색 이름")]
-    [SerializeField] private string gameOverPanelName = "GameOverPanel";
+    [Tooltip("위 참조가 비었을 때만 이름으로 찾습니다(씬 오브젝트만 탐색).")]
+    [SerializeField] private string defeatPanelName = "DefeatPanel";
 
-    [Tooltip("패널이 켜질 때 첫 선택(다시하기 버튼 권장)")]
-    [SerializeField] private GameObject firstSelect;
-
-    [Header("옵션")]
+    [Tooltip("게임오버 시 게임 정지")]
     [SerializeField] private bool pauseOnGameOver = true;
 
-    [Tooltip("비워두면 모든 씬에서 동작합니다.\n특정 씬에서만 동작시키고 싶으면 그 씬 이름을 입력하세요.")]
-    [SerializeField] private string runSceneName = "";
-
-    [Header("단축키(디버그)")]
+    [Header("Hotkey(Debug)")]
     [SerializeField] private bool enableHotkey = true;
-    [SerializeField] private KeyCode openGameOverHotkey = KeyCode.Home;
+    [SerializeField] private KeyCode openKey = KeyCode.Home;
 
-    [Tooltip("New Input System에서 Home키를 읽을지 여부(Old Input만 쓰면 꺼도 됨)")]
+#if ENABLE_INPUT_SYSTEM
     [SerializeField] private bool useNewInputSystemHotkey = true;
+#endif
 
     private bool _shown;
 
@@ -49,13 +42,10 @@ public sealed class UIManager2D : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
         _shown = false;
-
-        if (Time.timeScale != 1f) Time.timeScale = 1f;
-        TryHidePanel();
     }
 
     private void OnEnable()
@@ -74,39 +64,25 @@ public sealed class UIManager2D : MonoBehaviour
     {
         if (!enableHotkey) return;
 
-        // 1) Old Input(레거시) 방식
-        if (Input.GetKeyDown(openGameOverHotkey))
-        {
+        if (Input.GetKeyDown(openKey))
             ShowGameOver("Hotkey(OldInput)");
-            return;
-        }
 
-        // 2) New Input System 방식
 #if ENABLE_INPUT_SYSTEM
         if (useNewInputSystemHotkey && Keyboard.current != null)
         {
             if (Keyboard.current.homeKey.wasPressedThisFrame)
-            {
                 ShowGameOver("Hotkey(NewInputSystem)");
-                return;
-            }
         }
 #endif
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (!string.IsNullOrEmpty(runSceneName) && scene.name != runSceneName)
-            return;
-
         _shown = false;
-        if (Time.timeScale != 1f) Time.timeScale = 1f;
 
-        // 씬 전환으로 참조가 끊겼을 수 있으니, 없으면 재탐색
-        if (gameOverPanel == null)
-            gameOverPanel = FindPanelByName(gameOverPanelName);
-
-        TryHidePanel();
+        // 씬 바뀌면 참조가 끊겼을 수 있으니 다시 찾기
+        if (defeatUI == null)
+            defeatUI = FindDefeatUIInScene(defeatPanelName);
     }
 
     private void OnPlayerDead()
@@ -114,135 +90,56 @@ public sealed class UIManager2D : MonoBehaviour
         ShowGameOver("RunSignals.PlayerDead");
     }
 
-    [ContextMenu("테스트: 게임오버 표시")]
-    private void Test_ShowGameOver()
-    {
-        ShowGameOver("ContextMenu(Test)");
-    }
-
-    public void ShowGameOver(string reason = "")
+    public void ShowGameOver(string reason)
     {
         if (_shown) return;
         _shown = true;
 
-        // 1) 패널 확보
-        if (gameOverPanel == null)
-            gameOverPanel = FindPanelByName(gameOverPanelName);
+        if (defeatUI == null)
+            defeatUI = FindDefeatUIInScene(defeatPanelName);
 
-        EnsureEventSystem();
-
-        if (gameOverPanel != null)
+        if (defeatUI == null)
         {
-            // 켜기 전에 렌더/정렬 조건부터 강제 복구
-            ForceVisibleAndOnTop(gameOverPanel);
-
-            gameOverPanel.SetActive(true);
-
-            // 버튼 포커스
-            if (firstSelect != null && EventSystem.current != null)
-                EventSystem.current.SetSelectedGameObject(firstSelect);
-        }
-        else
-        {
-            Debug.LogWarning($"[UIManager2D] GameOverPanel을 찾지 못했습니다. name='{gameOverPanelName}' reason='{reason}'", this);
+            Debug.LogWarning($"[UIManager2D] DefeatUIController2D를 찾지 못함 name='{defeatPanelName}' reason='{reason}'", this);
+            return;
         }
 
-        if (pauseOnGameOver)
-            Time.timeScale = 0f;
+        // Canvas 표시 문제 최소 복구
+        defeatUI.ForceCanvasVisible();
 
-        Debug.Log($"[UIManager2D] GameOver 표시 호출 reason='{reason}' panel={(gameOverPanel != null ? gameOverPanel.name : "NULL")}", this);
+        defeatUI.Open(reason, pauseOnGameOver);
+
+        Debug.Log($"[UIManager2D] GameOver Open reason='{reason}' ui='{defeatUI.name}'", this);
     }
 
     public void HideGameOver()
     {
         _shown = false;
-        TryHidePanel();
-        if (Time.timeScale != 1f) Time.timeScale = 1f;
+        if (defeatUI != null)
+            defeatUI.Close();
     }
 
-    public void OnClickRetry()
+    private static DefeatUIController2D FindDefeatUIInScene(string panelName)
     {
-        HideGameOver();
-        var active = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(active.name);
-    }
-
-    public void OnClickQuit()
-    {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
+#if UNITY_2023_1_OR_NEWER
+        // 씬 오브젝트만(비활성 포함) 탐색 -> 프리팹 에셋 잡는 문제 방지
+        var all = Object.FindObjectsByType<DefeatUIController2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 #else
-        Application.Quit();
+        var all = Object.FindObjectsOfType<DefeatUIController2D>(true);
 #endif
-    }
+        if (all == null || all.Length == 0) return null;
 
-    private void TryHidePanel()
-    {
-        if (gameOverPanel == null) return;
-        gameOverPanel.SetActive(false);
-    }
+        if (string.IsNullOrEmpty(panelName))
+            return all[0];
 
-    private static GameObject FindPanelByName(string name)
-    {
-        if (string.IsNullOrEmpty(name)) return null;
-
-        var all = Resources.FindObjectsOfTypeAll<Transform>();
         for (int i = 0; i < all.Length; i++)
         {
-            var t = all[i];
-            if (t == null) continue;
-
-            // 에디터 내부/숨김 오브젝트 제외(과탐색 방지)
-            if (t.hideFlags != HideFlags.None) continue;
-
-            if (t.name == name)
-                return t.gameObject;
-        }
-        return null;
-    }
-
-    private static void EnsureEventSystem()
-    {
-        if (EventSystem.current != null) return;
-
-        var es = new GameObject("EventSystem");
-        es.AddComponent<EventSystem>();
-
-        // StandaloneInputModule은 Old Input 기반이지만,
-        // 버튼 클릭 자체는 마우스/터치로도 되기 때문에 일단 생성해둔다.
-        es.AddComponent<StandaloneInputModule>();
-    }
-
-    private static void ForceVisibleAndOnTop(GameObject panelRoot)
-    {
-        // 1) 부모 Canvas/CanvasGroup 강제 복구
-        var canvases = panelRoot.GetComponentsInParent<Canvas>(true);
-        for (int i = 0; i < canvases.Length; i++)
-        {
-            var c = canvases[i];
-            if (c == null) continue;
-
-            c.enabled = true;
-            c.gameObject.SetActive(true);
-
-            // ScreenSpace-Camera인데 카메라가 비어있으면 UI가 안 보일 수 있음
-            if (c.renderMode == RenderMode.ScreenSpaceCamera && c.worldCamera == null)
-                c.worldCamera = Camera.main;
-
-            // 맨 위에 오도록 정렬 강제(다른 캔버스에 가려지는 케이스 방지)
-            c.overrideSorting = true;
-            c.sortingOrder = 9999;
+            if (all[i] == null) continue;
+            if (all[i].gameObject.name == panelName)
+                return all[i];
         }
 
-        var groups = panelRoot.GetComponentsInParent<CanvasGroup>(true);
-        for (int i = 0; i < groups.Length; i++)
-        {
-            var g = groups[i];
-            if (g == null) continue;
-
-            g.alpha = 1f;
-            g.interactable = true;
-            g.blocksRaycasts = true;
-        }
+        // 이름 매칭 실패 시 첫 번째 반환(그래도 UI 열리게)
+        return all[0];
     }
 }

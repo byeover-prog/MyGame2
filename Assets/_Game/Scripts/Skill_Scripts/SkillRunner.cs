@@ -1,3 +1,4 @@
+// UTF-8
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +10,8 @@ using UnityEngine;
 public sealed class SkillRunner : MonoBehaviour
 {
     [Header("오너(플레이어)")]
-    [SerializeField] private Transform owner; // 비우면 Awake에서 self
+    [Tooltip("비우면 Awake에서 PlayerExp(있으면) -> self 순으로 찾습니다.")]
+    [SerializeField] private Transform owner;
 
     [Header("스킬 장착 위치")]
     [Tooltip("비우면 owner 아래에 SkillMount를 자동 생성/탐색")]
@@ -20,7 +22,8 @@ public sealed class SkillRunner : MonoBehaviour
     [Header("디버그")]
     [SerializeField] private bool enableLogs = false;
 
-    private readonly Dictionary<string, ILevelableSkill> _instances = new Dictionary<string, ILevelableSkill>(32);
+    // id -> (해당 프리팹 안의 모든 ILevelableSkill)
+    private readonly Dictionary<string, List<ILevelableSkill>> _instances = new Dictionary<string, List<ILevelableSkill>>(32);
 
     private void Awake()
     {
@@ -29,6 +32,7 @@ public sealed class SkillRunner : MonoBehaviour
             var pe = FindFirstObjectByType<PlayerExp>();
             owner = pe != null ? pe.transform : transform;
         }
+
         EnsureMount();
     }
 
@@ -74,42 +78,54 @@ public sealed class SkillRunner : MonoBehaviour
         }
 
         var go = Instantiate(prefab, parent);
+        go.name = id;
         go.transform.localPosition = Vector3.zero;
         go.transform.localRotation = Quaternion.identity;
         go.transform.localScale = Vector3.one;
 
-        var all = go.GetComponentsInChildren<MonoBehaviour>(true);
-        ILevelableSkill levelable = null;
+        // 같은 프리팹 안에 여러 ILevelableSkill이 있을 수 있음(무기 + 패시브 조합 등)
+        var list = new List<ILevelableSkill>(4);
 
-        for (int i = 0; i < all.Length; i++)
+        // 루트 우선(있으면 1순위로 앞에 넣기)
+        var rootBehaviours = go.GetComponents<MonoBehaviour>();
+        for (int i = 0; i < rootBehaviours.Length; i++)
         {
-            if (all[i] is ILevelableSkill s)
-            {
-                // 1) 루트에 붙은 게 있으면 그게 1순위
-                if (all[i].gameObject == go)
-                {
-                    levelable = s;
-                    break;
-                }
-
-                // 2) 루트가 없으면 첫 번째를 임시로 잡되, 계속 탐색은 해서 개수 카운트
-                if (levelable == null) levelable = s;
-            }
+            if (rootBehaviours[i] is ILevelableSkill s)
+                list.Add(s);
         }
 
-        if (levelable == null)
+        // 자식 포함 전체 수집(중복 방지)
+        var all = go.GetComponentsInChildren<MonoBehaviour>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] is not ILevelableSkill s) continue;
+
+            bool dup = false;
+            for (int k = 0; k < list.Count; k++)
+            {
+                if (ReferenceEquals(list[k], s)) { dup = true; break; }
+            }
+            if (!dup) list.Add(s);
+        }
+
+        if (list.Count <= 0)
         {
             Debug.LogError($"[SkillRunner] ILevelableSkill 없음: {id} (루트/자식 검색 실패)", go);
             Destroy(go);
             return;
         }
-        Debug.Log($"[SkillRunner] ILevelableSkill 선택됨: {id} => {levelable.GetType().Name}", go);
 
-        _instances.Add(id, levelable);
-        levelable.OnAttached(owner);
+        _instances.Add(id, list);
+
+        // 장착 콜백(모두)
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (list[i] == null) continue;
+            list[i].OnAttached(owner);
+        }
 
         if (enableLogs)
-            Debug.Log($"[SkillRunner] Attach '{id}'", this);
+            Debug.Log($"[SkillRunner] Attach '{id}' (components={list.Count})", this);
     }
 
     public void ApplyLevel(string id, int level)
@@ -117,14 +133,18 @@ public sealed class SkillRunner : MonoBehaviour
         if (string.IsNullOrWhiteSpace(id)) return;
         if (level <= 0) return;
 
-        if (!_instances.TryGetValue(id, out var levelable) || levelable == null)
+        if (!_instances.TryGetValue(id, out var list) || list == null || list.Count <= 0)
         {
             if (enableLogs)
                 Debug.LogWarning($"[SkillRunner] ApplyLevel 무시(미장착): '{id}'", this);
             return;
         }
 
-        levelable.ApplyLevel(level);
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (list[i] == null) continue;
+            list[i].ApplyLevel(level);
+        }
     }
 
     public bool IsAttached(string id) => !string.IsNullOrWhiteSpace(id) && _instances.ContainsKey(id);

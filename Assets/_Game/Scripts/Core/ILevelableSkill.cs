@@ -9,5 +9,7 @@ public interface ILevelableSkill
     void OnAttached(Transform owner);
 
     // 레벨업 시 호출
-    void ApplyLevel(int level);
+    void ApplyLevel(int newLevel);
+    
+    void OnAttaced(Transform newOwner);
 }
