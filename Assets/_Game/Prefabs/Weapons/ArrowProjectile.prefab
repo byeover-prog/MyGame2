@@ -9,13 +9,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4058634118947462141}
-  - component: {fileID: 3809372804871011955}
   - component: {fileID: 3674168569020914249}
   - component: {fileID: 4020582295785281833}
   - component: {fileID: 1281644234998683652}
   - component: {fileID: 1534040017305913308}
   - component: {fileID: -860772033551373037}
   - component: {fileID: -3633592114328859660}
+  - component: {fileID: 3809372804871011955}
   m_Layer: 15
   m_Name: ArrowProjectile
   m_TagString: Untagged
@@ -33,24 +33,11 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3809372804871011955
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7796759533629522074}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a51a6241cd886a48b37ee0e9fcd24b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArrowProjectile2D
-  selfCollider: {fileID: 4020582295785281833}
 --- !u!212 &3674168569020914249
 SpriteRenderer:
   serializedVersion: 2
@@ -96,8 +83,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 1420497153
-  m_SortingLayer: 4
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -8438435414053321817, guid: c162335258a880a43a85181ba3b019a4,
@@ -243,3 +230,16 @@ MonoBehaviour:
   sortingLayerName: SkillFX
   orderInLayer: 50
   includeChildren: 1
+--- !u!114 &3809372804871011955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796759533629522074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a51a6241cd886a48b37ee0e9fcd24b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArrowProjectile2D
+  selfCollider: {fileID: 4020582295785281833}

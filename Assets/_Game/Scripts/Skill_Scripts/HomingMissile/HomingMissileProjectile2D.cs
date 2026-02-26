@@ -5,8 +5,7 @@ using UnityEngine;
 // [구현 원리 요약]
 // - Rigidbody2D.linearVelocity로 이동하고, turnSpeedDeg만큼 회전하며 타겟을 추적한다.
 // - hitSet(HashSet<int>)으로 같은 적 중복 타격을 막는다.
-// - chainCount가 남아있으면 다음 타겟을 다시 탐색한다(간단 구현: OverlapCircleAll).
-
+// - chainCount가 남아있으면 다음 타겟을 다시 탐색한다(NonAlloc).
 [DisallowMultipleComponent]
 public sealed class HomingMissileProjectile2D : MonoBehaviour
 {
@@ -25,6 +24,7 @@ public sealed class HomingMissileProjectile2D : MonoBehaviour
     private Transform _target;
 
     private readonly HashSet<int> _hitSet = new HashSet<int>(64);
+    private readonly Collider2D[] _acquireHits = new Collider2D[48];
 
     private void Awake()
     {
@@ -58,7 +58,10 @@ public sealed class HomingMissileProjectile2D : MonoBehaviour
         _hitSet.Clear();
 
         if (rb != null)
+        {
             rb.linearVelocity = _dir * _speed;
+            rb.angularVelocity = 0f;
+        }
     }
 
     private void FixedUpdate()
@@ -106,7 +109,7 @@ public sealed class HomingMissileProjectile2D : MonoBehaviour
         {
             _remainingChains--;
             _target = null;
-            TryAcquireTarget(); // 다음 타겟 시도
+            TryAcquireTarget();
             if (_target != null) return;
         }
 
@@ -115,26 +118,31 @@ public sealed class HomingMissileProjectile2D : MonoBehaviour
 
     private void TryAcquireTarget()
     {
-        var hits = Physics2D.OverlapCircleAll(transform.position, _seekRadius, _enemyMask);
-        if (hits == null || hits.Length == 0) return;
+        Vector2 origin = transform.position;
+
+        int count = Physics2D.OverlapCircleNonAlloc(origin, _seekRadius, _acquireHits, _enemyMask);
+        for (int i = count; i < _acquireHits.Length; i++) _acquireHits[i] = null;
+
+        if (count <= 0) return;
 
         float best = float.MaxValue;
         Transform bestT = null;
 
-        Vector2 o = transform.position;
-        for (int i = 0; i < hits.Length; i++)
+        for (int i = 0; i < count; i++)
         {
-            var c = hits[i];
+            var c = _acquireHits[i];
             if (c == null) continue;
 
             int id = DamageUtil2D.GetRootInstanceId(c);
             if (_hitSet.Contains(id)) continue;
 
-            float d = ((Vector2)c.transform.position - o).sqrMagnitude;
+            Transform t = (c.attachedRigidbody != null) ? c.attachedRigidbody.transform : c.transform;
+
+            float d = ((Vector2)t.position - origin).sqrMagnitude;
             if (d < best)
             {
                 best = d;
-                bestT = c.transform;
+                bestT = t;
             }
         }
 

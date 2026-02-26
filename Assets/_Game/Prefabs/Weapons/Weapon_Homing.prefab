@@ -46,7 +46,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 441dbc8d8cf683d47b93a20d5f1d2a96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HomingMissileWeapon2D
-  projectilePrefab: {fileID: 0}
+  projectilePrefab: {fileID: 8561632100752635023, guid: 6f78a42690b83ec46b19264e52164c54,
+    type: 3}
   spawnPoint: {fileID: 3062990565879727660}
   enemyMask:
     serializedVersion: 2

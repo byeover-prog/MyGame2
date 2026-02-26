@@ -49,7 +49,7 @@ GameObject:
   - component: {fileID: 6163186266483944776}
   - component: {fileID: 5945316706138724838}
   m_Layer: 12
-  m_Name: YounSeol
+  m_Name: "\uD558\uC728"
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -122,8 +122,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 50
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -411119971871868054, guid: 2387a0596e343b54f9e25babd62ddd00,
-    type: 3}
+  m_Sprite: {fileID: 21300000, guid: 0918d3d2e46173943b878c86d8893eff, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -143,7 +142,7 @@ Animator:
   m_GameObject: {fileID: 4612122562724480527}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: d194605e5a94be848a2f7ee5ddd92ad0, type: 2}
+  m_Controller: {fileID: 9100000, guid: 68a240c0012e305499d6035702ff29e8, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -220,7 +219,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.35, y: 0.56}
+    oldSize: {x: 1.16, y: 1.16}
     newSize: {x: 0.35, y: 0.56}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -275,8 +274,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce03b6de574aa82419960eba421fee01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMover2D
+  moveAction: {fileID: 0}
+  dashAction: {fileID: 0}
   moveSpeed: 4
-  dashKey: 32
   dashDistance: 2.5
   dashDuration: 0.2
   dashCooldown: 2
@@ -297,7 +297,7 @@ MonoBehaviour:
   projectilePool: {fileID: 0}
   defaultStartWeapons: []
   slots:
-  - weapon: {fileID: 11400000, guid: 863bf6010be563745aaeeb64f91e420a, type: 2}
+  - weapon: {fileID: 0}
     enabled: 0
     finalStats:
       damage: 0
@@ -330,7 +330,7 @@ MonoBehaviour:
       enableBoomerang: 0
       enableRotate: 0
     nextFireTime: 0
-  - weapon: {fileID: 11400000, guid: fc4822f792be1174f9d9c02398f52696, type: 2}
+  - weapon: {fileID: 0}
     enabled: 0
     finalStats:
       damage: 0
@@ -363,7 +363,7 @@ MonoBehaviour:
       enableBoomerang: 0
       enableRotate: 0
     nextFireTime: 0
-  - weapon: {fileID: 11400000, guid: 6f2a43797d129464fbe888a5df7c5619, type: 2}
+  - weapon: {fileID: 0}
     enabled: 0
     finalStats:
       damage: 0
@@ -396,7 +396,7 @@ MonoBehaviour:
       enableBoomerang: 0
       enableRotate: 0
     nextFireTime: 0
-  - weapon: {fileID: 11400000, guid: 1ef11b9e9f59ffc44b679a829e6c27f3, type: 2}
+  - weapon: {fileID: 0}
     enabled: 0
     finalStats:
       damage: 0
@@ -429,7 +429,7 @@ MonoBehaviour:
       enableBoomerang: 0
       enableRotate: 0
     nextFireTime: 0
-  - weapon: {fileID: 11400000, guid: 4209007b3b2c86e41a6d2d35a3276718, type: 2}
+  - weapon: {fileID: 0}
     enabled: 0
     finalStats:
       damage: 0
@@ -462,7 +462,7 @@ MonoBehaviour:
       enableBoomerang: 0
       enableRotate: 0
     nextFireTime: 0
-  - weapon: {fileID: 11400000, guid: 24ad1f6538aa13a4db2a8258ffe56912, type: 2}
+  - weapon: {fileID: 0}
     enabled: 0
     finalStats:
       damage: 0
@@ -495,7 +495,7 @@ MonoBehaviour:
       enableBoomerang: 0
       enableRotate: 0
     nextFireTime: 0
-  - weapon: {fileID: 11400000, guid: 061ccd1bc9697a54d82e436a8cfd7497, type: 2}
+  - weapon: {fileID: 0}
     enabled: 0
     finalStats:
       damage: 0
@@ -528,7 +528,7 @@ MonoBehaviour:
       enableBoomerang: 0
       enableRotate: 0
     nextFireTime: 0
-  - weapon: {fileID: 11400000, guid: 9235a8d11cb4fcb43bf94fb5f15eff9d, type: 2}
+  - weapon: {fileID: 0}
     enabled: 0
     finalStats:
       damage: 0
@@ -610,7 +610,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CommonSkillStartBinder2D
   manager: {fileID: 0}
   startSkills:
-  - {fileID: 11400000, guid: a12a93c2bd734744bbb36c27f645b55f, type: 2}
+  - {fileID: 0}
+  applyOnStart: 1
+  warnWhenEmpty: 1
   logOnStart: 1
 --- !u!1 &8441124690858702990
 GameObject:

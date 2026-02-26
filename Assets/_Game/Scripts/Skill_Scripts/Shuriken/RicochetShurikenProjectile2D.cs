@@ -30,10 +30,14 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
     [Tooltip("ExitKick 동안의 이동 속도 배율(기본 속도 * 배율)")]
     [SerializeField] private float exitKickSpeedMul = 1.2f;
 
+    [Header("겹침 방지")]
+    [Tooltip("적을 맞춘 뒤, 이 시간 동안 다른 적과의 충돌을 무시(겹친 몬스터 관통용)")]
+    [SerializeField] private float hitImmunitySeconds = 0.12f;
+
     private float _exitKickLeft;
+    private float _hitImmunityLeft;      // ★ 히트 후 무적 타이머
     private Vector2 _lastDir = Vector2.right;
 
-    // 다음 타겟을 "예약"해두고, ExitKick 끝나면 전환
     private EnemyRegistryMember2D _pendingTarget;
 
     private void OnEnable()
@@ -53,6 +57,7 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         _loggedInitError = false;
 
         _exitKickLeft = 0f;
+        _hitImmunityLeft = 0f;
         _pendingTarget = null;
         _lastDir = Vector2.right;
     }
@@ -74,6 +79,7 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         _loggedInitError = false;
 
         _exitKickLeft = 0f;
+        _hitImmunityLeft = 0f;
         _pendingTarget = null;
 
         if (target != null)
@@ -90,29 +96,34 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             if (!_loggedInitError)
             {
                 _loggedInitError = true;
-                Debug.LogError("[RicochetShurikenProjectile2D] Init()이 호출되지 않았습니다. (무기 발사 로직에서 Init/startTarget 누락 가능)", this);
+                Debug.LogError("[RicochetShurikenProjectile2D] Init()이 호출되지 않았습니다.", this);
             }
             ReturnToPool();
             return;
         }
 
-        if (rotateDegPerSec != 0f)
-            transform.Rotate(0f, 0f, rotateDegPerSec * Time.fixedDeltaTime);
+        float dt = Time.fixedDeltaTime;
 
-        age += Time.fixedDeltaTime;
+        if (rotateDegPerSec != 0f)
+            transform.Rotate(0f, 0f, rotateDegPerSec * dt);
+
+        age += dt;
         if (age >= life)
         {
             ReturnToPool();
             return;
         }
 
-        // 1) 맞춘 직후: 콜라이더 밖으로 빠져나오기(박힘 방지)
+        // ★ 히트 무적 타이머 감소
+        if (_hitImmunityLeft > 0f)
+            _hitImmunityLeft -= dt;
+
+        // 1) ExitKick: 맞춘 직후 콜라이더 밖으로 빠져나오기
         if (_exitKickLeft > 0f)
         {
-            _exitKickLeft -= Time.fixedDeltaTime;
-            transform.position += (Vector3)(_lastDir * (speed * exitKickSpeedMul) * Time.fixedDeltaTime);
+            _exitKickLeft -= dt;
+            transform.position += (Vector3)(_lastDir * (speed * exitKickSpeedMul) * dt);
 
-            // ExitKick 끝나면 예약된 타겟으로 전환
             if (_exitKickLeft <= 0f && _pendingTarget != null)
             {
                 target = _pendingTarget;
@@ -121,6 +132,7 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             return;
         }
 
+        // 2) 타겟 유효성 검사
         if (target != null && !target.IsValidTarget)
             target = null;
 
@@ -130,9 +142,9 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             return;
         }
 
+        // 3) 타겟을 향해 이동
         Vector2 desired = (target.Position - (Vector2)transform.position);
 
-        // target과 너무 겹치면(이미 들어가 있음) 그냥 종료(정화구는 박히면 안 됨)
         if (desired.sqrMagnitude < 0.0001f)
         {
             ReturnToPool();
@@ -141,13 +153,17 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
 
         Vector2 dir = desired.normalized;
         _lastDir = dir;
-        transform.position += (Vector3)(dir * speed * Time.fixedDeltaTime);
+        transform.position += (Vector3)(dir * speed * dt);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!_initialized) return;
         if (other == null) return;
+
+        // ★ 히트 무적 중이면 충돌 무시 (겹친 몬스터 즉사 방지)
+        if (_hitImmunityLeft > 0f) return;
+
         if (!DamageUtil2D.IsInLayerMask(other.gameObject.layer, enemyMask)) return;
 
         int id = DamageUtil2D.GetRootId(other);
@@ -156,16 +172,16 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         hitSet.Add(id);
         DamageUtil2D.TryApplyDamage(other, damage);
 
+        // 튕김 처리
         if (remainingBounces > 0)
         {
             remainingBounces--;
 
-            // 다음 타겟: 현재 위치 기준 가장 가까운 적(이미 맞은 적 제외)
             if (EnemyRegistry2D.TryGetNearestExcluding(transform.position, hitSet, out var next))
             {
-                // 즉시 방향 전환하지 말고, exitKick으로 일단 밖으로 뺀 뒤에 전환
                 _pendingTarget = next;
                 _exitKickLeft = Mathf.Max(0.01f, exitKickSeconds);
+                _hitImmunityLeft = Mathf.Max(exitKickSeconds, hitImmunitySeconds); // ★ 무적 시작
                 return;
             }
         }

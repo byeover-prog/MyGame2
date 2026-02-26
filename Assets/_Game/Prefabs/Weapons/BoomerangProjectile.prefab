@@ -11,11 +11,11 @@ GameObject:
   - component: {fileID: 8605704935767082449}
   - component: {fileID: 5128262131237398867}
   - component: {fileID: 5767354764339404154}
-  - component: {fileID: 4084445079568018521}
   - component: {fileID: 735654324422084155}
   - component: {fileID: 1121678731948288416}
   - component: {fileID: 5223043172017737808}
-  - component: {fileID: 5783634900558933300}
+  - component: {fileID: -2779735152273170524}
+  - component: {fileID: -8673239630998233534}
   m_Layer: 15
   m_Name: BoomerangProjectile
   m_TagString: Untagged
@@ -83,8 +83,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 1420497153
-  m_SortingLayer: 4
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -7928876641947680184, guid: b12bdcfcaf91d2f43a7473682d706037,
@@ -93,7 +93,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 4.1, y: 5.69}
+  m_Size: {x: 7.43, y: 10.24}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -132,20 +132,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.07077798, y: 0.87110996}
-  m_Radius: 1.835334
---- !u!114 &4084445079568018521
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6195577076014076753}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81b28208ae12f894a95faab520dbf09f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BoomerangProjectile2D
+  m_Offset: {x: -0.017254628, y: 0.79659915}
+  m_Radius: 1.7085196
 --- !u!50 &735654324422084155
 Rigidbody2D:
   serializedVersion: 5
@@ -217,7 +205,7 @@ MonoBehaviour:
   ricochetRange: 0
   pierce: 1
   destroyOnHit: 1
---- !u!114 &5783634900558933300
+--- !u!114 &-2779735152273170524
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -226,9 +214,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 6195577076014076753}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b25534c296ad06245b44d738de394756, type: 3}
+  m_Script: {fileID: 11500000, guid: 81b28208ae12f894a95faab520dbf09f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AutoSorting2D
-  sortingLayerName: SkillFX
-  orderInLayer: 50
-  includeChildren: 1
+  m_EditorClassIdentifier: Assembly-CSharp::BoomerangProjectile2D
+--- !u!114 &-8673239630998233534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6195577076014076753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 072647fb13f18814597b801cac01cbab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoomerangSpin2D
+  degreesPerSecond: 720

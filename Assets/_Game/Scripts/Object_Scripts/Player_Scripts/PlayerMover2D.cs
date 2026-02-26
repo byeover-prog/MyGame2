@@ -5,10 +5,7 @@ using UnityEngine.InputSystem;
 public sealed class PlayerMover2D : MonoBehaviour
 {
     [Header("입력(새 Input System)")]
-    [Tooltip("IA_Player/Player/Move 액션을 넣으세요.")]
     [SerializeField] private InputActionReference moveAction;
-
-    [Tooltip("IA_Player/Player/Dash 액션을 넣으세요.")]
     [SerializeField] private InputActionReference dashAction;
 
     [Header("이동")]
@@ -21,6 +18,19 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     [Header("참조")]
     [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Animator animator;
+
+    [Tooltip("플레이어 스프라이트(없으면 자식에서 자동 탐색). 좌/우 반전은 flipX로 처리합니다.")]
+    [SerializeField] private SpriteRenderer spriteRenderer;
+
+    [Header("애니 판정(떨림 방지)")]
+    [Tooltip("이 속도 이상이면 걷기(true)로 전환")]
+    [Min(0f)]
+    [SerializeField] private float walkOnSpeed = 0.05f;
+
+    [Tooltip("이 속도 이하이면 정지(false)로 전환")]
+    [Min(0f)]
+    [SerializeField] private float walkOffSpeed = 0.02f;
 
     public Vector2 MoveInput { get; private set; }
     public Vector2 FacingDir { get; private set; } = Vector2.right;
@@ -29,14 +39,22 @@ public sealed class PlayerMover2D : MonoBehaviour
     private float _nextDashReadyTime = 0f;
     private Vector2 _dashVelocity;
 
+    private bool _isWalkingCached;
+
+    private static readonly int IsWalkingHash = Animator.StringToHash("isWalking");
+
     private void Reset()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponentInChildren<Animator>();
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     private void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     private void OnEnable()
@@ -53,7 +71,7 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     private void Update()
     {
-        // 1) 이동 입력
+        // 입력
         Vector2 input = Vector2.zero;
         if (moveAction != null)
             input = moveAction.action.ReadValue<Vector2>();
@@ -61,12 +79,34 @@ public sealed class PlayerMover2D : MonoBehaviour
         if (input.sqrMagnitude > 1f) input.Normalize();
         MoveInput = input;
 
-        if (MoveInput.sqrMagnitude > 0.0001f)
-            FacingDir = MoveInput;
-
-        // 2) 대시 입력
+        // 방향 규칙(요청사항 그대로)
+        // - 왼쪽 입력(x<0)일 때만 왼쪽
+        // - 위/아래만(x==0) 또는 오른쪽 포함(x>=0)은 오른쪽 유지
+        if (MoveInput.x < -0.0001f)
+            FacingDir = Vector2.left;
+        else if (MoveInput.x > 0.0001f)
+            FacingDir = Vector2.right;
+        // 대시
         if (dashAction != null && dashAction.action.WasPressedThisFrame())
             TryDash();
+
+        // isWalking 판정(실제 속도 기반 + 히스테리시스)
+        if (animator != null && rb != null)
+        {
+            float speed = rb.linearVelocity.magnitude;
+
+            bool next;
+            if (_isWalkingCached)
+                next = speed > walkOffSpeed;   // 걷는 중엔 더 낮아져야 꺼짐
+            else
+                next = speed >= walkOnSpeed;   // 서있을 땐 이 이상이면 켜짐
+
+            if (next != _isWalkingCached)
+            {
+                _isWalkingCached = next;
+                animator.SetBool(IsWalkingHash, _isWalkingCached);
+            }
+        }
     }
 
     private void FixedUpdate()

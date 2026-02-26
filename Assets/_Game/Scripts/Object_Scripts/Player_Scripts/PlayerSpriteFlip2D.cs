@@ -11,10 +11,11 @@ public sealed class PlayerSpriteFlip2D : MonoBehaviour
     [Tooltip("뒤집을 SpriteRenderer를 넣으세요. (보통 플레이어 본체)")]
     [SerializeField] private SpriteRenderer spriteRenderer;
 
-    [Header("동작")]
-    [Tooltip("왼쪽을 볼 때 flipX=true로 뒤집습니다.")]
-    [SerializeField] private bool flipWhenFacingLeft = true;
+    [Header("기본 방향")]
+    [Tooltip("스프라이트 원본이 '오른쪽'을 보고 그려졌으면 true.\n원본이 '왼쪽'을 보고 그려졌으면 false.")]
+    [SerializeField] private bool spriteDefaultFacesRight = true;
 
+    [Header("동작")]
     [Tooltip("입력이 없을 때도 마지막 방향을 유지할지")]
     [SerializeField] private bool keepLastFacing = true;
 
@@ -34,19 +35,21 @@ public sealed class PlayerSpriteFlip2D : MonoBehaviour
     {
         if (mover == null || spriteRenderer == null) return;
 
-        // keepLastFacing=true면 FacingDir를 그대로 쓰고,
-        // false면 입력이 없을 때는 방향 변경을 하지 않음
-        Vector2 dir = mover.FacingDir;
         if (!keepLastFacing && mover.MoveInput.sqrMagnitude < 0.0001f)
             return;
 
-        // x가 음수면 왼쪽을 본다
+        Vector2 dir = mover.FacingDir;
         bool facingLeft = dir.x < -0.001f;
+        bool facingRight = dir.x > 0.001f;
 
-        // 왼쪽을 볼 때 뒤집기
-        if (flipWhenFacingLeft)
+        // x==0이면 방향 유지(스프라이트는 그대로)
+        if (!facingLeft && !facingRight) return;
+
+        // 원본이 오른쪽이면: 왼쪽 볼 때 flipX=true
+        // 원본이 왼쪽이면: 오른쪽 볼 때 flipX=true
+        if (spriteDefaultFacesRight)
             spriteRenderer.flipX = facingLeft;
         else
-            spriteRenderer.flipX = !facingLeft;
+            spriteRenderer.flipX = facingRight;
     }
 }

@@ -82,7 +82,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 65536
   requireTargetToFire: 1
-  balanceIdOverride: 
+  balanceIdOverride: weapon_balsi
   spawnOffsetRadius: 0.25
   fireJitterDelayMin: 0.05
   fireJitterDelayMax: 0.1

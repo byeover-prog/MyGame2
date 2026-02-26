@@ -14,8 +14,7 @@ GameObject:
   - component: {fileID: -641310885405526830}
   - component: {fileID: 352200905192923142}
   - component: {fileID: -6726285706623136437}
-  - component: {fileID: -5842252964617863460}
-  - component: {fileID: 6956343075232518734}
+  - component: {fileID: -3571912339003547082}
   m_Layer: 15
   m_Name: HomingOrb
   m_TagString: Untagged
@@ -83,7 +82,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 1420497153
+  m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
@@ -155,7 +154,7 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -197,7 +196,7 @@ MonoBehaviour:
   - UpgradeLevel
   - OnLevelChanged
   log: 1
---- !u!114 &-5842252964617863460
+--- !u!114 &-3571912339003547082
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -206,30 +205,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 8561632100752635023}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
+  m_Script: {fileID: 11500000, guid: c5357f8ba2089964da65fc79cb0cce06, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
-  col: {fileID: 0}
-  ignoreOwnerCollision: 1
-  mode: 1
-  homingTurnSpeed: 720
-  homingRange: 30
-  ricochetCount: 0
-  ricochetRange: 0
-  pierce: 0
-  destroyOnHit: 1
---- !u!114 &6956343075232518734
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8561632100752635023}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b25534c296ad06245b44d738de394756, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AutoSorting2D
-  sortingLayerName: SkillFX
-  orderInLayer: 50
-  includeChildren: 1
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileHitRule2D
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 65536
+  damage: 20
+  pierce: 1
+  sameTargetHitInterval: 0
+  despawnDelayAfterHit: 0.2
+  disableColliderOnHit: 1

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1289371633153427558}
   - component: {fileID: 609559359909851885}
-  - component: {fileID: -1571613651829965436}
   - component: {fileID: -3159772859642482551}
   m_Layer: 15
   m_Name: DarkOrbSplit
@@ -79,8 +78,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 1420497153
-  m_SortingLayer: 4
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 5483859174317454229, guid: 05f490a76fb99b740808d59b96bfa856,
@@ -94,21 +93,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &-1571613651829965436
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4174282902008845588}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b25534c296ad06245b44d738de394756, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AutoSorting2D
-  sortingLayerName: SkillFX
-  orderInLayer: 50
-  includeChildren: 1
 --- !u!114 &-3159772859642482551
 MonoBehaviour:
   m_ObjectHideFlags: 0

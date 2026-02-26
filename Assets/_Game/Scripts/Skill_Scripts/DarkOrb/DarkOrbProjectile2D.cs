@@ -2,17 +2,33 @@
 using UnityEngine;
 
 // [구현 원리 요약]
-// - 직선 이동 후, 수명 종료 또는 적 충돌 시 폭발한다.
-// - 폭발은 OverlapCircle로 범위 데미지를 1회 준다.
-// - 분열은 "폭발 지점"에서만 생성한다(플레이어/발사점으로 돌아가면 안 됨).
-// - DarkOrbSkill2D가 호출하는 Init(...) 시그니처를 제공한다(컴파일 안정화).
+// - 기존(잘못된) 구조: 폭발 시 splitCount만큼 -40~+40에 "균등 분산"으로 한 번에 방사형 생성(=GPT 그림)
+// - 수정(원하는) 구조: Player 그림처럼 계층 트리 분열
+//   depth=1(메인) 폭발 -> 2개 생성
+//   depth=2 폭발 -> 2개씩 생성(총 4)
+//   depth=3 폭발 -> 2개씩 생성(총 8)
+// - splitCount는 "한 번에 발사 수"가 아니라, "최대 분열 단계"로 해석한다.
+//   0 => maxDepth=1 (분열 없음)
+//   2 => maxDepth=2 (1->2)
+//   4 => maxDepth=3 (1->2->4)
+//   8 => maxDepth=4 (1->2->4->8)
 
 [DisallowMultipleComponent]
 public sealed class DarkOrbProjectile2D : MonoBehaviour
 {
-    [Header("분열 프리팹(선택)")]
-    [Tooltip("비우면 자기 자신으로 분열합니다.")]
+    [Header("분열 프리팹(권장: 자기 자신 프리팹)")]
+    [Tooltip("분열로 찍어낼 프리팹(보통 자기 자신 DarkOrbProjectile2D 프리팹)\n비우면 현재 오브젝트를 복제합니다(권장X).")]
     [SerializeField] private DarkOrbProjectile2D splitSpawnPrefab;
+
+    [Header("분열 각도(도)")]
+    [Tooltip("V자 분열 각도(도). 예) 40 = ±40도")]
+    [Range(1f, 89f)]
+    [SerializeField] private float splitAngleDeg = 40f;
+
+    [Header("겹침 방지(유닛)")]
+    [Tooltip("분열체를 폭발 위치에서 살짝 밀어내서, 같은 콜라이더 안에서 즉시 연쇄폭발하는 현상을 줄입니다.")]
+    [Min(0f)]
+    [SerializeField] private float spawnEps = 0.4f;
 
     private LayerMask _enemyMask;
 
@@ -24,6 +40,7 @@ public sealed class DarkOrbProjectile2D : MonoBehaviour
 
     private float _explosionRadius;
 
+    // 외부 Init에서 받는 값(0/2/4/8)
     private int _splitCount;
     private float _splitSpeed;
     private float _splitLife;
@@ -32,10 +49,15 @@ public sealed class DarkOrbProjectile2D : MonoBehaviour
 
     private float _alpha = 0.55f;
 
+    // 트리 분열용
+    private int _depth = 1;      // 현재 단계(1부터)
+    private int _maxDepth = 1;   // 최대 단계(1~4)
+
     private bool _inited;
+    private bool _exploding;
     private readonly Collider2D[] _hits = new Collider2D[32];
 
-    // DarkOrbSkill2D가 요구하는 Init(12개 인자) 제공
+    // DarkOrbSkill2D가 요구하는 Init(12개 인자) 유지
     public void Init(
         LayerMask enemyMask,
         int damage,
@@ -69,10 +91,29 @@ public sealed class DarkOrbProjectile2D : MonoBehaviour
 
         _alpha = Mathf.Clamp01(orbAlpha);
 
-        if (splitSpawnPrefab == null) splitSpawnPrefab = this;
+        // 트리 규칙: splitCount를 maxDepth로 변환
+        _depth = 1;
+        _maxDepth = SplitCountToMaxDepth(_splitCount);
 
         ApplyAlpha(_alpha);
+
         _inited = true;
+        _exploding = false;
+    }
+
+    // 자식 스폰 시 depth/maxDepth를 유지하기 위한 세팅
+    private void SetTreeDepth(int depth, int maxDepth)
+    {
+        _depth = Mathf.Max(1, depth);
+        _maxDepth = Mathf.Max(1, maxDepth);
+    }
+
+    private static int SplitCountToMaxDepth(int splitCount)
+    {
+        if (splitCount <= 0) return 1; // 분열 없음
+        if (splitCount <= 2) return 2; // 1->2
+        if (splitCount <= 4) return 3; // 1->2->4
+        return 4;                      // 1->2->4->8
     }
 
     private void ApplyAlpha(float a)
@@ -117,8 +158,10 @@ public sealed class DarkOrbProjectile2D : MonoBehaviour
     private void Explode(Vector2 pos)
     {
         if (!_inited) return;
-        _inited = false;
+        if (_exploding) return;
+        _exploding = true;
 
+        // 1) 폭발 데미지 1회
         int count = Physics2D.OverlapCircleNonAlloc(pos, _explosionRadius, _hits, _enemyMask);
         for (int i = 0; i < count; i++)
         {
@@ -127,40 +170,60 @@ public sealed class DarkOrbProjectile2D : MonoBehaviour
             DamageUtil2D.ApplyDamage(h, _damage);
         }
 
-        if (_splitCount > 0)
+        // 2) Player 그림 구조: "항상 2개만" 분열 (depth 기반)
+        if (_depth < _maxDepth)
         {
-            float baseAngle = Mathf.Atan2(_dir.y, _dir.x) * Mathf.Rad2Deg;
-            const float splitAngle = 40f;
+            Vector2 dirA = Rotate(_dir, +splitAngleDeg).normalized;
+            Vector2 dirB = Rotate(_dir, -splitAngleDeg).normalized;
 
-            // splitCount는 "한 번 폭발에서 생성할 수"로 해석
-            int spawnN = Mathf.Clamp(_splitCount, 0, 64);
-
-            for (int i = 0; i < spawnN; i++)
-            {
-                // 균등 분산(-40~+40)
-                float t = (spawnN == 1) ? 0f : (i / (float)(spawnN - 1)) * 2f - 1f; // -1..+1
-                float ang = baseAngle + t * splitAngle;
-
-                Vector2 d = new Vector2(Mathf.Cos(ang * Mathf.Deg2Rad), Mathf.Sin(ang * Mathf.Deg2Rad));
-                SpawnChild(pos, d);
-            }
+            SpawnChild(pos + dirA * spawnEps, dirA, _depth + 1, _maxDepth);
+            SpawnChild(pos + dirB * spawnEps, dirB, _depth + 1, _maxDepth);
         }
 
         Destroy(gameObject);
     }
 
-    private void SpawnChild(Vector2 pos, Vector2 d)
+    private void SpawnChild(Vector2 pos, Vector2 d, int childDepth, int maxDepth)
     {
-        DarkOrbProjectile2D child = null;
+        DarkOrbProjectile2D child;
 
-        if (_splitPool != null)
+        // 프리팹 우선(권장)
+        if (splitSpawnPrefab != null)
         {
-            // 풀을 쓰고 싶으면 여기서 Get<DarkOrbProjectile2D>가 가능한 구조여야 함.
-            // 프로젝트마다 풀 구현이 다르니, 안전하게 Instantiate로 처리.
+            child = Instantiate(splitSpawnPrefab, pos, Quaternion.identity);
+        }
+        else
+        {
+            // 폴백(권장X): 현재 오브젝트 복제
+            child = Instantiate(this, pos, Quaternion.identity);
         }
 
-        child = Instantiate(splitSpawnPrefab, pos, Quaternion.identity);
-        child.Init(_enemyMask, _splitDamage > 0 ? _splitDamage : _damage, _splitSpeed, _splitLife, d,
-                   _explosionRadius, 0, 0f, 0.1f, 0, null, _alpha);
+        // 자식은 "splitCount=0"으로 넣고, depth/maxDepth는 별도로 세팅해서 트리 유지
+        int childDmg = (_splitDamage > 0) ? _splitDamage : _damage;
+
+        child.Init(
+            _enemyMask,
+            childDmg,
+            _splitSpeed,
+            _splitLife,
+            d,
+            _explosionRadius,
+            0,              // 중요: 방사형 분열 방지(이 값을 쓰지 않음)
+            _splitSpeed,
+            _splitLife,
+            0,
+            _splitPool,
+            _alpha
+        );
+
+        child.SetTreeDepth(childDepth, maxDepth);
+    }
+
+    private static Vector2 Rotate(Vector2 v, float deg)
+    {
+        float rad = deg * Mathf.Deg2Rad;
+        float cos = Mathf.Cos(rad);
+        float sin = Mathf.Sin(rad);
+        return new Vector2(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
     }
 }

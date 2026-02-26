@@ -22,7 +22,8 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
     // -------------------------
     // 공유 예산(트리 전체가 같은 참조를 공유)
     // -------------------------
-    private sealed class FragmentBudget
+    // 외부(메인 오브)에서 예산을 만들어 자식들에게 동일 참조로 전달할 수 있어야 하므로 public.
+    public sealed class FragmentBudget
     {
         public int used;
         public int max;
@@ -66,6 +67,7 @@ public sealed class DarkOrbSplitProjectile2D : PooledObject2D
 
     private void OnEnable()
     {
+        Debug.LogError($"[CHECK] SplitProjectile ExplodeAndSplit RUNNING depth={_depth}/{_maxDepth} name={gameObject.name} id={GetInstanceID()}");
         _age = 0f;
 
         _enemyMask = 0;
