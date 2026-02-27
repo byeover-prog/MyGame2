@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 1281644234998683652}
   - component: {fileID: 1534040017305913308}
   - component: {fileID: -860772033551373037}
-  - component: {fileID: -3633592114328859660}
   - component: {fileID: 3809372804871011955}
   m_Layer: 15
   m_Name: ArrowProjectile
@@ -215,21 +214,6 @@ MonoBehaviour:
   ricochetRange: 0
   pierce: 0
   destroyOnHit: 1
---- !u!114 &-3633592114328859660
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7796759533629522074}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b25534c296ad06245b44d738de394756, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AutoSorting2D
-  sortingLayerName: SkillFX
-  orderInLayer: 50
-  includeChildren: 1
 --- !u!114 &3809372804871011955
 MonoBehaviour:
   m_ObjectHideFlags: 0

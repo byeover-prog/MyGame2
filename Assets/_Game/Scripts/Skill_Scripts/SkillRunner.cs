@@ -5,6 +5,10 @@ using UnityEngine;
 /// <summary>
 /// "프리팹 장착"과 "레벨 적용"만 담당(SRP).
 /// - 런타임 상태/오퍼/UI/시간정지 등은 책임 없음
+/// 
+/// [핵심 수정]
+// - id별 마지막 레벨을 캐시한다(ApplyLevel이 Attach보다 먼저 와도 OK)
+// - Attach 시 캐시된 레벨을 즉시 적용한다(레벨업이 1레벨 고정되는 문제 해결)
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class SkillRunner : MonoBehaviour
@@ -24,6 +28,9 @@ public sealed class SkillRunner : MonoBehaviour
 
     // id -> (해당 프리팹 안의 모든 ILevelableSkill)
     private readonly Dictionary<string, List<ILevelableSkill>> _instances = new Dictionary<string, List<ILevelableSkill>>(32);
+
+    // ★ 추가: id -> 마지막으로 적용된 레벨(Attach 타이밍과 무관하게 항상 동기화)
+    private readonly Dictionary<string, int> _levelCache = new Dictionary<string, int>(32);
 
     private void Awake()
     {
@@ -66,7 +73,11 @@ public sealed class SkillRunner : MonoBehaviour
         if (prefab == null) return;
 
         if (_instances.ContainsKey(id))
+        {
+            if (enableLogs)
+                Debug.Log($"[SkillRunner] Attach 무시(이미 장착): '{id}'", this);
             return;
+        }
 
         EnsureMount();
 
@@ -124,8 +135,24 @@ public sealed class SkillRunner : MonoBehaviour
             list[i].OnAttached(owner);
         }
 
-        if (enableLogs)
-            Debug.Log($"[SkillRunner] Attach '{id}' (components={list.Count})", this);
+        // ★ 추가: 이미 레벨이 캐시되어 있으면, 장착 즉시 그 레벨로 동기화한다.
+        // (카드 선택 ApplyLevel이 Attach보다 먼저 호출되는 케이스 방지)
+        if (_levelCache.TryGetValue(id, out int cachedLv) && cachedLv > 0)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] == null) continue;
+                list[i].ApplyLevel(cachedLv);
+            }
+
+            if (enableLogs)
+                Debug.Log($"[SkillRunner] Attach '{id}' 후 캐시 레벨 적용: Lv{cachedLv} (components={list.Count})", this);
+        }
+        else
+        {
+            if (enableLogs)
+                Debug.Log($"[SkillRunner] Attach '{id}' (components={list.Count})", this);
+        }
     }
 
     public void ApplyLevel(string id, int level)
@@ -133,10 +160,13 @@ public sealed class SkillRunner : MonoBehaviour
         if (string.IsNullOrWhiteSpace(id)) return;
         if (level <= 0) return;
 
+        // ★ 추가: 먼저 캐시한다. (장착 전/후 상관없이 항상 최신 레벨 유지)
+        _levelCache[id] = level;
+
         if (!_instances.TryGetValue(id, out var list) || list == null || list.Count <= 0)
         {
             if (enableLogs)
-                Debug.LogWarning($"[SkillRunner] ApplyLevel 무시(미장착): '{id}'", this);
+                Debug.LogWarning($"[SkillRunner] ApplyLevel 캐시만 수행(미장착): '{id}' -> Lv{level}", this);
             return;
         }
 
@@ -145,7 +175,17 @@ public sealed class SkillRunner : MonoBehaviour
             if (list[i] == null) continue;
             list[i].ApplyLevel(level);
         }
+
+        if (enableLogs)
+            Debug.Log($"[SkillRunner] ApplyLevel 적용: '{id}' -> Lv{level} (components={list.Count})", this);
     }
 
     public bool IsAttached(string id) => !string.IsNullOrWhiteSpace(id) && _instances.ContainsKey(id);
+
+    // (선택) 디버그용: 현재 캐시 레벨 조회
+    public int GetCachedLevel(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return 0;
+        return _levelCache.TryGetValue(id, out int lv) ? lv : 0;
+    }
 }

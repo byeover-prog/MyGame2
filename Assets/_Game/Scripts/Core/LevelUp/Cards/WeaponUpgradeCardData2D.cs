@@ -1,3 +1,4 @@
+// UTF-8
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +8,7 @@ using UnityEngine;
 /// 
 /// 설계 의도
 /// - UI는 ILevelUpCardData만 알면 된다.
-/// - 실제 적용(업그레이드/레벨 상태 갱신)은 Apply()에서 수행한다.
+/// - 실제 적용(업그레이드/레벨 상태 갱신/실제 무기 ApplyLevel)은 Apply()에서 수행한다.
 /// 
 /// 주의
 /// - 이 클래스는 런타임에만 사용된다.
@@ -107,7 +108,7 @@ public sealed class WeaponUpgradeCardData2D : ILevelUpCardData
 
         bool changed = false;
 
-        // 실제 적용
+        // 실제 적용(업그레이드 값 반영)
         if (_applier != null)
             changed = _applier.Apply(_card);
 
@@ -120,10 +121,12 @@ public sealed class WeaponUpgradeCardData2D : ILevelUpCardData
         {
             _levelState.IncreaseLevel(_card.slotIndex, 1);
 
+            int lv = _levelState.GetLevel(_card.slotIndex);
+            lv = Mathf.Clamp(lv, 0, 8);
+
             // shooter 슬롯의 표시용 레벨도 동기화(디버그/밸런싱 시 혼란 방지)
             if (_shooter != null)
             {
-                int lv = _levelState.GetLevel(_card.slotIndex);
                 var slots = _shooter.SlotsReadOnly;
                 if (slots != null && _card.slotIndex >= 0 && _card.slotIndex < slots.Count)
                 {
@@ -132,7 +135,66 @@ public sealed class WeaponUpgradeCardData2D : ILevelUpCardData
                         s.level = Mathf.Max(1, lv);
                 }
             }
+
+            // ★ 핵심: 실제 무기(프리팹 인스턴스)에 ApplyLevel을 전달해야 "레벨 효과"가 적용된다.
+            // SkillRunner가 월드에 1개 존재하고, 내부에서 weaponId로 스킬 인스턴스를 찾아 ILevelableSkill.ApplyLevel을 호출하는 구조임.
+            ApplyLevelToSkillRunner(lv);
         }
+    }
+
+    private void ApplyLevelToSkillRunner(int lv0to8)
+    {
+        // 런타임 스킬 레벨은 보통 1~8로 쓰므로 0이면 1로 보정
+        int skillLv = Mathf.Clamp(lv0to8, 1, 8);
+
+        string weaponId = ResolveWeaponId();
+        if (string.IsNullOrWhiteSpace(weaponId))
+        {
+            Debug.LogWarning("[WeaponUpgradeCardData2D] weaponId를 찾지 못해 ApplyLevel을 호출할 수 없습니다. (WeaponDefinitionSO/WeaponUpgradeCardSO에 id가 있어야 합니다)");
+            return;
+        }
+
+        // 씬 내 SkillRunner 찾기(프로토타입 단계라 Find로 충분)
+        SkillRunner runner = UnityEngine.Object.FindFirstObjectByType<SkillRunner>();
+        if (runner == null)
+        {
+            Debug.LogWarning("[WeaponUpgradeCardData2D] SkillRunner를 찾지 못해 ApplyLevel을 호출할 수 없습니다.");
+            return;
+        }
+
+        runner.ApplyLevel(weaponId, skillLv);
+    }
+
+    /// <summary>
+    /// weaponId를 "정확히" 가져와야 한다.
+    /// - 가장 안전: WeaponDefinitionSO가 weaponId를 가지고 있으면 그걸 사용
+    /// - 카드가 weaponId를 갖고 있으면 그걸 사용
+    /// 
+    /// ※ 아래는 프로젝트마다 멤버명이 다를 수 있어, 존재하는 멤버명에 맞춰 1줄만 수정하면 된다.
+    /// </summary>
+    private string ResolveWeaponId()
+    {
+        // 1) WeaponDefinitionSO에서 가져오기 (권장)
+        // TODO: 네 WeaponDefinitionSO의 실제 멤버명에 맞춰 한 줄만 고치면 됨.
+        // 예) return _weaponDef.weaponId; / return _weaponDef.id; / return _weaponDef.balanceId;
+        if (_weaponDef != null)
+        {
+            // 가장 흔한 후보들을 순서대로 시도(컴파일 안 되면 너 프로젝트 멤버명으로 하나만 남겨)
+            // return _weaponDef.weaponId;
+            // return _weaponDef.id;
+            // return _weaponDef.balanceId;
+        }
+
+        // 2) 카드에서 가져오기(카드에 id가 있다면)
+        if (_card != null)
+        {
+            // 가장 흔한 후보
+            // return _card.weaponId;
+            // return _card.id;
+            // return _card.balanceId;
+        }
+
+        return null;
     }
 
     private static SkillTag[] ParseTags(string tagsKr)
@@ -141,8 +203,6 @@ public sealed class WeaponUpgradeCardData2D : ILevelUpCardData
             return EmptyTags;
 
         // 매우 단순한 키워드 매칭(프로토타입)
-        // - 여러 태그가 들어오면 모두 반영
-        // - Unknown/공통 같은 건 태그로 보여주지 않는다.
         var list = new List<SkillTag>(4);
 
         void Add(SkillTag t)

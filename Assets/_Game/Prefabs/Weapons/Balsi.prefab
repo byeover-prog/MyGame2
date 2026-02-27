@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 4357092550096953625}
   - component: {fileID: 2106738964708143328}
   - component: {fileID: 764454520727778005}
-  - component: {fileID: 24231395069958346}
   - component: {fileID: 9106754863539150079}
+  - component: {fileID: 24231395069958346}
   m_Layer: 15
   m_Name: Balsi
   m_TagString: Untagged
@@ -141,19 +141,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.868386, y: 0.93693626}
   m_EdgeRadius: 0
---- !u!114 &24231395069958346
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7148072882438260549}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca74c0eec08d6914cbe3da41c59a0304, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BalsiProjectile2D
-  _spriteForwardAngleOffsetDeg: 1
 --- !u!50 &9106754863539150079
 Rigidbody2D:
   serializedVersion: 5
@@ -181,3 +168,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &24231395069958346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7148072882438260549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca74c0eec08d6914cbe3da41c59a0304, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BalsiProjectile2D
+  _spriteForwardAngleOffsetDeg: 1
+  _debugLog: 0
+  _rb: {fileID: 0}
