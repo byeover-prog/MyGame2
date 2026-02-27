@@ -10,4 +10,5 @@ public enum CommonSkillKind
     ArrowRain = 7, // 프로토타입 제외(비활성 유지)
     
     Balsi = 8, // 발시(윤설)
+    ThunderTalisman = 9, // 낙뢰부(하율 전용)
 }

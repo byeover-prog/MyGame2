@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2223466731760306983}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: SpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 6659609647218975807}
   - component: {fileID: 6296080321885801146}
   - component: {fileID: 6215998619112459940}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Weapon_Balsi
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -88,6 +88,10 @@ MonoBehaviour:
   fireJitterDelayMax: 0.1
   projectileSortingBase: 0
   projectileSortingStepPerKind: 10
+  fallbackCooldownSeconds: 1
+  fallbackDamage: 10
+  fallbackProjectileSpeed: 12
+  fallbackProjectileLife: 2
   pool: {fileID: 6215998619112459940}
   spawnPoint: {fileID: 2223466731760306983}
   pierceCount: 0
@@ -105,3 +109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectilePool2D
   prefab: {fileID: 24231395069958346, guid: f07ea3d00ed6c454faf9f3829e458fb0, type: 3}
+  prewarmCount: 20
+  prewarmPerFrame: 3
+  prewarmOnStart: 1
+  maxCount: 200

@@ -1,3 +1,7 @@
+// UTF-8
+using System;
+using System.IO;
+using System.Text;
 using UnityEngine;
 
 /// <summary>
@@ -43,10 +47,38 @@ public sealed class JsonManager2D : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        if (log)
+        {
+            Debug.Log($"[JsonManager2D] Awake => name={gameObject.name}, scene={gameObject.scene.name}, " +
+                      $"defaultNull={(defaultSkillBalanceJson == null)}, len={(defaultSkillBalanceJson ? defaultSkillBalanceJson.text.Length : -1)}", this);
+        }
     }
 
     public string GetSkillBalanceOverridePath()
         => JsonIO2D.GetPersistentPath(skillBalanceOverrideFileName);
+
+    // ----------------------------
+    // 진단 유틸
+    // ----------------------------
+    private static string NormalizeJsonText(string raw)
+    {
+        if (raw == null) return null;
+
+        // BOM 제거(가끔 persistent에 BOM 붙으면 JsonUtility가 터짐)
+        raw = raw.Trim();
+        if (raw.Length > 0 && raw[0] == '\ufeff')
+            raw = raw.Substring(1);
+
+        return raw;
+    }
+
+    private static string Head(string s, int len = 160)
+    {
+        if (string.IsNullOrEmpty(s)) return "(empty)";
+        s = s.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t");
+        return s.Length <= len ? s : s.Substring(0, len) + "...";
+    }
 
     /// <summary>
     /// 스킬 밸런스를 정책대로 로드한다.
@@ -60,14 +92,38 @@ public sealed class JsonManager2D : MonoBehaviour
         // 1) persistent override 우선
         if (usePersistentOverride)
         {
-            if (JsonIO2D.TryLoadFromPersistent(skillBalanceOverrideFileName, out data, out error))
-            {
-                source = BalanceSource.PersistentOverride;
-                if (log) Debug.Log($"[JsonManager2D] SkillBalance 로드: persistent override => {GetSkillBalanceOverridePath()}", this);
-                return true;
-            }
+            string path = GetSkillBalanceOverridePath();
 
-            if (log) Debug.LogWarning($"[JsonManager2D] persistent override 로드 실패(폴백): {error}", this);
+            if (File.Exists(path))
+            {
+                string raw = File.ReadAllText(path, Encoding.UTF8);
+                raw = NormalizeJsonText(raw);
+
+                if (log) Debug.Log($"[JsonManager2D] persistent head: {Head(raw)}", this);
+
+                try
+                {
+                    data = JsonUtility.FromJson<T>(raw);
+                    if (data != null)
+                    {
+                        source = BalanceSource.PersistentOverride;
+                        if (log) Debug.Log($"[JsonManager2D] SkillBalance 로드: persistent override => {path}", this);
+                        return true;
+                    }
+
+                    error = "persistent JSON 파싱 결과가 null입니다.";
+                    if (log) Debug.LogWarning($"[JsonManager2D] persistent 파싱 null(폴백): {error}", this);
+                }
+                catch (Exception ex)
+                {
+                    error = $"JSON parse error(persistent): {ex.Message} | head={Head(raw)}";
+                    if (log) Debug.LogWarning($"[JsonManager2D] persistent 파싱 실패(폴백): {error}", this);
+                }
+            }
+            else
+            {
+                if (log) Debug.LogWarning($"[JsonManager2D] persistent override 파일이 없습니다(폴백): {path}", this);
+            }
         }
 
         // 2) TextAsset 폴백
@@ -77,9 +133,12 @@ public sealed class JsonManager2D : MonoBehaviour
             return false;
         }
 
+        string textRaw = NormalizeJsonText(defaultSkillBalanceJson.text);
+        if (log) Debug.Log($"[JsonManager2D] textasset head: {Head(textRaw)}", this);
+
         try
         {
-            data = JsonUtility.FromJson<T>(defaultSkillBalanceJson.text);
+            data = JsonUtility.FromJson<T>(textRaw);
             if (data == null)
             {
                 error = "TextAsset JSON 파싱 결과가 null입니다.";
@@ -90,9 +149,9 @@ public sealed class JsonManager2D : MonoBehaviour
             if (log) Debug.Log("[JsonManager2D] SkillBalance 로드: TextAsset", this);
             return true;
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
-            error = ex.Message;
+            error = $"JSON parse error(textasset): {ex.Message} | head={Head(textRaw)}";
             return false;
         }
     }
@@ -112,20 +171,19 @@ public sealed class JsonManager2D : MonoBehaviour
         string path = GetSkillBalanceOverridePath();
 
         // 이미 있으면 건드리지 않음(실수 방지)
-        if (System.IO.File.Exists(path))
+        if (File.Exists(path))
         {
             Debug.Log($"[JsonManager2D] 이미 override 파일이 존재합니다: {path}", this);
             return;
         }
 
-        if (!JsonIO2D.TrySaveTextToPersistent(skillBalanceOverrideFileName, defaultSkillBalanceJson.text, out string error))
+        if (!JsonIO2D.TrySaveTextToPersistent(skillBalanceOverrideFileName, defaultSkillBalanceJson.text, out string err))
         {
-            Debug.LogWarning($"[JsonManager2D] override 내보내기 실패: {error}", this);
+            Debug.LogWarning($"[JsonManager2D] override 내보내기 실패: {err}", this);
             return;
         }
 
         Debug.Log($"[JsonManager2D] override 파일 생성 완료: {path}", this);
-        Debug.Log($"[JsonManager2D] Awake => name={gameObject.name}, scene={gameObject.scene.name}, defaultNull={(defaultSkillBalanceJson==null)}, len={(defaultSkillBalanceJson? defaultSkillBalanceJson.text.Length : -1)}", this);
     }
 
     // ----------------------------

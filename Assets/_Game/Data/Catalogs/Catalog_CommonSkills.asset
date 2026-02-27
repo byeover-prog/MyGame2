@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Catalog_CommonSkills
   m_EditorClassIdentifier: Assembly-CSharp::CommonSkillCatalogSO
   skills:
-  - {fileID: 11400000, guid: 0cb2f22b3587db54ca97fc6c73a27b16, type: 2}
-  - {fileID: 11400000, guid: c9e78ec0683c84c41846cca48d335aad, type: 2}
-  - {fileID: 11400000, guid: e5ca376f06625e548878b7c31c14bc07, type: 2}
-  - {fileID: 11400000, guid: fd072ae5006e1554aa3b6596f0693f7d, type: 2}
-  - {fileID: 11400000, guid: 457a1ced300633f4b87679b8f2580fba, type: 2}
-  - {fileID: 11400000, guid: 4088b3e748714a645b500e9ab2afb4b7, type: 2}
-  - {fileID: 11400000, guid: 98816423e3f581943b2ab79dddcb65b7, type: 2}
-  - {fileID: 11400000, guid: 61617d02b1c96f54a8364ccc7d60e2fa, type: 2}
+  - {fileID: 11400000, guid: 84e5088e2acb19b408a146ba069f9adc, type: 2}
+  - {fileID: 11400000, guid: bcd00001e9e02c54caf7388499e85186, type: 2}
+  - {fileID: 11400000, guid: b590e081b6a5dae479f99c3ac0479618, type: 2}
+  - {fileID: 11400000, guid: 719c2c972fc4394419fb238fb8e3a720, type: 2}
+  - {fileID: 11400000, guid: 2a180e5bbcb81fc459a8d4557518b396, type: 2}
+  - {fileID: 11400000, guid: 6e7ac8d097855e4418f51c87a0e70e97, type: 2}
+  - {fileID: 11400000, guid: 2bb7f7aeea12a6a4889e47780d085d19, type: 2}
+  - {fileID: 11400000, guid: 31304f19e41eca94893a112556c969fd, type: 2}
   cardPool: {fileID: 11400000, guid: a0047d1ed61ad814eb345cc1496aaa2c, type: 2}

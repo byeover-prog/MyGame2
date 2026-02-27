@@ -14,9 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSkillDeckSO
   weapons:
   - {fileID: 11400000, guid: 0f2131c5a0aa05a47be170589c237a2d, type: 2}
-  - {fileID: 11400000, guid: 148d12d792c525c45b393495fdfdfd65, type: 2}
   - {fileID: 11400000, guid: 2e0daf72a62a633408a24c6cefde1881, type: 2}
   - {fileID: 11400000, guid: 81d7f5153e2c12e40999b92d61d70db5, type: 2}
   - {fileID: 11400000, guid: b5d0e634fa90f9544addf2a7d8a68205, type: 2}
   - {fileID: 11400000, guid: bf9b8295384381b44a6220f49823ae1a, type: 2}
   - {fileID: 11400000, guid: 9265dbb4ba5013c4cbb2c400ffc12bc3, type: 2}
+  - {fileID: 11400000, guid: 148d12d792c525c45b393495fdfdfd65, type: 2}
+  - {fileID: 11400000, guid: 0754c704615252e4c9dec278ca5e7b4f, type: 2}
+  - {fileID: 11400000, guid: 62331c1eed2dc174ea8e84f10be8ff5a, type: 2}
+  - {fileID: 11400000, guid: 3450d458f7330bf4ab04a3282a07e005, type: 2}
+  - {fileID: 11400000, guid: 376dd8a72460991479864a73eac418f3, type: 2}
+  - {fileID: 11400000, guid: 8b2840114632d3047814ec46959e3532, type: 2}
+  - {fileID: 11400000, guid: 41e16810df3c50c42bc46d168ba5411d, type: 2}
+  - {fileID: 11400000, guid: cc7246e6dc0f6944895203bb3d33056a, type: 2}

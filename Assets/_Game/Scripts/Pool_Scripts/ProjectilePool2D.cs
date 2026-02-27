@@ -1,92 +1,147 @@
 // UTF-8
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 // [구현 원리 요약]
-// - 무기(Weapon)가 투사체를 Instantiate/Destroy 하지 않도록, 투사체를 미리 만들어 Queue로 재사용한다.
-// - 투사체는 반드시 PooledObject2D를 상속해야 하며, ReturnToPool()로 반납한다.
-// - "글로벌 풀(ProjectilePool)"과 섞지 않는다. (2D 공통스킬은 이 풀을 표준으로 사용)
+// - 프리웜(미리 생성)은 성능에 좋지만, 한 프레임에 몰리면 에디터가 먹통처럼 멈춘다.
+// - 그래서 프리웜을 "프레임 분산" 코루틴으로 진행한다.
+// - 투사체는 PooledObject2D 상속 + ReturnToPool()로 반납.
+//
+// ★ 수정사항:
+// - Get() 시 투사체를 풀 부모에서 분리(SetParent(null))하여
+//   부모 스케일/이동 영향 제거
+// - Return() 시 풀 아래로 복귀
+// - 원본 localScale 캐싱으로 스케일 복원 보장
 
 [DisallowMultipleComponent]
 public sealed class ProjectilePool2D : MonoBehaviour
 {
     [Header("연결 설정")]
-    [Tooltip("풀에서 생성/재사용할 투사체 프리팹\n" +
-             "※ 반드시 PooledObject2D(또는 그 자식)를 붙인 프리팹이어야 합니다.")]
+    [Tooltip("풀에서 생성/재사용할 투사체 프리팹\n※ 반드시 PooledObject2D(또는 그 자식)를 붙인 프리팹이어야 합니다.")]
     [SerializeField] private PooledObject2D prefab;
 
     [Header("프리웜(시작 렉 방지)")]
-    [Tooltip("Awake에서 미리 만들어둘 개수")]
+    [Tooltip("총 프리웜 개수")]
     [Min(0)]
     [SerializeField] private int prewarmCount = 20;
 
+    [Tooltip("프리웜을 한 프레임에 몇 개씩 나눠 만들지(먹통 방지)\n권장: 2~5")]
+    [Range(1, 20)]
+    [SerializeField] private int prewarmPerFrame = 3;
+
+    [Tooltip("프리웜을 Awake 즉시 하지 않고 Start에서 시작(씬 로딩 안정)\n권장: ON")]
+    [SerializeField] private bool prewarmOnStart = true;
+
     [Header("상한(안전장치)")]
-    [Tooltip("풀 내부에 '보관'할 최대 개수\n" +
-             "※ 프로토타입 안정성 우선: 한도를 넘어도 필요하면 추가 생성은 합니다(멈춤 방지).")]
+    [Tooltip("풀 내부에 '보관'할 최대 개수")]
     [Min(1)]
     [SerializeField] private int maxCount = 200;
 
     private readonly Queue<PooledObject2D> _pool = new Queue<PooledObject2D>(256);
-    private int _created;
+    private Coroutine _prewarmCo;
+
+    // ★ 프리팹 원본 localScale 캐싱 (부모 스케일 영향 복원용)
+    private Vector3 _prefabLocalScale = Vector3.one;
 
     private void Awake()
     {
         if (prefab == null) return;
 
-        int target = Mathf.Clamp(prewarmCount, 0, maxCount);
-        for (int i = 0; i < target; i++)
-        {
-            var obj = CreateNew();
-            Return(obj);
-        }
+        // 프리팹 원본 스케일 기억
+        _prefabLocalScale = prefab.transform.localScale;
+
+        if (!prewarmOnStart)
+            StartPrewarm();
     }
 
-    // 무기에서 쓰는 표준 API
+    private void Start()
+    {
+        if (prefab == null) return;
+
+        if (prewarmOnStart)
+            StartPrewarm();
+    }
+
+    private void StartPrewarm()
+    {
+        if (prewarmCount <= 0) return;
+        if (_prewarmCo != null) StopCoroutine(_prewarmCo);
+        _prewarmCo = StartCoroutine(PrewarmRoutine());
+    }
+
+    private IEnumerator PrewarmRoutine()
+    {
+        int target = Mathf.Clamp(prewarmCount, 0, maxCount);
+
+        while (_pool.Count < target)
+        {
+            int batch = Mathf.Min(prewarmPerFrame, target - _pool.Count);
+
+            for (int i = 0; i < batch; i++)
+            {
+                var obj = CreateNew();
+                Return(obj);
+            }
+
+            // ★ 다음 프레임으로 넘겨서 먹통 방지
+            yield return null;
+        }
+
+        _prewarmCo = null;
+    }
+
     public T Get<T>(Vector3 pos, Quaternion rot) where T : PooledObject2D
     {
         var obj = GetRaw();
+
+        // ★ 핵심 수정: 풀 부모에서 분리하여 월드 공간에서 독립 동작
+        // - 부모 스케일(무기 프리팹 0.2~0.28 등) 영향 제거
+        // - 부모 이동(플레이어 추적) 영향 제거
+        obj.transform.SetParent(null, false);
+
+        // 월드 위치/회전 설정
         obj.transform.SetPositionAndRotation(pos, rot);
-        obj.gameObject.SetActive(true);
-        return (T)obj;
+
+        // ★ 스케일 복원: 부모 해제 후 localScale = worldScale이므로 프리팹 원본값으로 복원
+        obj.transform.localScale = _prefabLocalScale;
+
+        obj.ClearReturningFlag();
+        if (!obj.gameObject.activeSelf) obj.gameObject.SetActive(true);
+
+        if (obj is T t) return t;
+
+        Debug.LogError($"[ProjectilePool2D] Get<{typeof(T).Name}> 타입 불일치. 실제={obj.GetType().Name} prefab={prefab.name}", this);
+        return obj.GetComponent<T>();
     }
 
-    // 타입을 모르거나, Get 후에 GetComponent로 찾고 싶은 경우
     public PooledObject2D GetRaw()
     {
         if (_pool.Count > 0)
             return _pool.Dequeue();
 
-        // maxCount는 "보관 상한" 개념으로만 사용
-        // (실전에서는 더 엄격히 막아도 되지만, 지금은 멈춤/누락 방지가 우선)
         return CreateNew();
     }
 
     private PooledObject2D CreateNew()
     {
-        _created++;
-
         var obj = Instantiate(prefab, transform);
-        obj.name = prefab.name; // (Clone) 붙는 것 방지(가독성)
-
-        // ★ 핵심: 반납 경로를 여기로 고정
+        obj.name = prefab.name;
         obj.BindPool(this);
 
-        obj.gameObject.SetActive(false);
+        if (obj.gameObject.activeSelf) obj.gameObject.SetActive(false);
         return obj;
     }
 
-    // PooledObject2D.ReturnToPool()이 호출하면 여기로 들어온다
     public void Return(PooledObject2D obj)
     {
         if (obj == null) return;
 
-        // 씬 정리(풀 루트로 묶어서 보기 좋게)
+        // 풀 아래로 복귀 (worldPositionStays=false → local 좌표계로 깔끔하게 정리)
         obj.transform.SetParent(transform, false);
 
-        obj.gameObject.SetActive(false);
+        if (obj.gameObject.activeSelf) obj.gameObject.SetActive(false);
 
-        // 보관 상한을 넘으면 보관하지 않고 파괴(메모리 폭주 방지)
-        // 단, maxCount는 "보관"만 제한. 생성은 GetRaw에서 계속 가능.
         if (_pool.Count >= maxCount)
         {
             Destroy(obj.gameObject);
@@ -101,6 +156,7 @@ public sealed class ProjectilePool2D : MonoBehaviour
     {
         if (maxCount < 1) maxCount = 1;
         if (prewarmCount < 0) prewarmCount = 0;
+        if (prewarmPerFrame < 1) prewarmPerFrame = 1;
     }
 #endif
 }

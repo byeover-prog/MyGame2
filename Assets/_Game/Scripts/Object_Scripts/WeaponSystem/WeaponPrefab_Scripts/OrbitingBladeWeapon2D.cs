@@ -1,33 +1,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 회전검 무기 (CommonSkillWeapon2D 기반)
+/// 
+/// ★ 레벨업 처리 방식:
+/// - 레벨업해도 현재 돌고 있는 사이클에는 아무 변화 없음
+/// - 현재 사이클이 끝나고(OFF) → 다음 사이클이 시작될 때(ON) 새 개수 적용
+/// - 보간/재배치 로직 불필요 → 깔끔하고 버벅거림 없음
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
 {
     [Header("블레이드 설정")]
-    [Tooltip("회전할 검(이미지) 템플릿. 리지드바디/콜라이더는 없어도 됩니다.")]
     [SerializeField] private GameObject bladeTemplate;
-
-    [Tooltip("검 하나당 적 타격 판정 반경")]
     [SerializeField] private float hitRadius = 1.0f;
 
     [Header("비주얼(방향)")]
     [SerializeField] private bool rotateBladeToFaceOutward = true;
-
-    [Tooltip("스프라이트 기본 방향 보정(도). 90/-90/180로 맞추면 대부분 해결됩니다.")]
     [SerializeField] private float bladeVisualRotationOffsetDeg = 0f;
 
     [Header("쿨타임(ON/OFF 사이클)")]
-    [Tooltip("체크하면 회전검이 '활성 시간' 동안만 동작하고 이후 '쿨타임' 동안 꺼집니다.")]
     [SerializeField] private bool useCooldownCycle = true;
-
-    [Tooltip("활성 상태로 유지되는 시간(초)")]
     [SerializeField, Min(0.1f)] private float activeSeconds = 1.5f;
-
-    [Tooltip("비활성(쿨타임) 시간(초)")]
     [SerializeField, Min(0.1f)] private float cooldownSeconds = 1.5f;
 
-    [Header("안전 캡(수치 조정용)")]
+    [Header("안전 캡")]
     [SerializeField] private float minOrbitRadius = 2.0f;
     [SerializeField] private float minHitInterval = 0.20f;
     [SerializeField] private int maxDamagePerHit = 50;
@@ -38,15 +36,22 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
 
     private float baseAngle;
 
-    // 쿨타임 사이클 상태
+    // 쿨타임 사이클
     private bool _isActive = true;
     private float _stateTimer;
+
+    // ★ 핵심: 현재 사이클에서 실제로 사용 중인 블레이드 수
+    //   레벨업해도 이 값은 바뀌지 않음 → 다음 사이클에서만 갱신
+    private int _currentCycleCount;
 
     public override void Initialize(CommonSkillConfigSO cfg, Transform ownerTr, int startLevel)
     {
         base.Initialize(cfg, ownerTr, startLevel);
         EnsureBladeInstances();
-        OnLevelChanged();
+
+        // 최초 획득 시에는 즉시 적용
+        _currentCycleCount = Mathf.Max(1, P.projectileCount);
+        PositionAndActivateBlades(_currentCycleCount);
 
         _isActive = true;
         _stateTimer = 0f;
@@ -61,7 +66,16 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
     protected override void OnLevelChanged()
     {
         EnsureBladeInstances();
-        ApplyActiveCountVisible();
+
+        // ★ 현재 사이클에는 아무것도 건드리지 않음
+        // _currentCycleCount는 다음 ON 사이클에서 갱신됨
+        // (쿨다운 사이클 미사용 시에는 즉시 적용)
+        if (!useCooldownCycle)
+        {
+            _currentCycleCount = Mathf.Max(1, P.projectileCount);
+            PositionAndActivateBlades(_currentCycleCount);
+        }
+
         lastHitTime.Clear();
     }
 
@@ -69,7 +83,7 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
     {
         if (owner == null || config == null) return;
 
-        // ON/OFF 사이클 처리
+        // ON/OFF 사이클
         if (useCooldownCycle)
         {
             _stateTimer += Time.deltaTime;
@@ -80,8 +94,8 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
                 {
                     _isActive = false;
                     _stateTimer = 0f;
-                    SetBladesVisible(false);      // 꺼지는 동안 아예 안 보이게
-                    lastHitTime.Clear();          // 재활성 시 즉시 중복타격 방지
+                    SetBladesVisible(false);
+                    lastHitTime.Clear();
                     return;
                 }
             }
@@ -91,32 +105,33 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
                 {
                     _isActive = true;
                     _stateTimer = 0f;
-                    ApplyActiveCountVisible();    // 다시 켜짐 + 개수 반영
+
+                    // ★ 다음 사이클 시작: 여기서 새 블레이드 수 적용
+                    _currentCycleCount = Mathf.Max(1, P.projectileCount);
+                    PositionAndActivateBlades(_currentCycleCount);
                 }
                 else
                 {
-                    return; // 쿨타임 동안 로직 완전 정지(사기 방지)
+                    return;
                 }
             }
         }
 
-        // 활성 상태에서만 회전/타격
-        int activeCount = Mathf.Max(1, P.projectileCount);
+        // 회전/타격
         float radius = Mathf.Max(minOrbitRadius, P.orbitRadius);
         float angSpeed = P.orbitAngularSpeed;
 
         baseAngle = (baseAngle + angSpeed * Time.deltaTime) % 360f;
-        float step = 360f / activeCount;
+        float step = 360f / _currentCycleCount;
 
-        for (int i = 0; i < activeCount && i < blades.Count; i++)
+        for (int i = 0; i < _currentCycleCount && i < blades.Count; i++)
         {
             if (!blades[i].activeSelf) continue;
 
-            float angleDeg = (baseAngle + step * i);
+            float angleDeg = baseAngle + step * i;
             float a = angleDeg * Mathf.Deg2Rad;
 
-            Vector3 local = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * radius;
-            blades[i].transform.localPosition = local;
+            blades[i].transform.localPosition = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * radius;
 
             if (rotateBladeToFaceOutward)
                 blades[i].transform.localRotation = Quaternion.Euler(0f, 0f, angleDeg + bladeVisualRotationOffsetDeg);
@@ -166,16 +181,45 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
             bladeTemplate.SetActive(false);
     }
 
-    private void ApplyActiveCountVisible()
+    /// <summary>
+    /// 위치 먼저 계산 후 활성화 (1프레임 점프 방지)
+    /// </summary>
+    private void PositionAndActivateBlades(int activeCount)
     {
-        int activeCount = Mathf.Max(1, P.projectileCount);
+        float radius = Mathf.Max(minOrbitRadius, P.orbitRadius);
+        float step = 360f / Mathf.Max(1, activeCount);
+
         for (int i = 0; i < blades.Count; i++)
-            blades[i].SetActive(i < activeCount);
+        {
+            var blade = blades[i];
+
+            if (i < activeCount)
+            {
+                float angleDeg = baseAngle + step * i;
+                float a = angleDeg * Mathf.Deg2Rad;
+
+                blade.transform.localPosition = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * radius;
+
+                if (rotateBladeToFaceOutward)
+                    blade.transform.localRotation = Quaternion.Euler(0f, 0f, angleDeg + bladeVisualRotationOffsetDeg);
+
+                if (!blade.activeSelf)
+                    blade.SetActive(true);
+            }
+            else
+            {
+                if (blade.activeSelf)
+                    blade.SetActive(false);
+            }
+        }
     }
 
     private void SetBladesVisible(bool visible)
     {
-        for (int i = 0; i < blades.Count; i++)
-            blades[i].SetActive(visible && i < Mathf.Max(1, P.projectileCount));
+        if (visible)
+            PositionAndActivateBlades(_currentCycleCount);
+        else
+            for (int i = 0; i < blades.Count; i++)
+                blades[i].SetActive(false);
     }
 }

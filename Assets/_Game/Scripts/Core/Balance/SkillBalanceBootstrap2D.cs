@@ -11,6 +11,9 @@ namespace _Game.Scripts.Core.Balance
     /// - id -> SkillRow2D를 딕셔너리로 인덱싱(O(1) 조회)
     /// - (base + AddPerLevel*(level-1))로 레벨별 최종 수치 계산
     /// - base가 -1이면 "미사용"이므로 결과도 -1 유지
+    ///
+    /// [디버그 강화]
+    /// - JSON 파싱 실패(Invalid value) 원인 1초 확정용: source / head / 형식 판정 로그 출력
     /// </summary>
     [DefaultExecutionOrder(-900)]
     [DisallowMultipleComponent]
@@ -21,6 +24,9 @@ namespace _Game.Scripts.Core.Balance
         [Header("디버그")]
         [Tooltip("로딩/인덱싱 로그 출력")]
         [SerializeField] private bool log = false;
+
+        [Tooltip("파싱 실패 원인(빈 파일/CSV/JSON 아님)을 강하게 로그로 남김")]
+        [SerializeField] private bool logParseDiagnostics = true;
 
         [Tooltip("플레이 중 F5로 리로드(개발 편의)")]
         [SerializeField] private bool allowReloadInPlay = true;
@@ -36,7 +42,8 @@ namespace _Game.Scripts.Core.Balance
 
         private void Awake()
         {
-            Debug.Log($"[SkillBalanceBootstrap2D] JsonManager Instance={(JsonManager2D.Instance? JsonManager2D.Instance.name : "null")}", this);
+            Debug.Log($"[SkillBalanceBootstrap2D] JsonManager Instance={(JsonManager2D.Instance ? JsonManager2D.Instance.name : "null")}", this);
+
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
@@ -72,18 +79,37 @@ namespace _Game.Scripts.Core.Balance
                 return;
             }
 
+            // 로드
             if (!JsonManager2D.Instance.TryLoadSkillBalance(out SkillBalanceDB2D db, out string error, out var source))
             {
                 Debug.LogError($"[SkillBalanceBootstrap2D] 로드 실패: {error}");
                 return;
             }
 
+            // 파싱 실패 원인 확정용(여기서 source를 무조건 찍어두면, 어떤 파일을 물고 있는지 바로 알 수 있음)
+            if (logParseDiagnostics)
+            {
+                string srcName = GetSourceNameSafe(source);
+
+                // JsonManager2D 내부에서 TextAsset을 읽었다면, error에 parse 에러가 먼저 담기는 경우가 많다.
+                // 그래도 최소한 "어떤 source를 읽었는지"는 남겨둔다.
+                Debug.Log($"[SkillBalanceBootstrap2D] Load source={srcName}", this);
+
+                // db가 null이면 파싱이 실패했거나 구조가 안 맞는 상태일 가능성이 높다.
+                if (db == null)
+                {
+                    Debug.LogError("[SkillBalanceBootstrap2D] db가 null 입니다. (대부분 JSON 파싱 실패/엉뚱한 파일 로드/빈 파일)");
+                }
+            }
+
+            // 구조 체크
             if (db == null || db.skills == null || db.skills.Length == 0)
             {
-                Debug.LogError("[SkillBalanceBootstrap2D] skills가 비었습니다. (JSON에 skills 배열이 있어야 함)");
+                Debug.LogError($"[SkillBalanceBootstrap2D] skills가 비었습니다. (JSON에 skills 배열이 있어야 함) source={GetSourceNameSafe(source)}");
                 return;
             }
 
+            // 인덱싱
             for (int i = 0; i < db.skills.Length; i++)
             {
                 var row = db.skills[i];
@@ -102,7 +128,15 @@ namespace _Game.Scripts.Core.Balance
             IsReady = true;
 
             if (log)
-                Debug.Log($"[SkillBalanceBootstrap2D] 인덱싱 완료: {_map.Count} skills (source={source})");
+                Debug.Log($"[SkillBalanceBootstrap2D] 인덱싱 완료: {_map.Count} skills (source={GetSourceNameSafe(source)})");
+        }
+
+        private static string GetSourceNameSafe(object source)
+        {
+            if (source == null) return "null";
+            // JsonManager2D가 TextAsset/경로/enum 등 다양한 형태로 source를 줄 수 있으니 ToString()으로 안전 처리
+            try { return source.ToString(); }
+            catch { return "unknown"; }
         }
 
         /// <summary>
