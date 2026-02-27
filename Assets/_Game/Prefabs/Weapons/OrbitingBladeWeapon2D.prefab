@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 4363129624570349765}
   - component: {fileID: 5218928544521417293}
   - component: {fileID: 5277812215870179067}
-  - component: {fileID: -7141048674151399266}
   m_Layer: 0
   m_Name: OrbitingBladeWeapon2D
   m_TagString: Untagged
@@ -132,6 +131,10 @@ MonoBehaviour:
   fireJitterDelayMax: 0.1
   projectileSortingBase: 0
   projectileSortingStepPerKind: 10
+  fallbackCooldownSeconds: 1
+  fallbackDamage: 10
+  fallbackProjectileSpeed: 12
+  fallbackProjectileLife: 2
   bladeTemplate: {fileID: 7497907493957990343}
   hitRadius: 1
   rotateBladeToFaceOutward: 1
@@ -142,21 +145,6 @@ MonoBehaviour:
   minOrbitRadius: 1.5
   minHitInterval: 0.3
   maxDamagePerHit: 50
---- !u!114 &-7141048674151399266
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5202396342664615971}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b25534c296ad06245b44d738de394756, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AutoSorting2D
-  sortingLayerName: SkillFX
-  orderInLayer: 50
-  includeChildren: 1
 --- !u!1 &7497907493957990343
 GameObject:
   m_ObjectHideFlags: 0

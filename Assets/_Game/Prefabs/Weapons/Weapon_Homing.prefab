@@ -48,12 +48,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HomingMissileWeapon2D
   projectilePrefab: {fileID: 8561632100752635023, guid: 6f78a42690b83ec46b19264e52164c54,
     type: 3}
-  projectileSpeed: 10
+  projectileSpeed: 5
   cooldownSeconds: 1.8
   aimRange: 25
-  turnSpeedDeg: 720
+  turnSpeedDeg: 1080
   damage: 10
-  projectileLifeSeconds: 2
+  projectileLifeSeconds: 30
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536

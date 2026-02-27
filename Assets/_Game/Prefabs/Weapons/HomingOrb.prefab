@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: -641310885405526830}
   - component: {fileID: 352200905192923142}
   - component: {fileID: -6726285706623136437}
-  - component: {fileID: -3571912339003547082}
   m_Layer: 15
   m_Name: HomingOrb
   m_TagString: Untagged
@@ -174,8 +173,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HomingProjectile2D
   rb: {fileID: -9129200372951353056}
   col: {fileID: -641310885405526830}
-  rehitIntervalSeconds: 0.1
-  allowRehitWhenNoOtherTarget: 1
+  rehitIntervalSeconds: 1
+  noTargetKillSeconds: 1.5
   debugLog: 0
 --- !u!114 &-6726285706623136437
 MonoBehaviour:
@@ -200,25 +199,3 @@ MonoBehaviour:
   - UpgradeLevel
   - OnLevelChanged
   log: 1
---- !u!114 &-3571912339003547082
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8561632100752635023}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5357f8ba2089964da65fc79cb0cce06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectileHitRule2D
-  enemyMask:
-    serializedVersion: 2
-    m_Bits: 65536
-  damage: 20
-  pierce: 1
-  sameTargetHitInterval: 0
-  allowRehitWhileStaying: 1
-  stayCheckInterval: 0.05
-  despawnDelayAfterHit: 0.2
-  disableColliderOnHit: 1
