@@ -6,6 +6,7 @@ using UnityEngine;
 // - 레거시 모드: Enemy Prefab이 있으면 그 프리팹만 반복 스폰(기존 프로젝트 호환)
 // - 타임라인 모드: enemyPrefab이 비어있으면 EnemyRootSO + EnemySpawnTimelineSO로 "순서/구간" 스폰
 // - 기존 의존 코드 호환을 위해 Alive/SpawnRate 관련 API를 유지한다.
+// - [추가] SpawnAreaCollider가 있으면, 스폰 좌표를 뽑을 때 콜라이더 내부인지 검사해서 "맵 밖 스폰"을 원천 차단한다.
 [DisallowMultipleComponent]
 public sealed class EnemySpawner2D : MonoBehaviour
 {
@@ -47,6 +48,20 @@ public sealed class EnemySpawner2D : MonoBehaviour
 
     [Tooltip("시간 흐름에 따른 스폰 순서/구간")]
     [SerializeField] private EnemySpawnTimelineSO timeline;
+
+    [Header("스폰 영역(필수 권장)")]
+    [Tooltip("스폰 가능한 '플레이 영역'을 정의하는 Collider2D 입니다.\n" +
+             "예) 나무 라인 안쪽만 감싸는 PolygonCollider2D (IsTrigger 체크 권장)\n" +
+             "이 값이 있으면, 스폰 좌표는 반드시 이 콜라이더 내부에서만 생성됩니다.")]
+    [SerializeField] private Collider2D spawnAreaCollider;
+
+    [Tooltip("영역 가장자리(나무/벽)에 너무 붙지 않게, 안쪽으로 조금 밀어주는 마진(월드 유닛).")]
+    [Min(0f)]
+    [SerializeField] private float innerMargin = 0.5f;
+
+    [Tooltip("스폰 좌표 재시도 횟수. (플레이어가 가장자리에 붙어도 안쪽 점을 찾기 위해 필요)")]
+    [Min(10)]
+    [SerializeField] private int spawnPosMaxTries = 80;
 
     // ===== 기존 프로젝트가 요구하는 공개 API =====
     public int AliveCount => _aliveCount;
@@ -266,9 +281,85 @@ public sealed class EnemySpawner2D : MonoBehaviour
         float max = Mathf.Max(min + 0.01f, maxSpawnRadius);
 
         Vector2 center = player.position;
-        Vector2 dir = Random.insideUnitCircle.normalized;
-        float r = Random.Range(min, max);
-        return center + dir * r;
+
+        // [핵심] SpawnAreaCollider가 있으면: "반경 링"에서 뽑되, 콜라이더 내부인 점만 채택
+        if (spawnAreaCollider != null)
+        {
+            // 콜라이더 중심(마진을 안쪽으로 밀 때 사용)
+            Vector2 areaCenter = spawnAreaCollider.bounds.center;
+
+            for (int i = 0; i < spawnPosMaxTries; i++)
+            {
+                Vector2 dir = Random.insideUnitCircle;
+                if (dir.sqrMagnitude < 0.0001f) continue;
+                dir.Normalize();
+
+                float r = Random.Range(min, max);
+                Vector2 p = center + dir * r;
+
+                // 영역 밖이면 재시도
+                if (!spawnAreaCollider.OverlapPoint(p))
+                    continue;
+
+                // 가장자리 너무 붙는 것 방지: 영역 중심 방향으로 살짝 밀기
+                if (innerMargin > 0f)
+                {
+                    Vector2 toCenter = (areaCenter - p);
+                    if (toCenter.sqrMagnitude > 0.0001f)
+                        p += toCenter.normalized * innerMargin;
+
+                    // 마진 적용 후에도 내부인지 확인
+                    if (!spawnAreaCollider.OverlapPoint(p))
+                        continue;
+                }
+
+                return p;
+            }
+
+            // 여기까지 왔다 = 링 안에서 내부 점을 못 찾음(플레이어가 가장자리 바깥쪽에 너무 붙은 경우 등)
+            // 최후 안전장치: 영역 내부에서 임의 점을 뽑는다(반경 조건은 포기하되 "밖 스폰"은 절대 안 함)
+            for (int i = 0; i < spawnPosMaxTries; i++)
+            {
+                var b = spawnAreaCollider.bounds;
+                float x = Random.Range(b.min.x, b.max.x);
+                float y = Random.Range(b.min.y, b.max.y);
+                Vector2 p = new Vector2(x, y);
+
+                if (!spawnAreaCollider.OverlapPoint(p))
+                    continue;
+
+                if (innerMargin > 0f)
+                {
+                    Vector2 toCenter = (areaCenter - p);
+                    if (toCenter.sqrMagnitude > 0.0001f)
+                        p += toCenter.normalized * innerMargin;
+
+                    if (!spawnAreaCollider.OverlapPoint(p))
+                        continue;
+                }
+
+                if (verboseLog)
+                    Debug.LogWarning("[EnemySpawner2D] 링 내부 점을 못 찾아서 '영역 내부 랜덤'으로 대체 스폰했습니다.", this);
+
+                return p;
+            }
+
+            // 그래도 실패면(콜라이더가 너무 얇거나 잘못 세팅): 그냥 플레이어 위치 근처
+            if (verboseLog)
+                Debug.LogWarning("[EnemySpawner2D] SpawnAreaCollider 내부 점 추출 실패. SpawnArea 콜라이더 모양/IsTrigger/두께를 확인하세요.", this);
+
+            return center;
+        }
+
+        // SpawnAreaCollider가 없으면: 기존 방식 그대로(플레이어 주변 링)
+        {
+            Vector2 dir = Random.insideUnitCircle;
+            if (dir.sqrMagnitude < 0.0001f) dir = Vector2.right;
+            dir.Normalize();
+
+            float r = Random.Range(min, max);
+            return center + dir * r;
+        }
     }
 
     private static string PickByWeight(List<EnemySpawnTimelineSO.SpawnOption> options)

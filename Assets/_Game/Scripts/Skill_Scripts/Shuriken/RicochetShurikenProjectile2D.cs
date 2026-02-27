@@ -23,22 +23,32 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
     [Tooltip("날아가는 동안 회전 속도(도/초). 0이면 회전 안 함.")]
     [SerializeField] private float rotateDegPerSec = 1080f;
 
-    [Header("정화구 규칙: 박힘 방지")]
-    [Tooltip("적을 맞춘 직후, 잠깐 강제 전진해서 콜라이더 밖으로 빠져나오는 시간(초)")]
-    [SerializeField] private float exitKickSeconds = 0.06f;
+    [Header("박힘 방지")]
+    [Tooltip("적을 맞춘 직후 강제 전진 시간(초)")]
+    [SerializeField] private float exitKickSeconds = 0.08f;
 
-    [Tooltip("ExitKick 동안의 이동 속도 배율(기본 속도 * 배율)")]
-    [SerializeField] private float exitKickSpeedMul = 1.2f;
+    [Tooltip("ExitKick 이동 속도 배율")]
+    [SerializeField] private float exitKickSpeedMul = 1.5f;
 
     [Header("겹침 방지")]
-    [Tooltip("적을 맞춘 뒤, 이 시간 동안 다른 적과의 충돌을 무시(겹친 몬스터 관통용)")]
-    [SerializeField] private float hitImmunitySeconds = 0.12f;
+    [Tooltip("적 타격 후 이 시간 동안 다른 적 충돌 무시")]
+    [SerializeField] private float hitImmunitySeconds = 0.15f;
+
+    [Header("소멸")]
+    [Tooltip("마지막 타격 후 반대 방향으로 빠져나오는 시간(초)")]
+    [SerializeField] private float despawnDelay = 0.10f;
 
     private float _exitKickLeft;
-    private float _hitImmunityLeft;      // ★ 히트 후 무적 타이머
+    private float _hitImmunityLeft;
     private Vector2 _lastDir = Vector2.right;
+    private Vector2 _despawnDir = Vector2.right;
 
     private EnemyRegistryMember2D _pendingTarget;
+
+    private bool _despawnScheduled;
+    private float _despawnTimer;
+
+    private Collider2D _collider;
 
     private void OnEnable()
     {
@@ -60,6 +70,13 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         _hitImmunityLeft = 0f;
         _pendingTarget = null;
         _lastDir = Vector2.right;
+        _despawnDir = Vector2.right;
+
+        _despawnScheduled = false;
+        _despawnTimer = 0f;
+
+        if (_collider == null) _collider = GetComponent<Collider2D>();
+        if (_collider != null) _collider.enabled = true;
     }
 
     public void Init(LayerMask mask, int dmg, float spd, float lifeSeconds, int bounces, EnemyRegistryMember2D startTarget)
@@ -82,6 +99,12 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         _hitImmunityLeft = 0f;
         _pendingTarget = null;
 
+        _despawnScheduled = false;
+        _despawnTimer = 0f;
+
+        if (_collider == null) _collider = GetComponent<Collider2D>();
+        if (_collider != null) _collider.enabled = true;
+
         if (target != null)
         {
             Vector2 d = (target.Position - (Vector2)transform.position);
@@ -96,13 +119,23 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             if (!_loggedInitError)
             {
                 _loggedInitError = true;
-                Debug.LogError("[RicochetShurikenProjectile2D] Init()이 호출되지 않았습니다.", this);
+                Debug.LogError("[RicochetShurikenProjectile2D] Init() 미호출", this);
             }
             ReturnToPool();
             return;
         }
 
         float dt = Time.fixedDeltaTime;
+
+        // ★ 소멸 중: 반대 방향으로 빠져나오면서 사라짐
+        if (_despawnScheduled)
+        {
+            transform.position += (Vector3)(_despawnDir * speed * exitKickSpeedMul * dt);
+            _despawnTimer -= dt;
+            if (_despawnTimer <= 0f)
+                ReturnToPool();
+            return;
+        }
 
         if (rotateDegPerSec != 0f)
             transform.Rotate(0f, 0f, rotateDegPerSec * dt);
@@ -114,11 +147,10 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             return;
         }
 
-        // ★ 히트 무적 타이머 감소
         if (_hitImmunityLeft > 0f)
             _hitImmunityLeft -= dt;
 
-        // 1) ExitKick: 맞춘 직후 콜라이더 밖으로 빠져나오기
+        // ExitKick
         if (_exitKickLeft > 0f)
         {
             _exitKickLeft -= dt;
@@ -132,22 +164,22 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             return;
         }
 
-        // 2) 타겟 유효성 검사
+        // 타겟 유효성
         if (target != null && !target.IsValidTarget)
             target = null;
 
         if (target == null)
         {
-            ReturnToPool();
+            ScheduleDespawn(_lastDir);
             return;
         }
 
-        // 3) 타겟을 향해 이동
+        // 타겟 추적
         Vector2 desired = (target.Position - (Vector2)transform.position);
 
         if (desired.sqrMagnitude < 0.0001f)
         {
-            ReturnToPool();
+            ScheduleDespawn(-_lastDir);
             return;
         }
 
@@ -159,9 +191,8 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!_initialized) return;
+        if (_despawnScheduled) return;
         if (other == null) return;
-
-        // ★ 히트 무적 중이면 충돌 무시 (겹친 몬스터 즉사 방지)
         if (_hitImmunityLeft > 0f) return;
 
         if (!DamageUtil2D.IsInLayerMask(other.gameObject.layer, enemyMask)) return;
@@ -172,7 +203,7 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         hitSet.Add(id);
         DamageUtil2D.TryApplyDamage(other, damage);
 
-        // 튕김 처리
+        // 튕김
         if (remainingBounces > 0)
         {
             remainingBounces--;
@@ -181,11 +212,25 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             {
                 _pendingTarget = next;
                 _exitKickLeft = Mathf.Max(0.01f, exitKickSeconds);
-                _hitImmunityLeft = Mathf.Max(exitKickSeconds, hitImmunitySeconds); // ★ 무적 시작
+                _hitImmunityLeft = Mathf.Max(exitKickSeconds, hitImmunitySeconds);
                 return;
             }
         }
 
-        ReturnToPool();
+        // ★ 마지막 타격: 반대 방향으로 빠져나감
+        ScheduleDespawn(-_lastDir);
+    }
+
+    private void ScheduleDespawn(Vector2 dir)
+    {
+        if (_despawnScheduled) return;
+        _despawnScheduled = true;
+
+        _despawnDir = dir.sqrMagnitude > 0.0001f ? dir.normalized : -_lastDir;
+
+        if (_collider == null) _collider = GetComponent<Collider2D>();
+        if (_collider != null) _collider.enabled = false;
+
+        _despawnTimer = Mathf.Max(0.01f, despawnDelay);
     }
 }

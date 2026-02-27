@@ -34,6 +34,23 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
     [Min(0)]
     [SerializeField] private int projectileSortingStepPerKind = 10;
 
+    [Header("스탯(폴백: config/JSON이 비었을 때만 사용)")]
+    [Tooltip("config/JSON에서 쿨다운을 못 얻을 때 쓰는 임시 쿨다운(초)")]
+    [Min(0.01f)]
+    [SerializeField] private float fallbackCooldownSeconds = 1.0f;
+
+    [Tooltip("config/JSON에서 데미지를 못 얻을 때 쓰는 임시 데미지")]
+    [Min(0)]
+    [SerializeField] private int fallbackDamage = 10;
+
+    [Tooltip("config/JSON에서 투사체 속도를 못 얻을 때 쓰는 임시 속도")]
+    [Min(0.01f)]
+    [SerializeField] private float fallbackProjectileSpeed = 12f;
+
+    [Tooltip("config/JSON에서 투사체 수명을 못 얻을 때 쓰는 임시 수명(초)")]
+    [Min(0.01f)]
+    [SerializeField] private float fallbackProjectileLife = 2.0f;
+
     protected Transform owner;
     protected int level = 1;
     protected float cooldownTimer;
@@ -51,6 +68,59 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
 
     // 무기들은 이제 P를 통해 "최종 적용 값"을 받는다.
     protected CommonSkillLevelParams P => _runtimeP;
+
+    // --------------------------------------------------------------------
+    // [핵심] 무기들이 앞으로 공통으로 쓰는 “스탯 Getter(폴백 포함)”
+    // - 주의: 폴백은 config/JSON 둘 다 못 구했을 때만 쓴다.
+    // --------------------------------------------------------------------
+    private bool HasAnySourceStats => config != null || _lastBalanceRow != null;
+
+    protected int StatLevel => Mathf.Max(1, level);
+
+    protected float StatCooldownSeconds
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(0.01f, P.cooldown);
+            return Mathf.Max(0.01f, fallbackCooldownSeconds);
+        }
+    }
+
+    protected int StatDamage
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(0, P.damage);
+            return Mathf.Max(0, fallbackDamage);
+        }
+    }
+
+    protected float StatProjectileSpeed
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(0f, P.projectileSpeed);
+            return Mathf.Max(0f, fallbackProjectileSpeed);
+        }
+    }
+
+    protected float StatProjectileLife
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(0.05f, P.lifeSeconds);
+            return Mathf.Max(0.05f, fallbackProjectileLife);
+        }
+    }
+
+    protected int StatProjectileCount
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(1, P.projectileCount);
+            return 1;
+        }
+    }
 
     public virtual void Initialize(CommonSkillConfigSO cfg, Transform ownerTr, int startLevel)
     {
@@ -251,7 +321,8 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
 
     private void ConsumeCooldown()
     {
-        cooldownTimer = Mathf.Max(0.01f, P.cooldown);
+        // P.cooldown이 0이거나 config가 비어도, 폴백으로 안전하게 쿨다운이 돈다.
+        cooldownTimer = StatCooldownSeconds;
     }
 
     // ILevelableSkill이 요구하는 오타 메서드 호환용(인터페이스가 OnAttaced를 요구하면 이걸로 통과)
