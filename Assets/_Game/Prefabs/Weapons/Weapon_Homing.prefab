@@ -48,19 +48,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HomingMissileWeapon2D
   projectilePrefab: {fileID: 8561632100752635023, guid: 6f78a42690b83ec46b19264e52164c54,
     type: 3}
-  spawnPoint: {fileID: 3062990565879727660}
+  projectileSpeed: 10
+  cooldownSeconds: 1.8
+  aimRange: 25
+  turnSpeedDeg: 720
+  damage: 10
+  projectileLifeSeconds: 2
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536
-  aimRange: 25
-  requireTargetToFire: 1
-  cooldown: 1
-  projectileSpeed: 10
-  projectileLifeSeconds: 2
-  damage: 10
-  turnSpeedDeg: 720
-  chainCount: 0
-  log: 0
+  fireOrigin: {fileID: 0}
+  enforceDesignLevelRules: 1
+  damageMulPerLevelAfter5: 0.2
+  balanceId: weapon_homing
+  useSkillBalanceJson: 1
+  debugLog: 0
 --- !u!114 &4813153254415053326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73,7 +75,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9332755d83020b4f949b987fa5bbcfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectilePool2D
-  prefab: {fileID: 0}
+  prefab: {fileID: 352200905192923142, guid: 6f78a42690b83ec46b19264e52164c54, type: 3}
 --- !u!1 &5471009828096568008
 GameObject:
   m_ObjectHideFlags: 0

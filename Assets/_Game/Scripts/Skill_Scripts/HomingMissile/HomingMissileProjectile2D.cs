@@ -3,30 +3,31 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // [구현 원리 요약]
-// - 기본은 "한 발당 같은 적 1회만" (중복타격 방지)
-// - 옵션으로 "같은 적 재타격(다단히트)" 지원:
-//   - sameTargetRehitInterval > 0 이면, 같은 적도 일정 간격으로 다시 타격 가능
-//   - maxHitsPerTarget로 같은 적 최대 타격 횟수 제한 가능
-// - 같은 적 판정 키는 안정화(리짓바디 -> 루트 컴포넌트 -> fallback)
+// - Rigidbody2D.linearVelocity로 이동하고, turnSpeedDeg만큼 회전하며 타겟을 추적한다.
+// - 적을 타격하면 remainingChains만큼 추가 타격(재추적)을 수행한다.
+// - 최적화: EnemyRegistry2D(등록된 적 목록) 기반으로 타겟을 찾고, 없을 때만 Physics2D를 fallback 한다.
+// - 안전장치: 근거리에서 Enter 누락 대비 OnTriggerStay에서도 동일 처리한다.
+// - 보스 1마리 보정: 신규 타겟이 없으면 같은 적 재타격(옵션)
+
 [DisallowMultipleComponent]
-public sealed class HomingMissileProjectile2D : MonoBehaviour
+public sealed class HomingMissileProjectile2D : PooledObject2D
 {
     [Header("필수")]
-    [Tooltip("투사체 리지드바디(없으면 자동 GetComponent)")]
+    [Tooltip("투사체 리지드바디(없으면 Transform 이동으로 처리)")]
     [SerializeField] private Rigidbody2D rb;
 
-    [Header("같은 적 판정(옵션)")]
-    [Tooltip("적 루트에 Rigidbody2D가 없을 때, 부모에서 이 컴포넌트를 찾아 같은 적 키로 사용합니다.\n예) EnemyRegistryMember2D")]
-    [SerializeField] private string targetRootComponentTypeName = "EnemyRegistryMember2D";
+    [Tooltip("투사체 콜라이더(Trigger 권장)")]
+    [SerializeField] private Collider2D col;
 
-    [Header("다단히트(옵션)")]
-    [Tooltip("같은 적 재타격 간격(초)\n0이면 '같은 적 1회만'(기본)")]
-    [Min(0f)]
-    [SerializeField] private float sameTargetRehitInterval = 0f;
+    [Header("재타격/체인 옵션")]
+    [Tooltip("같은 적에게 연속으로 맞는 것을 막는 간격(초)\n(TriggerStay로 프레임마다 맞는 것 방지)")]
+    [SerializeField, Min(0.02f)] private float rehitIntervalSeconds = 0.10f;
 
-    [Tooltip("같은 적 최대 타격 횟수\n1이면 기본(중복타격 방지), 2 이상이면 다단히트 가능")]
-    [Min(1)]
-    [SerializeField] private int maxHitsPerTarget = 1;
+    [Tooltip("체인 중 '새로운 적'을 못 찾으면, 이미 맞은 적도 다시 타격할지(보스 1마리 보정)")]
+    [SerializeField] private bool allowRehitWhenNoOtherTarget = true;
+
+    [Header("디버그")]
+    [SerializeField] private bool debugLog;
 
     private LayerMask _enemyMask;
     private float _seekRadius;
@@ -40,22 +41,28 @@ public sealed class HomingMissileProjectile2D : MonoBehaviour
     private Vector2 _dir;
     private Transform _target;
 
-    // 같은 적 판정 키 기반 히트 기록
-    private readonly Dictionary<int, HitInfo> _hitInfo = new Dictionary<int, HitInfo>(64);
+    // 체인 시 "이미 맞은 적"을 우선 제외하기 위한 목록(EnemyRegistry 기준 RootInstanceId)
+    private readonly HashSet<int> _hitRootIds = new HashSet<int>(64);
 
-    private struct HitInfo
-    {
-        public int count;
-        public float nextTime; // 재타격 가능 시간
-    }
+    // 같은 적 루트에 대해 TriggerStay로 반복 타격되는 것 방지
+    private readonly Dictionary<int, float> _nextHitTimeByRoot = new Dictionary<int, float>(16);
 
+    private bool _despawnScheduled;
+    private float _despawnTimer;
+    private Vector2 _despawnDir;
+    private const float DESPAWN_DELAY = 0.06f;
+    private const float EXIT_KICK_SPEED = 10f;
+
+    // fallback(Physics2D)용 NonAlloc 버퍼
     private readonly Collider2D[] _acquireHits = new Collider2D[48];
 
     private void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (col == null) col = GetComponent<Collider2D>();
     }
 
+    // 무기/스킬 스크립트에서 호출되는 Init 시그니처(호출부 유지)
     public void Init(
         LayerMask enemyMask,
         float seekRadius,
@@ -80,26 +87,46 @@ public sealed class HomingMissileProjectile2D : MonoBehaviour
         _dir = startDir.sqrMagnitude > 0.0001f ? startDir.normalized : Vector2.right;
         _target = startTarget;
 
-        _hitInfo.Clear();
+        _hitRootIds.Clear();
+        _nextHitTimeByRoot.Clear();
+
+        _despawnScheduled = false;
+        _despawnTimer = 0f;
+
+        if (col != null) col.enabled = true;
 
         if (rb != null)
         {
             rb.linearVelocity = _dir * _speed;
             rb.angularVelocity = 0f;
         }
+
+        SetRotationFromDirection(_dir);
+
+        if (_target == null)
+            TryAcquireTarget(excludeHitTargets: false);
     }
 
     private void FixedUpdate()
     {
+        if (_despawnScheduled)
+        {
+            _despawnTimer -= Time.fixedDeltaTime;
+            transform.position += (Vector3)(_despawnDir * (EXIT_KICK_SPEED * Time.fixedDeltaTime));
+            if (_despawnTimer <= 0f)
+                ReturnToPool();
+            return;
+        }
+
         _age += Time.fixedDeltaTime;
         if (_age >= _life)
         {
-            Destroy(gameObject);
+            ReturnToPool();
             return;
         }
 
         if (_target == null)
-            TryAcquireTarget();
+            TryAcquireTarget(excludeHitTargets: false);
 
         if (_target != null)
         {
@@ -117,86 +144,101 @@ public sealed class HomingMissileProjectile2D : MonoBehaviour
             rb.linearVelocity = _dir * _speed;
         else
             transform.position += (Vector3)(_dir * (_speed * Time.fixedDeltaTime));
+
+        SetRotationFromDirection(_dir);
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other) => TryHit(other);
+
+    private void OnTriggerStay2D(Collider2D other)
     {
+        // 근거리 리타겟/고속 이동 시 Enter 누락 대비
+        TryHit(other);
+    }
+
+    private void TryHit(Collider2D other)
+    {
+        if (_despawnScheduled) return;
         if (other == null) return;
         if (!DamageUtil2D.IsInLayerMask(other.gameObject.layer, _enemyMask)) return;
 
-        int key = GetTargetKey(other);
-        if (key == 0) return;
+        int rootKey = DamageUtil2D.GetRootInstanceId(other);
+        float now = Time.time;
 
-        if (!CanHitNow(key))
+        if (_nextHitTimeByRoot.TryGetValue(rootKey, out float nextTime))
+        {
+            if (now < nextTime) return;
+        }
+
+        // 데미지
+        DamageUtil2D.TryApplyDamage(other, _damage);
+        _nextHitTimeByRoot[rootKey] = now + rehitIntervalSeconds;
+
+        // 체인 제외용 RootId 기록
+        var member = other.GetComponentInParent<EnemyRegistryMember2D>();
+        if (member != null) _hitRootIds.Add(member.RootInstanceId);
+
+        if (debugLog)
+            Debug.Log($"[HomingMissileProjectile2D] Hit: {other.name}, remainChains={_remainingChains}");
+
+        // 체인 소진
+        if (_remainingChains <= 0)
+        {
+            ScheduleDespawn(_dir);
             return;
-
-        ApplyHit(key, other);
-
-        // 체인(=다른 적 추가 타격) 처리
-        if (_remainingChains > 0)
-        {
-            _remainingChains--;
-            _target = null;
-            TryAcquireTarget();
-            if (_target != null) return;
         }
 
-        // 체인이 없고, 다단히트 옵션도 없다면 여기서 종료
-        // 다단히트가 켜져 있으면 "같은 적 재타격"을 위해 살아있어야 하므로,
-        // destroy 조건을 다단히트 설정으로 나눈다.
-        if (sameTargetRehitInterval <= 0f || maxHitsPerTarget <= 1)
+        _remainingChains--;
+
+        // 다음 타겟 획득(이미 맞은 적은 우선 제외)
+        Transform next = AcquireNextTarget(excludeHitTargets: true);
+
+        if (next == null && allowRehitWhenNoOtherTarget)
         {
-            Destroy(gameObject);
+            // 주변에 새 적이 없으면(보스 1마리) 동일 적 재타겟
+            next = other.transform;
         }
-        // 다단히트가 켜져 있으면, 다음 재타격은 Stay가 아니라 "다음에 다시 부딪힐 때" 발생한다.
-        // (호밍이라 보통 계속 접촉/재진입이 생기므로 간단히 유지)
+
+        if (next == null)
+        {
+            ScheduleDespawn(_dir);
+            return;
+        }
+
+        _target = next;
+
+        // 박힘 방지용 미세 이동
+        transform.position += (Vector3)(_dir * 0.05f);
     }
 
-    private bool CanHitNow(int key)
+    private void TryAcquireTarget(bool excludeHitTargets) => _target = AcquireNextTarget(excludeHitTargets);
+
+    private Transform AcquireNextTarget(bool excludeHitTargets)
     {
-        if (!_hitInfo.TryGetValue(key, out var info))
+        Vector2 from = transform.position;
+
+        // 1) EnemyRegistry 기반
+        if (excludeHitTargets && _hitRootIds.Count > 0)
         {
-            // 최초 히트는 무조건 허용
-            return true;
+            // EnemyRegistry2D.TryGetNearestExcluding(from, excludeIds, out result) : 매개변수 3개만 존재
+            if (EnemyRegistry2D.TryGetNearestExcluding(from, _hitRootIds, out var m) && m != null)
+            {
+                // 거리 제한은 호출부에서 체크
+                if (_seekRadius <= 0f) return m.Transform;
+                if ((m.Position - from).sqrMagnitude <= _seekRadius * _seekRadius) return m.Transform;
+            }
         }
-
-        // 횟수 제한
-        if (info.count >= Mathf.Max(1, maxHitsPerTarget))
-            return false;
-
-        // 재타격이 꺼져 있으면 1회만
-        if (sameTargetRehitInterval <= 0f)
-            return false;
-
-        // 시간 제한
-        return Time.time >= info.nextTime;
-    }
-
-    private void ApplyHit(int key, Collider2D other)
-    {
-        if (!_hitInfo.TryGetValue(key, out var info))
-            info = new HitInfo { count = 0, nextTime = 0f };
-
-        info.count += 1;
-
-        if (sameTargetRehitInterval > 0f)
-            info.nextTime = Time.time + sameTargetRehitInterval;
         else
-            info.nextTime = float.PositiveInfinity;
+        {
+            // EnemyRegistry2D.TryGetNearest(from, maxDistance, out result) : 존재
+            if (EnemyRegistry2D.TryGetNearest(from, _seekRadius, out var m) && m != null)
+                return m.Transform;
+        }
 
-        _hitInfo[key] = info;
-
-        DamageUtil2D.ApplyDamage(other, _damage);
-    }
-
-    private void TryAcquireTarget()
-    {
-        Vector2 origin = transform.position;
-
-        int count = Physics2D.OverlapCircleNonAlloc(origin, _seekRadius, _acquireHits, _enemyMask);
+        // 2) fallback: Physics2D
+        int count = Physics2D.OverlapCircleNonAlloc(from, _seekRadius, _acquireHits, _enemyMask);
         for (int i = count; i < _acquireHits.Length; i++) _acquireHits[i] = null;
-
-        if (count <= 0) return;
+        if (count <= 0) return null;
 
         float best = float.MaxValue;
         Transform bestT = null;
@@ -206,22 +248,15 @@ public sealed class HomingMissileProjectile2D : MonoBehaviour
             var c = _acquireHits[i];
             if (c == null) continue;
 
-            int key = GetTargetKey(c);
-
-            // "이미 다 맞춘 적"이면 타겟 후보에서 제외
-            if (key != 0 && _hitInfo.TryGetValue(key, out var info))
+            if (excludeHitTargets)
             {
-                if (info.count >= Mathf.Max(1, maxHitsPerTarget))
-                    continue;
-
-                // 재타격이 꺼져있고 1회 맞췄으면 제외
-                if (sameTargetRehitInterval <= 0f && info.count >= 1)
+                var mem = c.GetComponentInParent<EnemyRegistryMember2D>();
+                if (mem != null && _hitRootIds.Contains(mem.RootInstanceId))
                     continue;
             }
 
             Transform t = (c.attachedRigidbody != null) ? c.attachedRigidbody.transform : c.transform;
-            float d = ((Vector2)t.position - origin).sqrMagnitude;
-
+            float d = ((Vector2)t.position - from).sqrMagnitude;
             if (d < best)
             {
                 best = d;
@@ -229,29 +264,23 @@ public sealed class HomingMissileProjectile2D : MonoBehaviour
             }
         }
 
-        _target = bestT;
+        return bestT;
     }
 
-    // 같은 적 판정 키
-    private int GetTargetKey(Collider2D col)
+    private void ScheduleDespawn(Vector2 dir)
     {
-        if (col == null) return 0;
+        _despawnScheduled = true;
+        _despawnTimer = DESPAWN_DELAY;
+        _despawnDir = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector2.right;
 
-        if (col.attachedRigidbody != null)
-            return col.attachedRigidbody.GetInstanceID();
+        if (col != null) col.enabled = false;
+        if (rb != null) rb.linearVelocity = Vector2.zero;
+    }
 
-        if (!string.IsNullOrEmpty(targetRootComponentTypeName))
-        {
-            var comps = col.GetComponentsInParent<Component>(true);
-            for (int i = 0; i < comps.Length; i++)
-            {
-                var c = comps[i];
-                if (c == null) continue;
-                if (c.GetType().Name == targetRootComponentTypeName)
-                    return c.GetInstanceID();
-            }
-        }
-
-        return DamageUtil2D.GetRootInstanceId(col);
+    private void SetRotationFromDirection(Vector2 dir)
+    {
+        if (dir.sqrMagnitude <= 0.0001f) return;
+        float ang = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 0f, ang);
     }
 }

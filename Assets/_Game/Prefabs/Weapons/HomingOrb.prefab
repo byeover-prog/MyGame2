@@ -173,7 +173,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HomingProjectile2D
   rb: {fileID: -9129200372951353056}
-  targetRootComponentTypeName: EnemyRegistryMember2D
+  col: {fileID: -641310885405526830}
+  rehitIntervalSeconds: 0.1
+  allowRehitWhenNoOtherTarget: 1
+  debugLog: 0
 --- !u!114 &-6726285706623136437
 MonoBehaviour:
   m_ObjectHideFlags: 0
