@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 
 // [구현 원리 요약]
@@ -26,6 +25,7 @@ public sealed class BalanceDB : MonoBehaviour
         }
 
         Instance = this;
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
 
         if (loadOnAwake)
