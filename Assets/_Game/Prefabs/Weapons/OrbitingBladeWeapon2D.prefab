@@ -120,12 +120,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c855bccbe81281b4abd067a0b15fbed2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitingBladeWeapon2D
-  config: {fileID: 11400000, guid: 61617d02b1c96f54a8364ccc7d60e2fa, type: 2}
+  config: {fileID: 11400000, guid: 84e5088e2acb19b408a146ba069f9adc, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536
   requireTargetToFire: 1
-  balanceIdOverride: 
+  balanceIdOverride: weapon_rotatesword
   spawnOffsetRadius: 2
   fireJitterDelayMin: 0.5
   fireJitterDelayMax: 0.1

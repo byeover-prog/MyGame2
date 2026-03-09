@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5c3dd7167136c748ae485dbfdc41910, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThunderTalismanWeapon2D
-  config: {fileID: 11400000, guid: 9bf96773b21ddb446bcc400480216976, type: 2}
+  config: {fileID: 11400000, guid: dc37c8bf22f65f64ebe0a1e1ecc24c0f, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536
@@ -66,6 +66,8 @@ MonoBehaviour:
   thunderPrefab: {fileID: 9067721983097837878, guid: 7849a5c98a11afe49b0c9734d595452e,
     type: 3}
   maxThunders: 5
+  thunderRadiusMultiplier: 1.8
+  thunderMinRadius: 1.2
   debugLog: 0
 --- !u!1 &4328444704328186044
 GameObject:

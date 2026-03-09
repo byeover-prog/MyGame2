@@ -1,54 +1,39 @@
-// UTF-8
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// [구현 원리 요약]
+/// 피격 시 SpriteRenderer.color를 흰색으로 바꿔서 깜빡이게 합니다.
+/// 머티리얼 교체(MaterialSwap)는 텍스처 참조 문제로 검은색 노이즈가 생길 수 있어,
+/// color 틴트 방식만 사용합니다.
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class HitFlash2D : MonoBehaviour
 {
-    public enum FlashMode
-    {
-        TintColor,        // SpriteRenderer.color만 변경
-        MaterialSwap,     // 머티리얼만 교체(라이트 없을 때 가장 확실)
-        TintAndMaterial,  // 둘 다
-    }
-
     [Header("대상(비워두면 자식 SpriteRenderer 자동 수집)")]
-    [SerializeField, InspectorName("대상 렌더러들")]
     [Tooltip("플레이어가 여러 SpriteRenderer로 구성되어 있으면 비워두는 것을 권장합니다(자동 수집).")]
-    private SpriteRenderer[] targetRenderers;
-
-    [Header("반짝임 방식")]
-    [SerializeField, InspectorName("플래시 모드")]
-    [Tooltip("Sprite-Lit + 라이트 부족이면 MaterialSwap(또는 TintAndMaterial)을 권장합니다.")]
-    private FlashMode flashMode = FlashMode.MaterialSwap;
-
-    [SerializeField, InspectorName("플래시 머티리얼")]
-    [Tooltip("라이트 영향을 받지 않는(Unlit) 머티리얼을 넣으면 플래시가 확실하게 보입니다.\n예: M_Flash_UnlitWhite(Shader: URP/2D/Sprite-Unlit-Default)")]
-    private Material flashMaterial;
+    [SerializeField] private SpriteRenderer[] targetRenderers;
 
     [Header("색/시간")]
-    [SerializeField, InspectorName("플래시 색")]
-    [Tooltip("TintColor 모드에서 사용됩니다.")]
-    private Color flashColor = Color.white;
+    [Tooltip("피격 시 스프라이트에 입힐 색상입니다. 흰색이면 스프라이트가 하얗게 번쩍입니다.")]
+    [SerializeField] private Color flashColor = Color.white;
 
-    [SerializeField, InspectorName("유지 시간(초)")]
-    private float flashSeconds = 0.08f;
+    [Tooltip("한 번 깜빡이는 유지 시간(초)입니다.")]
+    [SerializeField] private float flashSeconds = 0.06f;
 
-    [SerializeField, InspectorName("깜빡임 횟수")]
-    [Tooltip("2면 2번 깜빡입니다.")]
-    private int blinkCount = 2;
+    [Tooltip("깜빡임 반복 횟수입니다.")]
+    [SerializeField] private int blinkCount = 2;
 
-    [SerializeField, InspectorName("시간스케일 무시")]
-    [Tooltip("피격 순간 Time.timeScale을 낮추는(히트스탑) 구현이 있으면 체크 권장")]
-    private bool useUnscaledTime = true;
+    [Tooltip("Time.timeScale=0에서도 깜빡이게 할지 여부입니다.")]
+    [SerializeField] private bool useUnscaledTime = true;
 
     private Color[] _originalColors;
-    private Material[] _originalMaterials;
+    private bool _originalsCached;
     private Coroutine _co;
 
     private void Awake()
     {
-        CacheTargetsIfNeeded();
+        GatherTargets();
         CacheOriginals();
     }
 
@@ -62,82 +47,73 @@ public sealed class HitFlash2D : MonoBehaviour
         RestoreOriginals();
     }
 
+    /// <summary>
+    /// 피격 플래시를 재생합니다. 연속 호출해도 안전합니다.
+    /// </summary>
     [ContextMenu("테스트: 플래시 재생")]
     public void Play()
     {
-        CacheTargetsIfNeeded();
+        GatherTargets();
         if (targetRenderers == null || targetRenderers.Length == 0) return;
 
         CacheOriginals();
 
-        if (_co != null) StopCoroutine(_co);
+        if (_co != null)
+        {
+            StopCoroutine(_co);
+            RestoreOriginals();
+        }
+
         _co = StartCoroutine(CoFlash());
     }
 
-    private void CacheTargetsIfNeeded()
+    private void GatherTargets()
     {
-        if (targetRenderers == null || targetRenderers.Length == 0)
-            targetRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        if (targetRenderers != null && targetRenderers.Length > 0) return;
+        targetRenderers = GetComponentsInChildren<SpriteRenderer>(true);
     }
 
     private void CacheOriginals()
     {
-        if (targetRenderers == null) return;
+        if (_originalsCached) return;
+        if (targetRenderers == null || targetRenderers.Length == 0) return;
 
         int n = targetRenderers.Length;
-
-        if (_originalColors == null || _originalColors.Length != n)
-            _originalColors = new Color[n];
-
-        if (_originalMaterials == null || _originalMaterials.Length != n)
-            _originalMaterials = new Material[n];
+        _originalColors = new Color[n];
 
         for (int i = 0; i < n; i++)
         {
-            var r = targetRenderers[i];
-            if (r == null) continue;
-
-            _originalColors[i] = r.color;
-            _originalMaterials[i] = r.sharedMaterial;
+            if (targetRenderers[i] != null)
+                _originalColors[i] = targetRenderers[i].color;
         }
+
+        _originalsCached = true;
     }
 
     private void ApplyFlash()
     {
-        int n = targetRenderers.Length;
-
-        for (int i = 0; i < n; i++)
+        if (targetRenderers == null) return;
+        for (int i = 0; i < targetRenderers.Length; i++)
         {
-            var r = targetRenderers[i];
-            if (r == null) continue;
-
-            if (flashMode == FlashMode.TintColor || flashMode == FlashMode.TintAndMaterial)
-                r.color = flashColor;
-
-            if ((flashMode == FlashMode.MaterialSwap || flashMode == FlashMode.TintAndMaterial) && flashMaterial != null)
-                r.sharedMaterial = flashMaterial;
+            if (targetRenderers[i] != null)
+                targetRenderers[i].color = flashColor;
         }
     }
 
     private void RestoreOriginals()
     {
-        if (targetRenderers == null || _originalColors == null || _originalMaterials == null) return;
-
+        if (targetRenderers == null || _originalColors == null) return;
         int n = Mathf.Min(targetRenderers.Length, _originalColors.Length);
 
         for (int i = 0; i < n; i++)
         {
-            var r = targetRenderers[i];
-            if (r == null) continue;
-
-            r.color = _originalColors[i];
-            r.sharedMaterial = _originalMaterials[i];
+            if (targetRenderers[i] != null)
+                targetRenderers[i].color = _originalColors[i];
         }
     }
 
     private IEnumerator CoFlash()
     {
-        // 구현 원리: (색 변경/머티리얼 교체) -> 잠깐 유지 -> 원복을 반복
         int count = Mathf.Max(1, blinkCount);
 
         for (int i = 0; i < count; i++)

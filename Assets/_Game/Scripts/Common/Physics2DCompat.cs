@@ -25,7 +25,7 @@ public static class Physics2DCompat
         filter.SetLayerMask(layerMask);
 
         // 트리거 포함 여부(프로젝트 전역 설정에 맞춤)
-        filter.useTriggers = Physics2D.queriesHitTriggers;
+        filter.useTriggers = false; // 플레이어(IsTrigger)에 스킬 박히는 문제 방지
 
         // Depth/Angle 필터는 사용 안 함
         filter.useDepth = false;

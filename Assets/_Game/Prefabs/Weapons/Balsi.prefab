@@ -182,4 +182,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BalsiProjectile2D
   _spriteForwardAngleOffsetDeg: 1
   _debugLog: 0
-  _rb: {fileID: 0}
+  _rb: {fileID: 9106754863539150079}

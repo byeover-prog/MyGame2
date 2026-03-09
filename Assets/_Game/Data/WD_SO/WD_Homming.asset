@@ -15,7 +15,7 @@ MonoBehaviour:
   damageStepScale: 1
   cooldownStepScale: 1
   rangeStepScale: 1
-  weaponId: weapon_homming
+  weaponId: weapon_homing
   displayNameKr: "\uC815\uD654\uAD6C"
   tagsKr: "\uC591"
   visualDescriptionKr: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4\uC801\uC744 \uB300\uC0C1\uC73C\uB85C

@@ -1,6 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// [구현 원리 요약]
+/// 새 Input System 기반 플레이어 이동 + 대시.
+/// 맵 경계는 Bounds(AABB)를 직접 계산하거나, 인스펙터에서 수동 입력합니다.
+/// Kinematic+Trigger 환경에서도 맵 밖으로 나가지 않습니다.
+/// </summary>
 public sealed class PlayerMover2D : MonoBehaviour
 {
     [Header("입력(새 Input System)")]
@@ -8,20 +14,33 @@ public sealed class PlayerMover2D : MonoBehaviour
     [SerializeField] private InputActionReference dashAction;
 
     [Header("이동")]
+    [Tooltip("플레이어 기본 이동 속도입니다.")]
     [SerializeField] private float moveSpeed = 4.0f;
 
     [Header("대시")]
+    [Tooltip("대시 거리(월드 유닛)입니다.")]
     [SerializeField] private float dashDistance = 2.5f;
+    [Tooltip("대시 지속 시간(초)입니다.")]
     [SerializeField] private float dashDuration = 0.12f;
+    [Tooltip("대시 쿨다운(초)입니다.")]
     [SerializeField] private float dashCooldown = 0.9f;
 
     [Header("맵 경계 제한")]
-    [Tooltip("플레이어 이동을 제한할 Collider2D입니다. (BoxCollider2D/PolygonCollider2D)\n비우면 경계 제한 없음.")]
-    [SerializeField] private Collider2D boundaryCollider;
+    [Tooltip("맵 경계 영역 Collider2D를 넣으면 Bounds를 자동 계산합니다.\n" +
+             "99_Map의 MapBounds2D처럼 맵 전체를 감싸는 콜라이더를 넣으세요.\n" +
+             "비우면 아래 수동 범위(Manual Bounds)를 사용합니다.")]
+    [SerializeField] private Collider2D mapBoundsCollider;
 
-    [Tooltip("경계 안쪽 여유 거리(월드 유닛). 캐릭터가 경계에 딱 붙지 않게 합니다.")]
+    [Tooltip("mapBoundsCollider가 없을 때 사용할 수동 경계입니다.\n" +
+             "x=왼쪽끝, y=아래끝, width=가로길이, height=세로길이")]
+    [SerializeField] private Rect manualBounds = new Rect(-20, -20, 40, 40);
+
+    [Tooltip("경계 안쪽 여유 거리(월드 유닛)입니다.\n캐릭터가 경계에 딱 붙지 않게 합니다.")]
     [Min(0f)]
-    [SerializeField] private float boundaryMargin = 0.3f;
+    [SerializeField] private float boundaryMargin = 0.5f;
+
+    [Tooltip("경계 제한을 사용할지 여부입니다.")]
+    [SerializeField] private bool useBoundary = true;
 
     [Header("참조")]
     [SerializeField] private Rigidbody2D rb;
@@ -48,6 +67,10 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     private bool _isWalkingCached;
 
+    // 런타임 경계 (Awake에서 1회 계산)
+    private float _boundsMinX, _boundsMaxX, _boundsMinY, _boundsMaxY;
+    private bool _boundsReady;
+
     private static readonly int IsWalkingHash = Animator.StringToHash("isWalking");
 
     private void Reset()
@@ -62,6 +85,49 @@ public sealed class PlayerMover2D : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        InitBounds();
+    }
+
+    /// <summary>
+    /// 맵 경계를 1회 계산합니다.
+    /// Collider2D가 있으면 그 bounds를 사용하고, 없으면 manualBounds를 사용합니다.
+    /// </summary>
+    private void InitBounds()
+    {
+        if (!useBoundary) return;
+
+        // 자동 탐색: mapBoundsCollider가 비어있으면 "MapBounds" 이름의 오브젝트를 찾아봄
+        if (mapBoundsCollider == null)
+        {
+            var found = GameObject.Find("MapBounds2D");
+            if (found != null) mapBoundsCollider = found.GetComponent<Collider2D>();
+        }
+
+        if (mapBoundsCollider != null)
+        {
+            Bounds b = mapBoundsCollider.bounds;
+            float m = boundaryMargin;
+            _boundsMinX = b.min.x + m;
+            _boundsMaxX = b.max.x - m;
+            _boundsMinY = b.min.y + m;
+            _boundsMaxY = b.max.y - m;
+            _boundsReady = true;
+        }
+        else
+        {
+            // 수동 범위 사용
+            float m = boundaryMargin;
+            _boundsMinX = manualBounds.xMin + m;
+            _boundsMaxX = manualBounds.xMax - m;
+            _boundsMinY = manualBounds.yMin + m;
+            _boundsMaxY = manualBounds.yMax - m;
+            _boundsReady = true;
+        }
+
+        // 안전장치: min이 max보다 크면 스왑
+        if (_boundsMinX > _boundsMaxX) (_boundsMinX, _boundsMaxX) = (_boundsMaxX, _boundsMinX);
+        if (_boundsMinY > _boundsMaxY) (_boundsMinY, _boundsMaxY) = (_boundsMaxY, _boundsMinY);
     }
 
     private void OnEnable()
@@ -86,13 +152,12 @@ public sealed class PlayerMover2D : MonoBehaviour
         if (input.sqrMagnitude > 1f) input.Normalize();
         MoveInput = input;
 
-        // 방향 규칙(요청사항 그대로)
-        // - 왼쪽 입력(x<0)일 때만 왼쪽
-        // - 위/아래만(x==0) 또는 오른쪽 포함(x>=0)은 오른쪽 유지
+        // 방향 규칙
         if (MoveInput.x < -0.0001f)
             FacingDir = Vector2.left;
         else if (MoveInput.x > 0.0001f)
             FacingDir = Vector2.right;
+
         // 대시
         if (dashAction != null && dashAction.action.WasPressedThisFrame())
             TryDash();
@@ -104,9 +169,9 @@ public sealed class PlayerMover2D : MonoBehaviour
 
             bool next;
             if (_isWalkingCached)
-                next = speed > walkOffSpeed;   // 걷는 중엔 더 낮아져야 꺼짐
+                next = speed > walkOffSpeed;
             else
-                next = speed >= walkOnSpeed;   // 서있을 땐 이 이상이면 켜짐
+                next = speed >= walkOnSpeed;
 
             if (next != _isWalkingCached)
             {
@@ -129,24 +194,21 @@ public sealed class PlayerMover2D : MonoBehaviour
             rb.linearVelocity = MoveInput * moveSpeed;
         }
 
-        // 맵 경계 제한 (Kinematic+Trigger라 물리 충돌이 없으므로 수동 클램핑)
+        // 맵 경계 클램핑 (Kinematic+Trigger라 물리 충돌이 없으므로 수동 처리)
         ClampToBoundary();
     }
 
     /// <summary>
-    /// boundaryCollider의 bounds 안으로 위치를 제한합니다.
+    /// 미리 계산된 AABB 범위로 위치를 제한합니다.
+    /// 매 FixedUpdate마다 Collider2D.bounds를 읽지 않아 성능에 유리합니다.
     /// </summary>
     private void ClampToBoundary()
     {
-        if (boundaryCollider == null) return;
+        if (!useBoundary || !_boundsReady) return;
 
-        Vector3 pos = rb.position;
-        Bounds b = boundaryCollider.bounds;
-
-        float m = boundaryMargin;
-        pos.x = Mathf.Clamp(pos.x, b.min.x + m, b.max.x - m);
-        pos.y = Mathf.Clamp(pos.y, b.min.y + m, b.max.y - m);
-
+        Vector2 pos = rb.position;
+        pos.x = Mathf.Clamp(pos.x, _boundsMinX, _boundsMaxX);
+        pos.y = Mathf.Clamp(pos.y, _boundsMinY, _boundsMaxY);
         rb.position = pos;
     }
 
@@ -164,4 +226,37 @@ public sealed class PlayerMover2D : MonoBehaviour
         _dashEndTime = Time.time + dashDuration;
         _nextDashReadyTime = Time.time + dashCooldown;
     }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        // 에디터에서 경계를 시각적으로 확인
+        if (!useBoundary) return;
+
+        float minX, maxX, minY, maxY;
+        if (Application.isPlaying && _boundsReady)
+        {
+            minX = _boundsMinX; maxX = _boundsMaxX;
+            minY = _boundsMinY; maxY = _boundsMaxY;
+        }
+        else if (mapBoundsCollider != null)
+        {
+            var b = mapBoundsCollider.bounds;
+            float m = boundaryMargin;
+            minX = b.min.x + m; maxX = b.max.x - m;
+            minY = b.min.y + m; maxY = b.max.y - m;
+        }
+        else
+        {
+            float m = boundaryMargin;
+            minX = manualBounds.xMin + m; maxX = manualBounds.xMax - m;
+            minY = manualBounds.yMin + m; maxY = manualBounds.yMax - m;
+        }
+
+        Gizmos.color = new Color(1f, 0.3f, 0.3f, 0.6f);
+        Vector3 center = new Vector3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, 0f);
+        Vector3 size = new Vector3(maxX - minX, maxY - minY, 0f);
+        Gizmos.DrawWireCube(center, size);
+    }
+#endif
 }
