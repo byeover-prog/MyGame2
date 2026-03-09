@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 33004b08ff3419842a1d2c2778733435
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/ac_vendor.controller
+  uploadId: 854212

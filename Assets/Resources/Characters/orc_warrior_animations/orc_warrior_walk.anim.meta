@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3fe49d096a140fe4f88f7ab973dc8fda
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/orc_warrior_animations/orc_warrior_walk.anim
+  uploadId: 854212

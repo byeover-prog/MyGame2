@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: acc6a201af02643488d9f9c86c79d957
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/duck2_animations/duck2_walk_backview.anim
+  uploadId: 854212

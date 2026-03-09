@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d2febda4a3eb5074380f3efa21c3f88b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/frog1_animations/frog1_idle2_frontview.anim
+  uploadId: 854212

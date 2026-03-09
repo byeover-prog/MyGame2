@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8a836e46f7af304aa416a5bf0c54aab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoomerangWeapon2D
-  config: {fileID: 11400000, guid: bcd00001e9e02c54caf7388499e85186, type: 2}
+  config: {fileID: 11400000, guid: eca27cbc06a5d0d43a85393527bf0ec9, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536

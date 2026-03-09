@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 41c6d1ca8762c6040beeb0b97dbef4db
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/bird4_animations/bird4_turning.anim
+  uploadId: 854212
