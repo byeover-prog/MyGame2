@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// 회전검 무기 (CommonSkillWeapon2D 기반)
 /// 
-/// ★ 레벨업 처리 방식:
+///  레벨업 처리 방식:
 /// - 레벨업해도 현재 돌고 있는 사이클에는 아무 변화 없음
 /// - 현재 사이클이 끝나고(OFF) → 다음 사이클이 시작될 때(ON) 새 개수 적용
 /// - 보간/재배치 로직 불필요 → 깔끔하고 버벅거림 없음
@@ -40,7 +40,7 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
     private bool _isActive = true;
     private float _stateTimer;
 
-    // ★ 핵심: 현재 사이클에서 실제로 사용 중인 블레이드 수
+    //  핵심: 현재 사이클에서 실제로 사용 중인 블레이드 수
     //   레벨업해도 이 값은 바뀌지 않음 → 다음 사이클에서만 갱신
     private int _currentCycleCount;
 
@@ -142,7 +142,7 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
 
     private void CheckHitForBlade(Vector3 bladePosition)
     {
-        int hitCount = Physics2D.OverlapCircleNonAlloc(bladePosition, hitRadius, hitResults, enemyMask);
+        int hitCount = Physics2DCompat.OverlapCircleNonAlloc(bladePosition, hitRadius, hitResults, enemyMask);
 
         for (int i = 0; i < hitCount; i++)
         {

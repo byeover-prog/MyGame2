@@ -1,14 +1,18 @@
 using UnityEngine;
 
-// [구현 원리 요약]
-// 패시브 카드의 이름, 아이콘, 텍스트(수치)를 관리하는 데이터 파일입니다.
+/// <summary>
+/// [구현 원리 요약]
+/// 패시브 1종의 정의 데이터입니다.
+/// 종류(PassiveKind), 표시명, 아이콘, 레벨별 수치를 관리합니다.
+/// PassiveCatalogSO에 등록해야 게임에서 사용됩니다.
+/// </summary>
 [CreateAssetMenu(menuName = "혼령검/패시브/패시브 설정", fileName = "Passive_")]
 public sealed class PassiveConfigSO : ScriptableObject
 {
     [Header("기본 정보")]
     [Tooltip("패시브의 종류를 설정합니다.")]
     public PassiveKind kind;
-    
+
     [Tooltip("UI에 표시될 패시브의 이름입니다. (예: 곰의 완력)")]
     public string displayName = "패시브";
 

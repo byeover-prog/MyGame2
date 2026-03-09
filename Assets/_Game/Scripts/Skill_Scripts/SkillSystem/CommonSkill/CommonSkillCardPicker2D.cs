@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// [참고] pauseGameWhileOpen/_prevTimeScale은 시간 정지 로직 이관 후 미사용. 인스펙터 설정값 보존용.
+#pragma warning disable CS0414
 [DisallowMultipleComponent]
 public sealed class CommonSkillCardPicker2D : MonoBehaviour
 {
@@ -146,3 +148,4 @@ public sealed class CommonSkillCardPicker2D : MonoBehaviour
         if (cardView3 != null && c3 != null) cardView3.Bind(this, c3, manager.GetLevel(c3.skill.kind));
     }
 }
+#pragma warning restore CS0414
