@@ -1,4 +1,3 @@
-// UTF-8
 using System.Collections;
 using UnityEngine;
 
@@ -61,6 +60,9 @@ public sealed class CommonSkillStartBinder2D : MonoBehaviour
 
         // 매니저가 Awake/Indexing 끝날 때까지 1프레임 기다리기(실전에서 꽤 중요)
         yield return null;
+
+        // yield 후 재확인 — 다른 코루틴이 먼저 적용했을 수 있음
+        if (_appliedThisRun) yield break;
 
         if (manager == null)
         {

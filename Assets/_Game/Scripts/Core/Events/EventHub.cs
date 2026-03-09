@@ -3,13 +3,11 @@ using UnityEngine;
 
 /// <summary>
 /// 프로젝트 전역 이벤트 허브(델리게이트 집합).
-///
 /// 규칙:
 /// - UI는 "EventHub만" 구독한다.
 /// - 시스템은 EventHub에 Emit만 한다.
 /// - 구독은 OnEnable, 해제는 OnDisable에서.
 /// - 람다로 구독하지 말고 메서드로 구독(해제 실수 방지).
-///
 /// 복잡도: O(1)
 /// </summary>
 [DefaultExecutionOrder(-9000)]
@@ -58,7 +56,10 @@ public sealed class EventHub : MonoBehaviour
         Instance = this;
 
         if (dontDestroyOnLoad)
+        {
+            transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
+        }
     }
 
     // -------- Emit API (시스템이 호출) --------

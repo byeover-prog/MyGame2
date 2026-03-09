@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,6 +14,14 @@ public sealed class PlayerMover2D : MonoBehaviour
     [SerializeField] private float dashDistance = 2.5f;
     [SerializeField] private float dashDuration = 0.12f;
     [SerializeField] private float dashCooldown = 0.9f;
+
+    [Header("맵 경계 제한")]
+    [Tooltip("플레이어 이동을 제한할 Collider2D입니다. (BoxCollider2D/PolygonCollider2D)\n비우면 경계 제한 없음.")]
+    [SerializeField] private Collider2D boundaryCollider;
+
+    [Tooltip("경계 안쪽 여유 거리(월드 유닛). 캐릭터가 경계에 딱 붙지 않게 합니다.")]
+    [Min(0f)]
+    [SerializeField] private float boundaryMargin = 0.3f;
 
     [Header("참조")]
     [SerializeField] private Rigidbody2D rb;
@@ -116,10 +123,31 @@ public sealed class PlayerMover2D : MonoBehaviour
         if (Time.time < _dashEndTime)
         {
             rb.linearVelocity = _dashVelocity;
-            return;
+        }
+        else
+        {
+            rb.linearVelocity = MoveInput * moveSpeed;
         }
 
-        rb.linearVelocity = MoveInput * moveSpeed;
+        // 맵 경계 제한 (Kinematic+Trigger라 물리 충돌이 없으므로 수동 클램핑)
+        ClampToBoundary();
+    }
+
+    /// <summary>
+    /// boundaryCollider의 bounds 안으로 위치를 제한합니다.
+    /// </summary>
+    private void ClampToBoundary()
+    {
+        if (boundaryCollider == null) return;
+
+        Vector3 pos = rb.position;
+        Bounds b = boundaryCollider.bounds;
+
+        float m = boundaryMargin;
+        pos.x = Mathf.Clamp(pos.x, b.min.x + m, b.max.x - m);
+        pos.y = Mathf.Clamp(pos.y, b.min.y + m, b.max.y - m);
+
+        rb.position = pos;
     }
 
     private void TryDash()
