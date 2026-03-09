@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 
 // [구현 원리 요약]
@@ -206,7 +205,7 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
         // (Registry 쪽 시그니처 차이/누락으로 인한 불확실성 제거)
         Vector2 from = transform.position;
 
-        int count = Physics2D.OverlapCircleNonAlloc(from, _seekRadius, _acquireHits, _enemyMask);
+        int count = Physics2DCompat.OverlapCircleNonAlloc(from, _seekRadius, _acquireHits, _enemyMask);
         for (int i = count; i < _acquireHits.Length; i++) _acquireHits[i] = null;
         if (count <= 0) return null;
 

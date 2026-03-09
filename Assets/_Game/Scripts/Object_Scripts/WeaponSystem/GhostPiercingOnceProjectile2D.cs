@@ -109,7 +109,7 @@ namespace _Game.Scripts.Object_Scripts.WeaponSystem.Projectiles_Ghost
         {
             if (enemyMask.value == 0) return; // 마스크 0이면 절대 못 맞음
 
-            int count = Physics2D.OverlapCircleNonAlloc(transform.position, hitRadius, _buf, enemyMask);
+            int count = Physics2DCompat.OverlapCircleNonAlloc(transform.position, hitRadius, _buf, enemyMask);
             if (count <= 0) return;
 
             for (int i = 0; i < count; i++)

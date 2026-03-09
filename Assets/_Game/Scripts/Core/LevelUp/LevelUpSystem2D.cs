@@ -60,7 +60,9 @@ public sealed class LevelUpSystem2D : MonoBehaviour
     private int _pendingOpens;
     private bool _processing;
 
+#pragma warning disable CS0414 // 시간 정지 로직 이관 후 미사용, 추후 복원 대비 보존
     private float _prevTimeScale = 1f;
+#pragma warning restore CS0414
     private bool _pausedByMe;
 
     private readonly List<Candidate> _candidates = new List<Candidate>(128);

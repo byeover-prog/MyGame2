@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 
 // [구현 원리 요약]
@@ -130,7 +129,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D, ILevelableSk
         Vector2 origin = GetSpawnOrigin(firePivot);
 
         // 1) 적 탐색
-        int hitCount = Physics2D.OverlapCircleNonAlloc(origin, detectRange, _hits, enemyMask);
+        int hitCount = Physics2DCompat.OverlapCircleNonAlloc(origin, detectRange, _hits, enemyMask);
         if (hitCount <= 0 && requireTargetToFire) return;
 
         // 2) 타겟 후보 수집(가까운 순으로 정렬)
