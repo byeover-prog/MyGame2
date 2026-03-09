@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4973da556a22a547b8de2b8e991d0c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PiercingBulletWeapon2D
-  config: {fileID: 11400000, guid: b590e081b6a5dae479f99c3ac0479618, type: 2}
+  config: {fileID: 11400000, guid: 0e00e12370d56164aa2d3bcb080cbdfb, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536

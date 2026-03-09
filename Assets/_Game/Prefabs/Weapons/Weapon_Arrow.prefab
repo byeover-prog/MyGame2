@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81e56da059626c14b905312064d4028d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArrowShotWeapon2D
-  config: {fileID: 11400000, guid: 2bb7f7aeea12a6a4889e47780d085d19, type: 2}
+  config: {fileID: 11400000, guid: 83f8c539e8d41ca488af464b3b892413, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536

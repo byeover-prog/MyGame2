@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 04ad8358d336d744e95c63b03f0e73d6
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/frog2_animations/ac_frog2.controller
+  uploadId: 854212

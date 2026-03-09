@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ae3d290147c46f74db771c196d4387ec
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/duck1_animations/duck1_idle2.anim
+  uploadId: 854212

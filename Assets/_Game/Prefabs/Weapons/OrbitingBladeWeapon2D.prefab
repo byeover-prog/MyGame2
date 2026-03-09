@@ -120,7 +120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c855bccbe81281b4abd067a0b15fbed2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitingBladeWeapon2D
-  config: {fileID: 11400000, guid: 84e5088e2acb19b408a146ba069f9adc, type: 2}
+  config: {fileID: 11400000, guid: 7393f857a9e404f4a8bd20111dbb6696, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536

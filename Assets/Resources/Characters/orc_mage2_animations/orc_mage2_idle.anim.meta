@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 63e05d5cdf011da4a981e672142065d0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/orc_mage2_animations/orc_mage2_idle.anim
+  uploadId: 854212

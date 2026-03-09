@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 018b005ef1fb6244c920c45ab989f45b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/orc_mage_animations/orc mage.controller
+  uploadId: 854212

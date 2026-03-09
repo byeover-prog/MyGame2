@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b5e6658c7b56b0d48a07e46256962ed1
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/frog2_animations/frog2_walk_frontview.anim
+  uploadId: 854212

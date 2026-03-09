@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7be859cdc4a6eb34292ea0fb36c3e7ce
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/bird3_animations/bird3_walk.anim
+  uploadId: 854212
