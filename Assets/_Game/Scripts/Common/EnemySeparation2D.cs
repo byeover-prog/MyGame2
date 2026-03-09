@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 
 // [구현 원리 요약]
@@ -27,7 +26,7 @@ public sealed class EnemySeparation2D : MonoBehaviour
     {
         Vector2 pos = transform.position;
 
-        int count = Physics2D.OverlapCircleNonAlloc(pos, separationRadius, _buffer, enemyMask);
+        int count = Physics2DCompat.OverlapCircleNonAlloc(pos, separationRadius, _buffer, enemyMask);
         if (count <= 1) return;
 
         Vector2 sum = Vector2.zero;

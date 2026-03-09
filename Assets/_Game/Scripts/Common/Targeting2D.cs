@@ -13,7 +13,7 @@ public static class Targeting2D
     {
         target = null;
 
-        int count = Physics2D.OverlapCircleNonAlloc(origin, radius, _buffer, enemyMask);
+        int count = Physics2DCompat.OverlapCircleNonAlloc(origin, radius, _buffer, enemyMask);
         if (count <= 0) return false;
 
         float bestSqr = float.PositiveInfinity;

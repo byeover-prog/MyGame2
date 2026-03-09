@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+// [참고] 슬롯 상한/시간 정지 필드는 LevelUpOrchestrator로 이관 예정. 현재 미사용이지만 인스펙터 설정값 보존용.
+#pragma warning disable CS0414
 public sealed class LevelUpPanelController : MonoBehaviour
 {
     [Header("Common Skills")]
@@ -216,3 +218,4 @@ public sealed class LevelUpPanelController : MonoBehaviour
         Close();
     }
 }
+#pragma warning restore CS0414

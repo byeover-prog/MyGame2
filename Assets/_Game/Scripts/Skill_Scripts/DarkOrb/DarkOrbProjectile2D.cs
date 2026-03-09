@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 
 // [구현 원리 요약]
@@ -162,7 +161,7 @@ public sealed class DarkOrbProjectile2D : MonoBehaviour
         _exploding = true;
 
         // 1) 폭발 데미지 1회
-        int count = Physics2D.OverlapCircleNonAlloc(pos, _explosionRadius, _hits, _enemyMask);
+        int count = Physics2DCompat.OverlapCircleNonAlloc(pos, _explosionRadius, _hits, _enemyMask);
         for (int i = 0; i < count; i++)
         {
             var h = _hits[i];

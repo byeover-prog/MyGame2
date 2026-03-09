@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 
 // [구현 원리 요약]
@@ -141,7 +140,7 @@ public sealed class HomingMissileSkill2D : MonoBehaviour, ISkill2D
 
         Vector2 origin = firePoint != null ? (Vector2)firePoint.position : (Vector2)transform.position;
 
-        int hitCount = Physics2D.OverlapCircleNonAlloc(origin, searchRadius, _hits, enemyMask);
+        int hitCount = Physics2DCompat.OverlapCircleNonAlloc(origin, searchRadius, _hits, enemyMask);
 
         // 디버그 혼란 방지(이전 프레임 잔상 제거)
         for (int i = hitCount; i < _hits.Length; i++) _hits[i] = null;
@@ -187,7 +186,7 @@ public sealed class HomingMissileSkill2D : MonoBehaviour, ISkill2D
 
         var p = Instantiate(projectilePrefab, origin, Quaternion.identity);
 
-        // ✅ Init(9개) 시그니처에 정확히 맞춤
+        // Init(9개) 시그니처에 정확히 맞춤
         p.Init(
             enemyMask,
             searchRadius,
