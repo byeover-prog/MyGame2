@@ -170,7 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
-  debugSkillId: 
+  debugSkillId: Weapon_Shuriken
   maxLevel: 8
   level: 0
   forwardLevelToChildren: 1

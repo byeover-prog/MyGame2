@@ -1,0 +1,116 @@
+{
+    "version": 1,
+    "stageId": "stage_01_forest",
+    "displayNameKr": "숲 스테이지",
+    "durationSec": 1200,
+    "bossSpawnSec": 1200,
+
+    "expTable": {
+        "baseExpPerLevel": 10,
+        "expGrowthRate": 1.3,
+        "maxLevel": 50,
+        "_comment": "필요 경험치 = floor(baseExpPerLevel * expGrowthRate^(level-1)). Lv1→10, Lv2→13, Lv3→17..."
+    },
+
+    "enemyExp": [
+        { "enemyId": "wolf",            "baseExp": 1, "expPerLevelBonus": 0 },
+        { "enemyId": "raven",           "baseExp": 1, "expPerLevelBonus": 0 },
+        { "enemyId": "junior_dokebi",   "baseExp": 2, "expPerLevelBonus": 0 },
+        { "enemyId": "virgin_ghost",    "baseExp": 2, "expPerLevelBonus": 0 },
+        { "enemyId": "bachelor_ghost",  "baseExp": 3, "expPerLevelBonus": 1 },
+        { "enemyId": "stone_ghost",     "baseExp": 4, "expPerLevelBonus": 1 },
+        { "enemyId": "army_ghost",      "baseExp": 5, "expPerLevelBonus": 2 },
+        { "enemyId": "boss_gumiho",     "baseExp": 200, "expPerLevelBonus": 0 }
+    ],
+
+    "phases": [
+        {
+            "phaseId": "early",
+            "startSec": 0,
+            "endSec": 60,
+            "displayNameKr": "초반 — 잡몹 등장",
+            "spawnRatePerSec": 1.0,
+            "maxAlive": 30,
+            "waves": [
+                { "enemyId": "wolf",  "weight": 70, "hpScale": 1.0, "dmgScale": 1.0 },
+                { "enemyId": "raven", "weight": 30, "hpScale": 1.0, "dmgScale": 1.0 }
+            ]
+        },
+        {
+            "phaseId": "mid_1",
+            "startSec": 60,
+            "endSec": 180,
+            "displayNameKr": "중반 전기 — 도깨비 합류",
+            "spawnRatePerSec": 1.5,
+            "maxAlive": 40,
+            "waves": [
+                { "enemyId": "wolf",          "weight": 40, "hpScale": 1.2, "dmgScale": 1.1 },
+                { "enemyId": "raven",         "weight": 20, "hpScale": 1.2, "dmgScale": 1.1 },
+                { "enemyId": "junior_dokebi", "weight": 30, "hpScale": 1.0, "dmgScale": 1.0 },
+                { "enemyId": "virgin_ghost",  "weight": 10, "hpScale": 1.0, "dmgScale": 1.0 }
+            ]
+        },
+        {
+            "phaseId": "mid_2",
+            "startSec": 180,
+            "endSec": 360,
+            "displayNameKr": "중반 후기 — 귀신 합류",
+            "spawnRatePerSec": 2.0,
+            "maxAlive": 50,
+            "waves": [
+                { "enemyId": "wolf",            "weight": 20, "hpScale": 1.5, "dmgScale": 1.2 },
+                { "enemyId": "junior_dokebi",   "weight": 25, "hpScale": 1.3, "dmgScale": 1.1 },
+                { "enemyId": "virgin_ghost",    "weight": 25, "hpScale": 1.2, "dmgScale": 1.1 },
+                { "enemyId": "bachelor_ghost",  "weight": 20, "hpScale": 1.0, "dmgScale": 1.0 },
+                { "enemyId": "stone_ghost",     "weight": 10, "hpScale": 1.0, "dmgScale": 1.0 }
+            ]
+        },
+        {
+            "phaseId": "late",
+            "startSec": 360,
+            "endSec": 600,
+            "displayNameKr": "후반 — 강적 러시",
+            "spawnRatePerSec": 2.5,
+            "maxAlive": 60,
+            "waves": [
+                { "enemyId": "junior_dokebi",   "weight": 15, "hpScale": 1.8, "dmgScale": 1.3 },
+                { "enemyId": "virgin_ghost",    "weight": 15, "hpScale": 1.5, "dmgScale": 1.3 },
+                { "enemyId": "bachelor_ghost",  "weight": 25, "hpScale": 1.3, "dmgScale": 1.2 },
+                { "enemyId": "stone_ghost",     "weight": 25, "hpScale": 1.2, "dmgScale": 1.1 },
+                { "enemyId": "army_ghost",      "weight": 20, "hpScale": 1.0, "dmgScale": 1.0 }
+            ]
+        },
+        {
+            "phaseId": "hell",
+            "startSec": 600,
+            "endSec": 1200,
+            "displayNameKr": "지옥 — 서바이벌",
+            "spawnRatePerSec": 3.0,
+            "maxAlive": 80,
+            "waves": [
+                { "enemyId": "bachelor_ghost",  "weight": 25, "hpScale": 2.0, "dmgScale": 1.5 },
+                { "enemyId": "stone_ghost",     "weight": 30, "hpScale": 1.8, "dmgScale": 1.4 },
+                { "enemyId": "army_ghost",      "weight": 45, "hpScale": 1.5, "dmgScale": 1.3 }
+            ]
+        },
+        {
+            "phaseId": "boss",
+            "startSec": 1200,
+            "endSec": 9999,
+            "displayNameKr": "보스 — 구미호",
+            "spawnRatePerSec": 1.0,
+            "maxAlive": 80,
+            "_comment": "보스는 별도 스크립트에서 1회 스폰. 여기선 잡몹만 유지.",
+            "waves": [
+                { "enemyId": "army_ghost",      "weight": 60, "hpScale": 2.0, "dmgScale": 1.5 },
+                { "enemyId": "stone_ghost",     "weight": 40, "hpScale": 2.0, "dmgScale": 1.5 }
+            ],
+            "bossSpawn": {
+                "enemyId": "boss_gumiho",
+                "hpScale": 1.0,
+                "dmgScale": 1.0,
+                "count": 1
+            }
+        }
+    ]
+}
