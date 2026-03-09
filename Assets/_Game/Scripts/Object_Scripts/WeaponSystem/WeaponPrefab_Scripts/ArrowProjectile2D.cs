@@ -4,7 +4,6 @@ using UnityEngine;
 public sealed class ArrowProjectile2D : PooledObject2D
 {
     [Header("참조")]
-    [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Collider2D selfCollider;
 
     private LayerMask enemyMask;
@@ -18,33 +17,13 @@ public sealed class ArrowProjectile2D : PooledObject2D
 
     private void Awake()
     {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (selfCollider == null) selfCollider = GetComponent<Collider2D>();
-
-        ConfigureRigidbodyForVelocityMove();
     }
 
     private void OnDisable()
     {
-        // 풀에 반납될 때 상태 초기화(풀링 필수)
         ClearOwnerIgnore();
-
-        if (rb != null)
-            rb.linearVelocity = Vector2.zero;
-
         age = 0f;
-    }
-
-    private void ConfigureRigidbodyForVelocityMove()
-    {
-        if (rb == null) return;
-
-        rb.bodyType = RigidbodyType2D.Dynamic;
-        rb.gravityScale = 0f;
-        rb.freezeRotation = true;
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-        rb.interpolation = RigidbodyInterpolation2D.None;
-        rb.simulated = true;
     }
 
     public void Init(LayerMask mask, int dmg, float spd, float lifeSeconds, Vector2 direction, Transform owner)
@@ -57,14 +36,12 @@ public sealed class ArrowProjectile2D : PooledObject2D
 
         dir = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right;
 
-        ConfigureRigidbodyForVelocityMove();
+        // 진행 방향으로 회전
+        if (dir.sqrMagnitude > 0.0001f)
+            transform.right = dir;
 
-        // 풀링 재사용 대비: 이전 Ignore 해제 후 새 owner Ignore 적용
         ClearOwnerIgnore();
         IgnoreOwnerCollision(owner);
-
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
     }
 
     private void IgnoreOwnerCollision(Transform owner)
@@ -105,8 +82,7 @@ public sealed class ArrowProjectile2D : PooledObject2D
             return;
         }
 
-        if (rb != null)
-            rb.linearVelocity = dir * speed;
+        transform.position += (Vector3)(dir * speed * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

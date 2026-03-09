@@ -1,4 +1,6 @@
+// UTF-8
 using UnityEngine;
+using _Game.Scripts.Object_Scripts.WeaponSystem.WeaponPrefab_Scripts;
 
 [DisallowMultipleComponent]
 public sealed class BalsiWeapon2D : CommonSkillWeapon2D
@@ -6,11 +8,10 @@ public sealed class BalsiWeapon2D : CommonSkillWeapon2D
     [SerializeField] private ProjectilePool2D pool;
     [SerializeField] private Transform spawnPoint;
 
-    [Header("발시 옵션 (fallback)")]
-    [Tooltip("SkillEffectConfig.pierceCount == 0 일 때 사용하는 기본 관통 횟수.\n" +
-             "CommonSkillConfigSO.levels[].pierceCount 에 값이 있으면 그 값이 우선 적용됩니다.")]
-    [SerializeField, Min(0)]
-    private int fallbackPierceCount = 0;
+    [Header("관통(발시 전용)")]
+    [Tooltip("발시 투사체 관통 횟수(0=관통 없음). CommonSkillLevelParams에 pierceCount가 없는 프로젝트 호환용.")]
+    [Min(0)]
+    [SerializeField] private int pierceCount = 0;
 
     [Header("디버그")]
     [SerializeField] private bool debugLog = false;
@@ -20,9 +21,7 @@ public sealed class BalsiWeapon2D : CommonSkillWeapon2D
     private void Awake()
     {
         if (spawnPoint == null) spawnPoint = transform;
-
-        if (pool == null)
-            pool = GetComponentInChildren<ProjectilePool2D>(true);
+        if (pool == null) pool = GetComponentInChildren<ProjectilePool2D>(true);
     }
 
     private void Update()
@@ -44,7 +43,7 @@ public sealed class BalsiWeapon2D : CommonSkillWeapon2D
                     if (_noTargetLogTimer <= 0f)
                     {
                         _noTargetLogTimer = 1f;
-                        Debug.LogWarning("[BalsiWeapon2D] 타겟을 못 찾아서 발사하지 않습니다. (EnemyRegistry2D 등록/레이어/Tag 확인)", this);
+                        Debug.LogWarning("[BalsiWeapon2D] 타겟을 못 찾아서 발사하지 않습니다. (EnemyRegistry2D 등록 확인)", this);
                     }
                 }
                 return;
@@ -60,9 +59,7 @@ public sealed class BalsiWeapon2D : CommonSkillWeapon2D
 
     private void Fire(EnemyRegistryMember2D target)
     {
-        if (pool == null)
-            pool = GetComponentInChildren<ProjectilePool2D>(true);
-
+        if (pool == null) pool = GetComponentInChildren<ProjectilePool2D>(true);
         if (pool == null) return;
         if (owner == null) return;
 
@@ -71,11 +68,10 @@ public sealed class BalsiWeapon2D : CommonSkillWeapon2D
 
         var proj = pool.Get<BalsiProjectile2D>(origin, Quaternion.identity);
         ApplyProjectileSorting(proj.gameObject);
-        // SkillEffectConfig.pierceCount를 우선, 없으면 Inspector fallback 사용
-        int pierce = P.pierceCount > 0 ? P.pierceCount : fallbackPierceCount;
-        proj.Init(enemyMask, P.damage, P.projectileSpeed, P.lifeSeconds, dir, pierce);
+
+        proj.Init(enemyMask, P.damage, P.projectileSpeed, P.lifeSeconds, dir, pierceCount);
 
         if (debugLog)
-            Debug.Log($"[BalsiWeapon2D] Fire target={(target != null)} dmg={P.damage} cd={P.cooldown:0.00}", this);
+            Debug.Log($"[BalsiWeapon2D] Fire target={(target != null)} dmg={P.damage} cd={P.cooldown:0.00} pierce={pierceCount}", this);
     }
 }

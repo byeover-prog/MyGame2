@@ -21,10 +21,10 @@ TagManager:
   - 
   - 
   - Player
-  - Enemy
+  - SkillFX
   - Boss
   - Projectile
-  - 
+  - Enemy
   - 
   - 
   - 

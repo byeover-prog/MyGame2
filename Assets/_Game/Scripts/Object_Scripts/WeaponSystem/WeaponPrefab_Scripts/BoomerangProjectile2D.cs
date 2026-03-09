@@ -4,8 +4,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class BoomerangProjectile2D : PooledObject2D
 {
-    [SerializeField] private Rigidbody2D rb;
-
     private Transform owner;
     private LayerMask enemyMask;
 
@@ -25,11 +23,6 @@ public sealed class BoomerangProjectile2D : PooledObject2D
     private readonly HashSet<int> hitOut = new HashSet<int>(64);
     private readonly HashSet<int> hitBack = new HashSet<int>(64);
 
-    private void Awake()
-    {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
-    }
-
     public void Init(Transform ownerTr, Vector2 direction, LayerMask mask, int dmg, float outSpd, float backSpd, float distance, float lifeSeconds)
     {
         owner = ownerTr;
@@ -48,9 +41,6 @@ public sealed class BoomerangProjectile2D : PooledObject2D
 
         hitOut.Clear();
         hitBack.Clear();
-
-        if (rb != null)
-            rb.linearVelocity = dir * outSpeed;
     }
 
     private void FixedUpdate()
@@ -62,13 +52,12 @@ public sealed class BoomerangProjectile2D : PooledObject2D
             return;
         }
 
-        if (rb == null)
-            return;
+        float dt = Time.fixedDeltaTime;
 
         if (!returning)
         {
-            traveled += outSpeed * Time.fixedDeltaTime;
-            rb.linearVelocity = dir * outSpeed;
+            traveled += outSpeed * dt;
+            transform.position += (Vector3)(dir * outSpeed * dt);
 
             if (traveled >= maxDistance)
                 returning = true;
@@ -91,7 +80,7 @@ public sealed class BoomerangProjectile2D : PooledObject2D
             }
 
             Vector2 d = toOwner / Mathf.Max(0.0001f, dist);
-            rb.linearVelocity = d * returnSpeed;
+            transform.position += (Vector3)(d * returnSpeed * dt);
         }
     }
 

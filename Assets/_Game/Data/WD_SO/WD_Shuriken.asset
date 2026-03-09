@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
+  m_Name: WD_Shuriken
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  damageStepScale: 1
+  cooldownStepScale: 1
+  rangeStepScale: 1
+  weaponId: weapon_shuriken
+  displayNameKr: "\uC218\uB9AC\uAC80"
+  tagsKr: "\uBB3C\uB9AC"
+  visualDescriptionKr: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4\uC801\uC744 \uB300\uC0C1\uC73C\uB85C
+    \uC801\uC5D0\uAC8C \uD295\uAE30\uBA74\uC11C \uACF5\uACA9\uD558\uB294 \uC218\uB9AC\uAC80\uC744
+    \uD22C\uCC99 \uD569\uB2C8\uB2E4."
+  icon: {fileID: 7765474139541862038, guid: 6f3a2dc3b8c39044ea36eccc87dffac0, type: 3}
+  includeInPrototype: 1
+  isMainBasicSkill: 0
+  weight: 100
+  projectilePrefab: {fileID: 5000209898010349714, guid: 7935c7cec6de13948ad780e1512bee6f,
+    type: 3}
+  baseDamage: 5
+  baseFireInterval: 0.5
+  baseRange: 5
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 8192
+  targetPolicy: 0
+  avoidDuplicateTargets: 1

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 522cbe589d3a85643bac42f28b733c7d, type: 3}
+  m_Name: WD_DarkOrb
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  damageStepScale: 1
+  cooldownStepScale: 1
+  rangeStepScale: 1
+  weaponId: weapon_darkorb
+  displayNameKr: "\uC554\uD751\uAD6C"
+  tagsKr: "\uC74C"
+  visualDescriptionKr: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4\uC801\uC744 \uB300\uC0C1\uC73C\uB85C
+    \uC801\uC5D0\uAC8C \uB2FF\uC73C\uBA74 \uD3ED\uBC1C \uD6C4 \uBD84\uC5F4\uD558\uB294
+    \uC554\uD751 \uC601\uD63C\uC744 \uBC1C\uC0AC \uD569\uB2C8\uB2E4."
+  icon: {fileID: 5483859174317454229, guid: 05f490a76fb99b740808d59b96bfa856, type: 3}
+  includeInPrototype: 1
+  isMainBasicSkill: 0
+  weight: 100
+  projectilePrefab: {fileID: 3132555082536606338, guid: 51dac0e13e34d404db1bf644139c5bef,
+    type: 3}
+  baseDamage: 10
+  baseFireInterval: 1
+  baseRange: 10
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 8192
+  targetPolicy: 0
+  avoidDuplicateTargets: 1

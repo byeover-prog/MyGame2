@@ -5,7 +5,6 @@ using UnityEngine;
 public sealed class StraightPooledProjectile2D : PooledObject2D
 {
     [Header("참조")]
-    [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Collider2D selfCollider;
 
     [Header("충돌 마스크(Init/Launch에서 덮어씀)")]
@@ -27,9 +26,7 @@ public sealed class StraightPooledProjectile2D : PooledObject2D
 
     private void Awake()
     {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (selfCollider == null) selfCollider = GetComponent<Collider2D>();
-        ConfigureRigidbodyForVelocityMove();
     }
 
     private void OnDisable()
@@ -42,21 +39,6 @@ public sealed class StraightPooledProjectile2D : PooledObject2D
         _lifeSeconds = 0f;
         _dir = Vector2.right;
         _originPrefab = null;
-
-        if (rb != null)
-            rb.linearVelocity = Vector2.zero;
-    }
-
-    private void ConfigureRigidbodyForVelocityMove()
-    {
-        if (rb == null) return;
-
-        rb.bodyType = RigidbodyType2D.Dynamic;
-        rb.gravityScale = 0f;
-        rb.freezeRotation = true;
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-        rb.interpolation = RigidbodyInterpolation2D.None;
-        rb.simulated = true;
     }
 
     // --------------------------
@@ -82,13 +64,8 @@ public sealed class StraightPooledProjectile2D : PooledObject2D
 
         _dir = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right;
 
-        ConfigureRigidbodyForVelocityMove();
-
         ClearOwnerIgnore();
         IgnoreOwnerCollision(owner);
-
-        if (rb != null)
-            rb.linearVelocity = _dir * _speed;
     }
 
     public void Init(
@@ -156,8 +133,7 @@ public sealed class StraightPooledProjectile2D : PooledObject2D
             return;
         }
 
-        if (rb != null)
-            rb.linearVelocity = _dir * _speed;
+        transform.position += (Vector3)(_dir * _speed * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

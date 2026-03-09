@@ -35,6 +35,10 @@ public sealed class WeaponDefinitionSO : ScriptableObject
     [Tooltip("카드 태그(예: 공통, 빙결, 투사체)")]
     public string tagsKr = "공통";
 
+    [Tooltip("레벨업 카드에 반드시 표시되는 '공격 방식' 설명(레벨 표기 금지).\n예: '가장 가까운 적을 향해 직선 관통 탄을 발사합니다.'")]
+    [TextArea]
+    public string visualDescriptionKr;
+
     [Tooltip("카드/UI에 표시할 아이콘(없으면 아이콘 영역을 숨김)")]
     public Sprite icon;
 
@@ -67,6 +71,13 @@ public sealed class WeaponDefinitionSO : ScriptableObject
     public string GetDisplayName()
     {
         return string.IsNullOrWhiteSpace(displayNameKr) ? name : displayNameKr;
+    }
+
+    public string GetVisualDescription()
+    {
+        return string.IsNullOrWhiteSpace(visualDescriptionKr)
+            ? "가장 가까운 적을 자동으로 조준해 투사체를 발사합니다."
+            : visualDescriptionKr;
     }
 
     // --------------------

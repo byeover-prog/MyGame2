@@ -1,81 +1,91 @@
 ﻿using UnityEngine;
 
-/// <summary>
-/// 공통 투사체 기반 클래스
-/// - 수명 관리, 충돌 시 데미지 전달, 관통 처리
-/// - 이동 방식(직선/호밍)은 파생 클래스에서 구현
-/// </summary>
-public abstract class ProjectileBase2D : MonoBehaviour, IProjectile2D
+public abstract class ProjectileBase2D : MonoBehaviour
 {
-    [Header("공통(투사체)")]
-    [SerializeField] protected Rigidbody2D rb;
+    [Header("참조")]
+    [SerializeField] protected Collider2D col;
 
-    [Header("공통(수명)")]
-    [SerializeField] protected float lifetime = 2.5f;
+    [Header("충돌")]
+    [Tooltip("발사 시 오너(플레이어) 콜라이더와 충돌을 무시한다(몸에 갇힘 방지)")]
+    [SerializeField] private bool ignoreOwnerCollision = true;
 
-    [Header("공통(관통)")]
-    [SerializeField, Tooltip("0이면 첫 타격에 사라짐, 1이면 1회 관통 후 사라짐")]
-    protected int pierceCount = 0;
+    protected int damage;
+    protected float dieAt;
+    protected LayerMask enemyMask;
+    protected Transform owner;
 
-    protected int _damage;
-    protected int _pierceLeft;
-    protected LayerMask _targetMask;
-
-    private float _dieAt;
-
-    protected virtual void Reset()
-    {
-        rb = GetComponent<Rigidbody2D>();
-    }
+    protected Vector2 velocity;
 
     protected virtual void Awake()
     {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (col == null) col = GetComponent<Collider2D>();
     }
 
-    public void Launch(Vector2 dir, int damage, LayerMask targetMask)
+    /// <summary>
+    /// 발사 코어. 방향/데미지/속도/수명/마스크를 받아 초기화.
+    /// </summary>
+    public virtual void Launch(
+        Vector2 direction,
+        int newDamage,
+        float speed,
+        float lifeSeconds,
+        LayerMask newEnemyMask,
+        Transform newOwner)
     {
-        if (dir.sqrMagnitude < 0.0001f) dir = Vector2.right;
+        damage = Mathf.Max(1, newDamage);
+        enemyMask = newEnemyMask;
+        owner = newOwner;
 
-        _damage = Mathf.Max(0, damage);
-        _pierceLeft = Mathf.Max(0, pierceCount);
-        _targetMask = targetMask;
+        dieAt = Time.time + Mathf.Max(0.05f, lifeSeconds);
 
-        _dieAt = Time.time + Mathf.Max(0.05f, lifetime);
+        velocity = direction.normalized * Mathf.Max(0f, speed);
 
-        OnLaunch(dir.normalized);
+        if (ignoreOwnerCollision)
+            IgnoreOwnerCollisions();
+
+        // 투사체는 월드에 남는 게 정답(부모 붙어있으면 떼기)
+        if (transform.parent != null)
+            transform.SetParent(null, true);
     }
 
-    protected abstract void OnLaunch(Vector2 dir);
-
-    protected virtual void FixedUpdate()
+    private void IgnoreOwnerCollisions()
     {
-        if (Time.time >= _dieAt)
+        if (owner == null) return;
+
+        // 내 콜라이더가 없으면 스킵
+        var myCols = GetComponentsInChildren<Collider2D>(true);
+        if (myCols == null || myCols.Length == 0) return;
+
+        var ownerCols = owner.GetComponentsInChildren<Collider2D>(true);
+        if (ownerCols == null || ownerCols.Length == 0) return;
+
+        for (int i = 0; i < myCols.Length; i++)
         {
-            Destroy(gameObject);
+            var a = myCols[i];
+            if (a == null) continue;
+
+            for (int j = 0; j < ownerCols.Length; j++)
+            {
+                var b = ownerCols[j];
+                if (b == null) continue;
+                Physics2D.IgnoreCollision(a, b, true);
+            }
         }
     }
 
-    protected virtual void OnTriggerEnter2D(Collider2D other)
+    protected virtual void Update()
     {
-        // 레이어 마스크로 1차 필터(성능+확장)
-        if (((1 << other.gameObject.layer) & _targetMask) == 0)
-            return;
-
-        // 데미지 받을 수 있는 대상만 처리
-        if (!other.TryGetComponent<IDamageable2D>(out var dmg))
-            return;
-
-        if (dmg.IsDead) return;
-
-        dmg.TakeDamage(_damage);
-
-        if (_pierceLeft <= 0)
+        if (Time.time >= dieAt)
         {
-            Destroy(gameObject);
+            OnLifeEnded();
             return;
         }
 
-        _pierceLeft -= 1;
+        transform.position += (Vector3)(velocity * Time.deltaTime);
+    }
+
+    protected virtual void OnLifeEnded()
+    {
+        Destroy(gameObject);
     }
 }

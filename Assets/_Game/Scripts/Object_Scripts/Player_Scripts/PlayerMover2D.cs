@@ -1,27 +1,36 @@
+// UTF-8
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[DisallowMultipleComponent]
 public sealed class PlayerMover2D : MonoBehaviour
 {
+    [Header("입력(새 Input System)")]
+    [SerializeField] private InputActionReference moveAction;
+    [SerializeField] private InputActionReference dashAction;
+
     [Header("이동")]
     [SerializeField] private float moveSpeed = 4.0f;
 
     [Header("대시")]
-    [Tooltip("스페이스바로 대시합니다.")]
-    [SerializeField] private KeyCode dashKey = KeyCode.Space; // (레거시 호환용) 인스펙터 노출 유지
-
-    [Tooltip("대시 거리(대략적으로 이동할 거리)")]
     [SerializeField] private float dashDistance = 2.5f;
-
-    [Tooltip("대시 시간(짧을수록 '툭' 느낌)")]
     [SerializeField] private float dashDuration = 0.12f;
-
-    [Tooltip("대시 쿨타임")]
     [SerializeField] private float dashCooldown = 0.9f;
 
     [Header("참조")]
     [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Animator animator;
+
+    [Tooltip("플레이어 스프라이트(없으면 자식에서 자동 탐색). 좌/우 반전은 flipX로 처리합니다.")]
+    [SerializeField] private SpriteRenderer spriteRenderer;
+
+    [Header("애니 판정(떨림 방지)")]
+    [Tooltip("이 속도 이상이면 걷기(true)로 전환")]
+    [Min(0f)]
+    [SerializeField] private float walkOnSpeed = 0.05f;
+
+    [Tooltip("이 속도 이하이면 정지(false)로 전환")]
+    [Min(0f)]
+    [SerializeField] private float walkOffSpeed = 0.02f;
 
     public Vector2 MoveInput { get; private set; }
     public Vector2 FacingDir { get; private set; } = Vector2.right;
@@ -30,67 +39,74 @@ public sealed class PlayerMover2D : MonoBehaviour
     private float _nextDashReadyTime = 0f;
     private Vector2 _dashVelocity;
 
-    // 입력 시스템 값 캐시
-    private Vector2 _moveInputCache;
-    private bool _dashPressedThisFrame;
+    private bool _isWalkingCached;
+
+    private static readonly int IsWalkingHash = Animator.StringToHash("isWalking");
 
     private void Reset()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponentInChildren<Animator>();
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     private void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
-    /*
-     * [Input System 연결 방식]
-     * - PlayerInput(Invoke Unity Events) 사용 시:
-     *   - Move(Action: Value/Vector2)  -> 이 스크립트의 OnMove에 연결
-     *   - Dash(Action: Button)         -> 이 스크립트의 OnDash에 연결
-     *
-     * - 복잡도: O(1)
-     * - 주의: Update에서 UnityEngine.Input(레거시) 호출 금지
-     */
-
-    // Move 액션(Unity Events)에서 호출
-    public void OnMove(InputAction.CallbackContext context)
+    private void OnEnable()
     {
-        _moveInputCache = context.ReadValue<Vector2>();
-
-        // 대각선 입력 정규화(길이 1 초과 방지)
-        if (_moveInputCache.sqrMagnitude > 1f)
-            _moveInputCache.Normalize();
+        if (moveAction != null) moveAction.action.Enable();
+        if (dashAction != null) dashAction.action.Enable();
     }
 
-    // Dash 액션(Unity Events)에서 호출 (Press)
-    public void OnDash(InputAction.CallbackContext context)
+    private void OnDisable()
     {
-        // Button이 눌린 “순간”만 트리거
-        if (context.performed)
-            _dashPressedThisFrame = true;
+        if (moveAction != null) moveAction.action.Disable();
+        if (dashAction != null) dashAction.action.Disable();
     }
 
     private void Update()
     {
-        // 입력 적용
-        MoveInput = _moveInputCache;
+        // 입력
+        Vector2 input = Vector2.zero;
+        if (moveAction != null)
+            input = moveAction.action.ReadValue<Vector2>();
 
-        // 바라보는 방향 갱신(입력이 있을 때만)
-        if (MoveInput.sqrMagnitude > 0.0001f)
-            FacingDir = MoveInput;
+        if (input.sqrMagnitude > 1f) input.Normalize();
+        MoveInput = input;
 
-        // 대시 입력(이번 프레임에 눌렸으면)
-        if (_dashPressedThisFrame)
-        {
-            _dashPressedThisFrame = false;
+        // 방향 규칙(요청사항 그대로)
+        // - 왼쪽 입력(x<0)일 때만 왼쪽
+        // - 위/아래만(x==0) 또는 오른쪽 포함(x>=0)은 오른쪽 유지
+        if (MoveInput.x < -0.0001f)
+            FacingDir = Vector2.left;
+        else if (MoveInput.x > 0.0001f)
+            FacingDir = Vector2.right;
+        // 대시
+        if (dashAction != null && dashAction.action.WasPressedThisFrame())
             TryDash();
-        }
 
-        // (레거시 호환) dashKey는 인스펙터 유지용으로 남겼지만,
-        // Active Input Handling = New일 때는 아래 레거시 입력 호출을 절대 쓰면 안 됨.
-        // if (Input.GetKeyDown(dashKey)) TryDash();  // <- 금지
+        // isWalking 판정(실제 속도 기반 + 히스테리시스)
+        if (animator != null && rb != null)
+        {
+            float speed = rb.linearVelocity.magnitude;
+
+            bool next;
+            if (_isWalkingCached)
+                next = speed > walkOffSpeed;   // 걷는 중엔 더 낮아져야 꺼짐
+            else
+                next = speed >= walkOnSpeed;   // 서있을 땐 이 이상이면 켜짐
+
+            if (next != _isWalkingCached)
+            {
+                _isWalkingCached = next;
+                animator.SetBool(IsWalkingHash, _isWalkingCached);
+            }
+        }
     }
 
     private void FixedUpdate()

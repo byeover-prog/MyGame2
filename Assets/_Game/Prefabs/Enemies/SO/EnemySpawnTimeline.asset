@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a845754af43c744c90ecc29457a3a7b, type: 3}
+  m_Name: EnemySpawnTimeline
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnTimelineSO
+  Stages:
+  - Name: Stage0
+    Duration: 60
+    Options:
+    - EnemyId: wolf
+      Weight: 10
+    - EnemyId: raven
+      Weight: 1.5
+    - EnemyId: stoneghost
+      Weight: 0.5
+  - Name: Stage1
+    Duration: 60
+    Options:
+    - EnemyId: virginghost
+      Weight: 10
+    - EnemyId: raven
+      Weight: 2
+    - EnemyId: stoneghost
+      Weight: 0.5
+  - Name: Stage2
+    Duration: 120
+    Options:
+    - EnemyId: bachelorghost
+      Weight: 10
+    - EnemyId: stoneghost
+      Weight: 0.5
+    - EnemyId: raven
+      Weight: 2
+  - Name: Stage3
+    Duration: 120
+    Options:
+    - EnemyId: armyghsot
+      Weight: 10
+    - EnemyId: raven
+      Weight: 2
+    - EnemyId: stoneghost
+      Weight: 0.5
+  - Name: Stage4
+    Duration: 120
+    Options:
+    - EnemyId: JuniorDokebi
+      Weight: 10
+    - EnemyId: raven
+      Weight: 2
+    - EnemyId: stoneghost
+      Weight: 0.5
+  - Name: Stage5
+    Duration: 9999
+    Options:
+    - EnemyId: JuniorDokebi
+      Weight: 10
+    - EnemyId: raven
+      Weight: 5
+    - EnemyId: wolf
+      Weight: 2
+    - EnemyId: stoneghost
+      Weight: 0.5
+    - EnemyId: ArmyGhost
+      Weight: 2
+    - EnemyId: virginghost
+      Weight: 2
+    - EnemyId: BachelorGhost
+      Weight: 2
