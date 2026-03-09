@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -44,6 +43,7 @@ public sealed class UIManager2D : MonoBehaviour
         }
 
         Instance = this;
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
         _shown = false;
     }

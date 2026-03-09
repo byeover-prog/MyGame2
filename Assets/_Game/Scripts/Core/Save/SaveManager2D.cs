@@ -36,6 +36,7 @@ public sealed class SaveManager2D : MonoBehaviour
         }
 
         Instance = this;
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
 
         LoadOrCreate();
