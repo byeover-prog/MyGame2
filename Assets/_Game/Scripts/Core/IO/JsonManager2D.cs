@@ -1,4 +1,3 @@
-// UTF-8
 using System;
 using System.IO;
 using System.Text;
@@ -46,6 +45,7 @@ public sealed class JsonManager2D : MonoBehaviour
         }
 
         Instance = this;
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
 
         if (log)

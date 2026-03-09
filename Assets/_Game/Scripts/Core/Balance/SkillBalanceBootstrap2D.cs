@@ -1,4 +1,3 @@
-// UTF-8
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -51,6 +50,7 @@ namespace _Game.Scripts.Core.Balance
             }
 
             Instance = this;
+            transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
 
             BuildIndex();

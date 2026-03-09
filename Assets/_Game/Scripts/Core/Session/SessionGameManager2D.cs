@@ -1,4 +1,3 @@
-// UTF-8
 using System;
 using UnityEngine;
 
@@ -73,6 +72,7 @@ namespace _Game.Scripts.Core.Session
             }
 
             Instance = this;
+            transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
 
             // 초기 상태 적용
