@@ -90,10 +90,7 @@ public sealed class ProjectilePool : MonoBehaviour
             pooled2d.SetOriginPrefab(prefab);
         }
 
-        if (inst.TryGetComponent(out Projectile2D proj2d))
-        {
-            proj2d.BindPool(this, prefab);
-        }
+        // 삭제된 Projectile2D 바인딩 구문 제거됨
 
         inst.SetActive(true);
 

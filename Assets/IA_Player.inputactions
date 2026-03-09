@@ -4,21 +4,12 @@
     "maps": [
         {
             "name": "Player",
-            "id": "2b107102-7557-4b9d-8a16-2ad5d0d3bdcf",
+            "id": "d2e93d8e-896f-46d7-ad5c-ceb91c14e4f4",
             "actions": [
-                {
-                    "name": "New action",
-                    "type": "Button",
-                    "id": "827158e2-5a09-4485-b5d0-c6c70d060e93",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
                 {
                     "name": "Move",
                     "type": "Value",
-                    "id": "2bbb5357-7b76-48ab-a31b-899047b11b4d",
+                    "id": "eae79575-88c5-43a3-854e-e56a1e6e4a85",
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
@@ -27,7 +18,7 @@
                 {
                     "name": "Dash",
                     "type": "Button",
-                    "id": "f089a27f-858b-486f-a8e3-5f8c16a33cd5",
+                    "id": "57408bbe-a21e-42ed-ae61-05b45ca1a257",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -36,19 +27,8 @@
             ],
             "bindings": [
                 {
-                    "name": "",
-                    "id": "f4bcad73-235e-4990-807b-1449c57e81ef",
-                    "path": "",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "New action",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
                     "name": "2D Vector",
-                    "id": "13574ad1-e83a-4447-9374-65a55bf58cce",
+                    "id": "4ea53dea-10fc-4b0b-90d1-7e525e55d1e5",
                     "path": "2DVector",
                     "interactions": "",
                     "processors": "",
@@ -59,7 +39,7 @@
                 },
                 {
                     "name": "up",
-                    "id": "114cd6a5-d9ca-4044-95c9-9c5719bfee59",
+                    "id": "13ca226b-63d4-409b-af9c-bbc9981dc26e",
                     "path": "<Keyboard>/w",
                     "interactions": "",
                     "processors": "",
@@ -70,7 +50,7 @@
                 },
                 {
                     "name": "down",
-                    "id": "e811c44f-ab4e-4ff9-be91-649a64f6009f",
+                    "id": "6d335145-72d0-4b4d-9be0-4258aa001916",
                     "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
@@ -81,7 +61,7 @@
                 },
                 {
                     "name": "left",
-                    "id": "33d97aaf-026d-4f22-b197-82eb87b353b1",
+                    "id": "4a505141-9085-427a-bbf8-efa939522310",
                     "path": "<Keyboard>/a",
                     "interactions": "",
                     "processors": "",
@@ -92,7 +72,7 @@
                 },
                 {
                     "name": "right",
-                    "id": "1b4ace0d-4a32-4c3e-a012-021de384ee42",
+                    "id": "edea4b07-c642-4090-b953-7948cc32de74",
                     "path": "<Keyboard>/d",
                     "interactions": "",
                     "processors": "",
@@ -102,9 +82,174 @@
                     "isPartOfComposite": true
                 },
                 {
+                    "name": "2D Vector",
+                    "id": "5dc69af3-0121-4158-9715-532e9024af35",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "b53ff6e1-9ae6-4ed8-9447-6eec26adeb1a",
+                    "path": "<Gamepad>/dpad/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "a502ba98-2352-4985-94a5-0f0726e8027f",
+                    "path": "<Gamepad>/dpad/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "4cd95323-0774-4a8c-ac15-7fde27af4d7d",
+                    "path": "<Gamepad>/dpad/left",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "f7827f47-a7e2-45f5-97a5-75bcc62fd89b",
+                    "path": "<Gamepad>/dpad/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "2D Vector",
+                    "id": "c5355bc0-a8c6-4c13-af86-e2c046ae6181",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "6a842654-d462-4b23-bc9a-848b24028413",
+                    "path": "<Gamepad>/dpad/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "2ec6f071-1c5d-47ad-9935-aa7bb8313574",
+                    "path": "<Gamepad>/leftStick/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "a1d44fee-1166-42a8-bb43-92762fcb0449",
+                    "path": "<Gamepad>/leftStick/left",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "8d042a19-19e7-4e10-a225-80ead5eb630f",
+                    "path": "<Gamepad>/dpad/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
                     "name": "",
-                    "id": "59bf6cd2-89ea-436a-92bd-e2cf7b3417d4",
+                    "id": "6a19309e-98a8-4d4a-b019-cc6948a62149",
                     "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4f0ab364-09fd-4519-a765-977076bb3bb6",
+                    "path": "<NimbusGamepadHid>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fb481d80-a5bc-4d3f-8434-4b89a5dfaa81",
+                    "path": "<SwitchProControllerHID>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "23c5b2f0-11ed-4636-9d99-7962268ea3e6",
+                    "path": "<XInputController>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "121693b8-e863-4ef6-9474-77254547b86b",
+                    "path": "<XboxOneGamepadAndroid>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ae0adee7-cb5f-4525-8e5b-1e65b223549a",
+                    "path": "<XboxOneGampadiOS>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

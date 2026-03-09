@@ -1,13 +1,18 @@
+// UTF-8
 using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class CommonSkillWeapon2D : MonoBehaviour
+public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
 {
     [Header("공통")]
     [SerializeField] protected CommonSkillConfigSO config;
     [SerializeField] protected LayerMask enemyMask;
     [SerializeField] protected bool requireTargetToFire = true;
+
+    [Header("밸런스(JSON 오버라이드)")]
+    [Tooltip("JSON에서 찾을 스킬 ID.\n비워두면 기본값으로 'weapon_' + Kind(소문자) 를 사용합니다.\n예) weapon_darkorb, weapon_boomerang")]
+    [SerializeField] private string balanceIdOverride;
 
     [Header("겹침 방지(추천)")]
     [Tooltip("발사 시작 위치를 플레이어 중심에서 살짝 분산한다(유닛). 0이면 분산 없음.")]
@@ -29,14 +34,93 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour
     [Min(0)]
     [SerializeField] private int projectileSortingStepPerKind = 10;
 
+    [Header("스탯(폴백: config/JSON이 비었을 때만 사용)")]
+    [Tooltip("config/JSON에서 쿨다운을 못 얻을 때 쓰는 임시 쿨다운(초)")]
+    [Min(0.01f)]
+    [SerializeField] private float fallbackCooldownSeconds = 1.0f;
+
+    [Tooltip("config/JSON에서 데미지를 못 얻을 때 쓰는 임시 데미지")]
+    [Min(0)]
+    [SerializeField] private int fallbackDamage = 10;
+
+    [Tooltip("config/JSON에서 투사체 속도를 못 얻을 때 쓰는 임시 속도")]
+    [Min(0.01f)]
+    [SerializeField] private float fallbackProjectileSpeed = 12f;
+
+    [Tooltip("config/JSON에서 투사체 수명을 못 얻을 때 쓰는 임시 수명(초)")]
+    [Min(0.01f)]
+    [SerializeField] private float fallbackProjectileLife = 2.0f;
+
     protected Transform owner;
     protected int level = 1;
     protected float cooldownTimer;
 
     private bool _firePending;
 
+    // 런타임 파라미터(= SO 기본값 + JSON 덮어쓰기 + 레벨증가치 반영)
+    private CommonSkillLevelParams _runtimeP;
+
+    // 마지막으로 적용된 JSON Row(무기 전용 필드 적용용)
+    private SkillBalanceDB2D.SkillRow2D _lastBalanceRow;
+
     public CommonSkillKind Kind => config != null ? config.kind : 0;
     public int Level => level;
+
+    // 무기들은 이제 P를 통해 "최종 적용 값"을 받는다.
+    protected CommonSkillLevelParams P => _runtimeP;
+
+    // --------------------------------------------------------------------
+    // [핵심] 무기들이 앞으로 공통으로 쓰는 “스탯 Getter(폴백 포함)”
+    // - 주의: 폴백은 config/JSON 둘 다 못 구했을 때만 쓴다.
+    // --------------------------------------------------------------------
+    private bool HasAnySourceStats => config != null || _lastBalanceRow != null;
+
+    protected int StatLevel => Mathf.Max(1, level);
+
+    protected float StatCooldownSeconds
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(0.01f, P.cooldown);
+            return Mathf.Max(0.01f, fallbackCooldownSeconds);
+        }
+    }
+
+    protected int StatDamage
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(0, P.damage);
+            return Mathf.Max(0, fallbackDamage);
+        }
+    }
+
+    protected float StatProjectileSpeed
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(0f, P.projectileSpeed);
+            return Mathf.Max(0f, fallbackProjectileSpeed);
+        }
+    }
+
+    protected float StatProjectileLife
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(0.05f, P.lifeSeconds);
+            return Mathf.Max(0.05f, fallbackProjectileLife);
+        }
+    }
+
+    protected int StatProjectileCount
+    {
+        get
+        {
+            if (HasAnySourceStats) return Mathf.Max(1, P.projectileCount);
+            return 1;
+        }
+    }
 
     public virtual void Initialize(CommonSkillConfigSO cfg, Transform ownerTr, int startLevel)
     {
@@ -45,6 +129,8 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour
         level = Mathf.Max(1, startLevel);
         cooldownTimer = 0f;
         _firePending = false;
+
+        RefreshRuntimeParams();
         OnLevelChanged();
     }
 
@@ -57,15 +143,93 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour
     {
         int lv = Mathf.Max(1, newLevel);
         if (lv == level) return;
+
         level = lv;
+        RefreshRuntimeParams();
         OnLevelChanged();
     }
 
-    /// <summary>
-    /// 현재 레벨의 SkillEffectConfig를 반환합니다.
-    /// CommonSkillConfigSO.levels[] Inspector 값을 즉시 반영합니다.
-    /// </summary>
-    protected SkillEffectConfig P => (config != null) ? config.GetLevelParams(level) : default;
+    private void RefreshRuntimeParams()
+    {
+        _lastBalanceRow = null;
+
+        // 1) SO 기본값
+        _runtimeP = (config != null) ? config.GetLevelParams(level) : default;
+
+        // 2) JSON 오버라이드
+        string id = GetBalanceId();
+        if (!string.IsNullOrEmpty(id) && SkillBalanceService2D.IsLoaded)
+        {
+            if (SkillBalanceService2D.TryGet(id, out var row))
+            {
+                _lastBalanceRow = row;
+                ApplyBalanceRow(row, level, ref _runtimeP);
+            }
+        }
+    }
+
+    private static void ApplyBalanceRow(SkillBalanceDB2D.SkillRow2D row, int level, ref CommonSkillLevelParams p)
+    {
+        int lvMinus1 = Mathf.Max(0, level - 1);
+
+        // ----- 공통 -----
+        if (row.HasDamage()) p.damage = row.damage;
+        if (row.damageAddPerLevel != 0) p.damage = Mathf.Max(0, p.damage + row.damageAddPerLevel * lvMinus1);
+
+        if (row.HasCooldown()) p.cooldown = row.cooldown;
+        if (row.cooldownAddPerLevel != 0f) p.cooldown = Mathf.Max(0.01f, p.cooldown + row.cooldownAddPerLevel * lvMinus1);
+
+        if (row.HasSpeed()) p.projectileSpeed = row.speed;
+        if (row.speedAddPerLevel != 0f) p.projectileSpeed = Mathf.Max(0f, p.projectileSpeed + row.speedAddPerLevel * lvMinus1);
+
+        if (row.HasLife()) p.lifeSeconds = row.life;
+        if (row.lifeAddPerLevel != 0f) p.lifeSeconds = Mathf.Max(0.05f, p.lifeSeconds + row.lifeAddPerLevel * lvMinus1);
+
+        if (row.HasCount()) p.projectileCount = row.count;
+        if (row.countAddPerLevel != 0) p.projectileCount = Mathf.Max(1, p.projectileCount + row.countAddPerLevel * lvMinus1);
+
+        // ----- 강화/전용값 -----
+        if (row.HasBounceCount()) p.bounceCount = row.bounceCount;
+        if (row.bounceAddPerLevel != 0) p.bounceCount = Mathf.Max(0, p.bounceCount + row.bounceAddPerLevel * lvMinus1);
+
+        if (row.HasChainCount()) p.chainCount = row.chainCount;
+        if (row.chainAddPerLevel != 0) p.chainCount = Mathf.Max(0, p.chainCount + row.chainAddPerLevel * lvMinus1);
+
+        if (row.HasSplitCount()) p.splitCount = row.splitCount;
+        if (row.splitAddPerLevel != 0) p.splitCount = Mathf.Max(0, p.splitCount + row.splitAddPerLevel * lvMinus1);
+
+        if (row.HasExplosionRadius()) p.explosionRadius = row.explosionRadius;
+        if (row.explosionRadiusAddPerLevel != 0f) p.explosionRadius = Mathf.Max(0.01f, p.explosionRadius + row.explosionRadiusAddPerLevel * lvMinus1);
+
+        if (row.HasChildSpeed()) p.childSpeed = row.childSpeed;
+        if (row.childSpeedAddPerLevel != 0f) p.childSpeed = Mathf.Max(0f, p.childSpeed + row.childSpeedAddPerLevel * lvMinus1);
+
+        if (row.HasHitInterval()) p.hitInterval = row.hitInterval;
+        if (row.hitIntervalAddPerLevel != 0f) p.hitInterval = Mathf.Max(0.01f, p.hitInterval + row.hitIntervalAddPerLevel * lvMinus1);
+
+        if (row.HasOrbitRadius()) p.orbitRadius = row.orbitRadius;
+        if (row.orbitRadiusAddPerLevel != 0f) p.orbitRadius = Mathf.Max(0f, p.orbitRadius + row.orbitRadiusAddPerLevel * lvMinus1);
+
+        if (row.HasOrbitSpeed()) p.orbitAngularSpeed = row.orbitSpeed;
+        if (row.orbitSpeedAddPerLevel != 0f) p.orbitAngularSpeed = p.orbitAngularSpeed + row.orbitSpeedAddPerLevel * lvMinus1;
+    }
+
+    protected bool TryGetBalanceRow(out SkillBalanceDB2D.SkillRow2D row)
+    {
+        row = _lastBalanceRow;
+        return row != null;
+    }
+
+    protected virtual string GetBalanceId()
+    {
+        if (!string.IsNullOrEmpty(balanceIdOverride))
+            return balanceIdOverride.Trim();
+
+        string kindName = Kind.ToString();
+        if (string.IsNullOrEmpty(kindName)) return null;
+
+        return "weapon_" + kindName.ToLowerInvariant();
+    }
 
     protected bool TryGetNearest(out EnemyRegistryMember2D enemy)
     {
@@ -121,17 +285,11 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour
         }
     }
 
-    // 기존 무기 스크립트 호환용(컴파일 에러 방지)
     protected bool TryBeginFire(Action fireAction)
     {
         return TryBeginFireConsumeCooldown(fireAction);
     }
 
-    /// <summary>
-    /// 발사(지터 포함) + 쿨다운 소비를 "실제 발사 시점"에 맞춰서 처리한다.
-    /// - 지터(지연) 중에는 쿨다운을 절대 리셋하지 않는다.
-    /// - 그래서 2발 연속/발사 간격 붕괴를 구조적으로 차단한다.
-    /// </summary>
     protected bool TryBeginFireConsumeCooldown(Action fireAction)
     {
         if (fireAction == null) return false;
@@ -163,6 +321,24 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour
 
     private void ConsumeCooldown()
     {
-        cooldownTimer = Mathf.Max(0.01f, P.cooldown);
+        // P.cooldown이 0이거나 config가 비어도, 폴백으로 안전하게 쿨다운이 돈다.
+        cooldownTimer = StatCooldownSeconds;
+    }
+
+    // ILevelableSkill이 요구하는 오타 메서드 호환용(인터페이스가 OnAttaced를 요구하면 이걸로 통과)
+    public void OnAttaced(Transform newOwner) => OnAttached(newOwner);
+
+    public void OnAttached(Transform newOwner)
+    {
+        if (config == null)
+            Debug.LogWarning($"[CommonSkillWeapon2D] config가 비어있습니다: {name}", this);
+
+        Initialize(config, newOwner, 1);
+    }
+
+    public void ApplyLevel(int newLevel)
+    {
+        if (newLevel <= 0) return;
+        SetLevel(newLevel);
     }
 }

@@ -6,6 +6,24 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
 {
+    [Header("Legacy LevelUp Flow")]
+    [Tooltip("구 레벨업 시스템(이 스크립트)로 패널을 띄우고 싶을 때만 켜세요.\n신규 구조: LevelUpOpenOnPlayerExp + LevelUpOrchestrator + OfferService + LevelUpOfferPanelView")]
+    [SerializeField] private bool enableLegacyLevelUpFlow = false;
+
+    [Header("공통 스킬(카탈로그)")]
+    [SerializeField] private CommonSkillCatalogSO commonSkillCatalog;
+    [SerializeField] private CommonSkillManager2D commonSkillManager;
+
+    [Header("패시브(카탈로그)")]
+    [SerializeField] private PassiveCatalogSO passiveCatalog;
+    [SerializeField] private PassiveManager2D passiveManager;
+
+    [Header("슬롯 제한(인스펙터에서 조절)")]
+    [SerializeField] private int maxSkillSlots = 8;
+    [SerializeField] private int maxPassiveSlots = 8;
+    [SerializeField] private bool useTotalSlotCap = true;
+    [SerializeField] private int maxTotalSlots = 16;
+
     [Header("레벨업 소스")]
     [SerializeField] private PlayerExp playerExp;
 
@@ -56,18 +74,25 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         if (shooter == null) shooter = FindFirstObjectByType<WeaponShooterSystem2D>();
         if (weaponDatabase == null) weaponDatabase = FindFirstObjectByType<WeaponDatabaseSO>();
 
+        if (commonSkillManager == null) commonSkillManager = FindFirstObjectByType<CommonSkillManager2D>();
+        if (passiveManager == null) passiveManager = FindFirstObjectByType<PassiveManager2D>();
+
         if (seedEquippedWeaponsAsLevel1)
             SeedEquippedWeapons();
     }
 
     private void OnEnable()
     {
+        if (!enableLegacyLevelUpFlow) return;
+
         if (playerExp != null)
             playerExp.OnLevelUp += OnLevelUp;
     }
 
     private void OnDisable()
     {
+        if (!enableLegacyLevelUpFlow) return;
+
         if (playerExp != null)
             playerExp.OnLevelUp -= OnLevelUp;
     }
@@ -94,21 +119,27 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
             if (levelUpPanelInterval > 0f)
                 yield return new WaitForSecondsRealtime(levelUpPanelInterval);
 
-            var a = PickOneChoice(exclude0: null, exclude1: null);
-            var b = PickOneChoice(exclude0: a, exclude1: null);
-            var c = PickOneChoice(exclude0: a, exclude1: b);
+            // ✅ 3장 고정: 스킬 2장 + 패시브 1장
+            var a = PickOneSkillChoice(null, null);
+            var b = PickOneSkillChoice(a, null);
+            var c = PickOnePassiveChoice();
+
+            // 패시브 후보가 0이면 fallback: 스킬로 채움(카드 3장 보장)
+            if (c == null)
+                c = PickOneSkillChoice(a, b);
 
             _pendingLevelUpCount = Mathf.Max(0, _pendingLevelUpCount - 1);
 
-            // 리롤 콜백 포함 Open
+            // ✅ 리롤도 동일 규칙으로
             levelUpPanel.Open(
                 a, b, c,
                 OnChoicePicked,
                 () =>
                 {
-                    var ra = PickOneChoice(exclude0: null, exclude1: null);
-                    var rb = PickOneChoice(exclude0: ra, exclude1: null);
-                    var rc = PickOneChoice(exclude0: ra, exclude1: rb);
+                    var ra = PickOneSkillChoice(null, null);
+                    var rb = PickOneSkillChoice(ra, null);
+                    var rc = PickOnePassiveChoice();
+                    if (rc == null) rc = PickOneSkillChoice(ra, rb);
                     return (ra, rb, rc);
                 }
             );
@@ -120,10 +151,231 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
     private void OnChoicePicked(LevelUpChoice choice)
     {
         if (choice == null) return;
-        if (choice.Weapon == null) return;
 
-        ApplyUpgrade(choice.Weapon);
+        switch (choice.Type)
+        {
+            case LevelUpChoiceType.WeaponSkill:
+                if (choice.Weapon != null) ApplyUpgrade(choice.Weapon);
+                break;
+
+            case LevelUpChoiceType.CommonSkill:
+                if (commonSkillManager != null && choice.CommonSkill != null)
+                    commonSkillManager.Upgrade(choice.CommonSkill);
+                break;
+
+            case LevelUpChoiceType.Passive:
+                if (passiveManager != null && choice.Passive != null)
+                    passiveManager.Upgrade(choice.Passive);
+                break;
+        }
     }
+
+    // ============================
+    // 슬롯/보유 개수 계산
+    // ============================
+
+    private int GetAcquiredSkillCount()
+    {
+        int weaponCount = _levels.Count; // 무기 스킬 보유 수
+        int commonCount = 0;
+
+        if (commonSkillCatalog != null && commonSkillManager != null && commonSkillCatalog.skills != null)
+        {
+            foreach (var s in commonSkillCatalog.skills)
+                if (s != null && commonSkillManager.GetLevel(s.kind) > 0)
+                    commonCount++;
+        }
+
+        return weaponCount + commonCount;
+    }
+
+    private bool HasFreeSkillSlot()
+    {
+        int skills = GetAcquiredSkillCount();
+        int passives = passiveManager != null ? passiveManager.AcquiredCount : 0;
+
+        if (skills >= maxSkillSlots) return false;
+        if (useTotalSlotCap && (skills + passives) >= maxTotalSlots) return false;
+        return true;
+    }
+
+    private bool HasFreePassiveSlot()
+    {
+        int skills = GetAcquiredSkillCount();
+        int passives = passiveManager != null ? passiveManager.AcquiredCount : 0;
+
+        if (passives >= maxPassiveSlots) return false;
+        if (useTotalSlotCap && (skills + passives) >= maxTotalSlots) return false;
+        return true;
+    }
+
+    // ============================
+    // 카드 후보 뽑기
+    // ============================
+
+    private LevelUpChoice PickOneSkillChoice(LevelUpChoice exclude0, LevelUpChoice exclude1)
+    {
+        _candidate.Clear();
+
+        // 1) 무기 후보
+        var weapons = GetWeaponCandidates();
+        for (int i = 0; i < weapons.Count; i++)
+        {
+            var w = weapons[i];
+            if (w == null) continue;
+            if (string.IsNullOrWhiteSpace(w.weaponId)) continue;
+
+            if (exclude0 != null && exclude0.Type == LevelUpChoiceType.WeaponSkill && exclude0.Weapon == w) continue;
+            if (exclude1 != null && exclude1.Type == LevelUpChoiceType.WeaponSkill && exclude1.Weapon == w) continue;
+
+            if (IsMaxed(w)) continue;
+
+            bool acquired = GetLevel(w.weaponId) > 0;
+            if (!acquired && !HasFreeSkillSlot()) continue;
+
+            _candidate.Add(i); // 무기는 i 그대로 사용
+        }
+
+        // 2) 공통스킬 후보(무기 인덱스와 구분하기 위해 음수 인덱스 사용)
+        if (commonSkillCatalog != null && commonSkillCatalog.skills != null && commonSkillManager != null)
+        {
+            for (int i = 0; i < commonSkillCatalog.skills.Count; i++)
+            {
+                var s = commonSkillCatalog.skills[i];
+                if (s == null) continue;
+
+                if (exclude0 != null && exclude0.Type == LevelUpChoiceType.CommonSkill && exclude0.CommonSkill == s) continue;
+                if (exclude1 != null && exclude1.Type == LevelUpChoiceType.CommonSkill && exclude1.CommonSkill == s) continue;
+
+                if (commonSkillManager.IsMaxLevel(s)) continue;
+
+                bool acquired = commonSkillManager.GetLevel(s.kind) > 0;
+                if (!acquired && !HasFreeSkillSlot()) continue;
+
+                _candidate.Add(-(i + 1)); // ✅ 공통스킬은 -(i+1)
+            }
+        }
+
+        if (_candidate.Count == 0) return null;
+
+        int pick = _candidate[UnityEngine.Random.Range(0, _candidate.Count)];
+
+        // pick >= 0 => 무기
+        if (pick >= 0)
+        {
+            var w = weapons[pick];
+            int curLevel = GetLevel(w.weaponId);
+            int max = GetMaxLevel(w);
+            int nextLevel = Mathf.Clamp(curLevel + 1, 1, max);
+
+            string title = BuildCardTitle(w, curLevel, nextLevel, max);
+            string desc = BuildCardDescriptionSimple(w, nextLevel);
+
+            return new LevelUpChoice(w, nextLevel, title, desc, w.tagKr, w.icon);
+        }
+        else
+        {
+            int idx = (-pick) - 1;
+            if (commonSkillCatalog == null || commonSkillCatalog.skills == null) return null;
+            if (idx < 0 || idx >= commonSkillCatalog.skills.Count) return null;
+
+            var s = commonSkillCatalog.skills[idx];
+
+            int curLevel = commonSkillManager != null ? commonSkillManager.GetLevel(s.kind) : 0;
+            int max = Mathf.Max(1, (int)s.maxLevel);
+            int nextLevel = Mathf.Clamp(curLevel + 1, 1, max);
+
+            string skillName = string.IsNullOrWhiteSpace(s.displayName) ? s.name : s.displayName;
+
+            // [Issue 4 수정] "Lv." 표기 제거 + 신규 획득/업그레이드 구분 타이틀
+            // 이미 보유 중이면 "스킬명 강화", 신규면 "스킬명 획득"
+            string title = curLevel <= 0 ? $"{skillName} (획득)" : $"{skillName} (강화)";
+
+            // 카드 설명: 공격 방식 + 다음 레벨 수치 요약
+            string desc = BuildCommonSkillDesc(s, nextLevel);
+
+            return new LevelUpChoice(s, nextLevel, title, desc, "공통 스킬", s.icon);
+        }
+    }
+
+    private LevelUpChoice PickOnePassiveChoice()
+    {
+        if (passiveCatalog == null || passiveCatalog.passives == null || passiveCatalog.passives.Count == 0)
+            return null;
+
+        if (passiveManager == null)
+            return null;
+
+        _candidate.Clear();
+
+        for (int i = 0; i < passiveCatalog.passives.Count; i++)
+        {
+            var p = passiveCatalog.passives[i];
+            if (p == null) continue;
+
+            if (passiveManager.IsMaxLevel(p)) continue;
+
+            int cur = passiveManager.GetLevel(p.kind);
+            bool acquired = cur > 0;
+            if (!acquired && !HasFreePassiveSlot()) continue;
+
+            _candidate.Add(i);
+        }
+
+        if (_candidate.Count == 0) return null;
+
+        int pick = _candidate[UnityEngine.Random.Range(0, _candidate.Count)];
+        var cfg = passiveCatalog.passives[pick];
+
+        int curLv = passiveManager.GetLevel(cfg.kind);
+        int maxLv = Mathf.Max(1, (int)cfg.maxLevel);
+        int nextLv = Mathf.Clamp(curLv + 1, 1, maxLv);
+
+        string passiveName = string.IsNullOrWhiteSpace(cfg.displayName) ? cfg.name : cfg.displayName;
+
+        // [Issue 5 수정] "Lv." 표기 제거: 패시브 이름만 타이틀로 사용
+        string title = passiveName;
+
+        // [Issue 5] 수치 표기 필수: SO의 다음 레벨 params에서 자동 생성
+        // PassiveAutoBuilder struct 버그 수정 후 0%가 아닌 실제 값이 표시됨
+        var lp = cfg.GetLevelParams(nextLv);
+        string desc = BuildPassiveDesc(cfg.kind, passiveName, lp);
+
+        return new LevelUpChoice(cfg, nextLv, title, desc, "패시브", cfg.icon);
+    }
+
+    // [Issue 5] 패시브 카드 설명: 수치 명시, Lv. 표기 없음
+    private static string BuildPassiveDesc(PassiveKind kind, string kindName, PassiveLevelParams lp)
+    {
+        switch (kind)
+        {
+            case PassiveKind.AttackDamage:
+                return $"{kindName} +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.Defense:
+                return $"피해 감소 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.CooldownReduction:
+                return $"쿨타임 -{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.MoveSpeed:
+                return $"이동속도 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.PickupRange:
+                return $"아이템 획득 범위 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.MaxHp:
+                return $"최대 체력 +{lp.addInt}";
+            case PassiveKind.ElementDamage:
+                return $"속성 피해 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.SkillArea:
+                return $"스킬 범위 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            default:
+                // 범용 처리: addInt가 0이면 퍼센트, 0이 아니면 정수
+                if (lp.addInt != 0)
+                    return $"{kindName} +{lp.addInt}";
+                return $"{kindName} +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+        }
+    }
+
+    // ============================
+    // 무기 업그레이드 적용
+    // ============================
 
     private void ApplyUpgrade(WeaponDefinitionSO weapon)
     {
@@ -250,6 +502,10 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         return sum;
     }
 
+    // ============================
+    // 후보 풀(무기)
+    // ============================
+
     private IReadOnlyList<WeaponDefinitionSO> GetWeaponCandidates()
     {
         if (deck != null && !deck.IsEmpty)
@@ -261,6 +517,7 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         return Array.Empty<WeaponDefinitionSO>();
     }
 
+    // (구버전 호환) - 남겨두되, 현재 리롤에서는 사용 안 함
     private LevelUpChoice PickOneChoice(LevelUpChoice exclude0, LevelUpChoice exclude1)
     {
         var candidates = GetWeaponCandidates();
@@ -355,13 +612,71 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         return Mathf.Clamp(f, 0.05f, 10f);
     }
 
-    // 카드 제목: 레벨 숫자 없이 스킬 이름만 표시
-    private static string BuildCardTitle(WeaponDefinitionSO w, int cur, int next, int max)
+    // [Issue 4] 공통 스킬 카드 설명: 공격 방식 + 다음 레벨 수치 요약(Lv. 표기 없음)
+    private static string BuildCommonSkillDesc(CommonSkillConfigSO s, int nextLevel)
     {
-        return string.IsNullOrWhiteSpace(w.weaponNameKr) ? w.name : w.weaponNameKr;
+        if (s == null) return string.Empty;
+
+        // 1) 공격 방식 설명
+        string visual = !string.IsNullOrWhiteSpace(s.visualDescriptionKr)
+            ? s.visualDescriptionKr
+            : "자동으로 적을 공격합니다.";
+
+        // 2) 다음 레벨 핵심 수치 요약
+        var p = s.GetLevelParams(nextLevel);
+        string effect;
+
+        switch (s.kind)
+        {
+            case CommonSkillKind.OrbitingBlade:
+                effect = $"피해 {p.damage} | 검 {p.projectileCount}개 | 틱 {p.hitInterval:0.##}s";
+                break;
+            case CommonSkillKind.Boomerang:
+                effect = $"피해 {p.damage} | 투사체 {p.projectileCount}개 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.PiercingBullet:
+                effect = $"피해 {p.damage} | 투사체 {p.projectileCount}개 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.HomingMissile:
+                effect = $"피해 {p.damage} | 연쇄 {p.chainCount}회 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.DarkOrb:
+                effect = $"피해 {p.damage} | 분열 {p.splitCount}개 | 폭발반경 {p.explosionRadius:0.#}";
+                break;
+            case CommonSkillKind.Shuriken:
+                effect = $"피해 {p.damage} | 튕김 {p.bounceCount}회 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.ArrowShot:
+                effect = $"피해 {p.damage} | 화살 {p.projectileCount}발 | 쿨 {p.cooldown:0.##}s";
+                break;
+            case CommonSkillKind.ArrowRain:
+                effect = $"피해 {p.damage} | 반경 {p.explosionRadius:0.#} | 쿨 {p.cooldown:0.##}s";
+                break;
+            default:
+                effect = $"피해 {p.damage} | 쿨 {p.cooldown:0.##}s";
+                break;
+        }
+
+        return $"{visual}\n효과: {effect}";
     }
 
-    // 카드 설명: 레벨별 실제 변화량 자동 계산
+    // "왜 2레벨부터?" 느낌 줄이기: 획득/강화 + 레벨 표기 개선
+    private static string BuildCardTitle(WeaponDefinitionSO w, int cur, int next, int max)
+    {
+        string name = string.IsNullOrWhiteSpace(w.weaponNameKr) ? w.name : w.weaponNameKr;
+
+        if (cur <= 0) return $"{name} (획득)";
+        return $"{name} (Lv.{cur} → Lv.{next})";
+    }
+
+    // 무기 설명(간단): 기존 문장형 유지
+    private string BuildCardDescriptionSimple(WeaponDefinitionSO w, int nextLevel)
+    {
+        int cur = Mathf.Max(0, nextLevel - 1);
+        return BuildCardDescriptionText(w, cur, nextLevel);
+    }
+
+    // 수치 대신 문장형(네가 원하는 UX)
     private string BuildCardDescriptionText(WeaponDefinitionSO w, int curLevel, int nextLevel)
     {
         if (w == null) return string.Empty;
@@ -369,40 +684,6 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         if (curLevel <= 0)
             return "새 스킬을 획득합니다.";
 
-        // LV 표기
-        string lvLine = $"LV{curLevel} → LV{nextLevel}";
-
-        // 변화량 계산
-        int dmgCur  = CalculateDesiredBonusDamage(w, curLevel);
-        int dmgNext = CalculateDesiredBonusDamage(w, nextLevel);
-        float cdCur  = CalculateDesiredCooldownMul(w, curLevel);
-        float cdNext = CalculateDesiredCooldownMul(w, nextLevel);
-
-        var lines = new System.Text.StringBuilder();
-        lines.AppendLine(lvLine);
-
-        int dmgDelta = dmgNext - dmgCur;
-        if (dmgDelta > 0)
-            lines.AppendLine($"공격력 +{dmgDelta}");
-        else if (dmgDelta < 0)
-            lines.AppendLine($"공격력 {dmgDelta}");
-
-        float cdDelta = cdNext - cdCur;
-        if (cdDelta < -0.001f)
-            lines.AppendLine($"쿨타임 감소");
-        else if (cdDelta > 0.001f)
-            lines.AppendLine($"쿨타임 증가");
-
-        float rangeCur  = CalculateDesiredRangeAdd(w, curLevel);
-        float rangeNext = CalculateDesiredRangeAdd(w, nextLevel);
-        float rangeDelta = rangeNext - rangeCur;
-        if (rangeDelta > 0.001f)
-            lines.AppendLine($"사거리 +{rangeDelta:F1}");
-
-        // 아무 변화도 없으면 기본 문구
-        if (dmgDelta == 0 && Mathf.Abs(cdDelta) <= 0.001f && Mathf.Abs(rangeDelta) <= 0.001f)
-            lines.AppendLine("스킬이 강화됩니다.");
-
-        return lines.ToString().TrimEnd();
+        return "피해량이 증가하고 재사용 대기 시간이 감소합니다.";
     }
 }
