@@ -16,8 +16,10 @@ public sealed class StraightProjectile2D : ProjectileBase2D
     [SerializeField, Tooltip("없으면 Awake에서 자동으로 가져옵니다")]
     private Rigidbody2D rb;
 
-    private void Awake()
+    protected override void Awake()
     {
+        // 부모(ProjectileBase2D)의 콜라이더 자동 할당 등 공통 초기화
+        base.Awake();
         // 인스펙터 미할당/누락 방어
         if (rb == null) rb = GetComponent<Rigidbody2D>();
     }

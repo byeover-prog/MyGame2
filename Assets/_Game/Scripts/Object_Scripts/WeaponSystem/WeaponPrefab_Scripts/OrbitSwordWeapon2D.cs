@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// 회전검 무기 (구버전 / WeaponSystem 경로)
-/// ★ 오브젝트 풀링 방식으로 전환:
+/// 오브젝트 풀링 방식으로 전환:
 ///   - Rebuild() 시 Destroy/Instantiate 대신 활성/비활성 전환만 수행
 ///   - Awake에서 최대 개수만큼 미리 생성 후 재사용
 /// </summary>
@@ -26,10 +26,12 @@ public sealed class OrbitSwordWeapon2D : MonoBehaviour
     [Tooltip("미리 생성할 최대 검 수. 이후 SetSwordCount에서 이 수를 초과하지 않음.")]
     [SerializeField, Min(1)] private int maxPool = 8;
 
-    // ★ 풀링: 미리 생성된 검 리스트 (절대 런타임 중 Destroy하지 않음)
+    // 풀링: 미리 생성된 검 리스트 (절대 런타임 중 Destroy하지 않음)
     private readonly List<Transform> _swords = new List<Transform>(8);
     private float _angle;
+#pragma warning disable CS0414 // 풀 초기화 완료 플래그, 추후 방어 로직용 보존
     private bool _poolReady;
+#pragma warning restore CS0414
 
     private void Awake()
     {
@@ -73,7 +75,7 @@ public sealed class OrbitSwordWeapon2D : MonoBehaviour
     }
 
     /// <summary>
-    /// ★ 풀링 핵심: 최대 개수만큼 미리 생성, 이후에는 Instantiate하지 않음
+    /// 풀링 핵심: 최대 개수만큼 미리 생성, 이후에는 Instantiate하지 않음
     /// </summary>
     private void EnsurePool()
     {
@@ -97,7 +99,7 @@ public sealed class OrbitSwordWeapon2D : MonoBehaviour
     }
 
     /// <summary>
-    /// ★ 풀링: swordCount에 맞게 활성/비활성만 전환 (Destroy/Instantiate 없음)
+    /// 풀링: swordCount에 맞게 활성/비활성만 전환 (Destroy/Instantiate 없음)
     /// </summary>
     private void ApplyActiveCount()
     {

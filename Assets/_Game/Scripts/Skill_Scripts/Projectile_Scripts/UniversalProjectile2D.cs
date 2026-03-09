@@ -1,4 +1,3 @@
-// UTF-8
 // 요약: ProjectileBase2D(추상) 을 상속한 "모든 투사체 공용" 구현체.
 // - 어떤 무기/스킬이든 ProjectileBase2D를 요구하면 이 컴포넌트를 투사체 프리팹에 붙이면 된다.
 // - 동작 차이는 Mode + 파라미터로 인스펙터에서 해결.
@@ -48,10 +47,12 @@ public sealed class UniversalProjectile2D : ProjectileBase2D
         _remainRicochet = Mathf.Max(0, ricochetCount);
     }
 
-    private void Update()
+    protected override void Update()
     {
-        // ProjectileBase2D가 이동을 직접 처리하지 않는 구조라면 여기서 이동을 처리한다.
-        // (만약 ProjectileBase2D가 velocity 이동을 이미 한다면, 여기 코드는 "방향 갱신"만 하게 바꾸면 됨)
+        // 부모(ProjectileBase2D)의 수명 체크 + 기본 이동을 먼저 수행
+        base.Update();
+
+        // 모드별 추가 이동 처리 (유도/리코쳇)
         switch (mode)
         {
             case MoveMode.Homing:

@@ -68,7 +68,7 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
             Debug.Log($"[ThunderStrike] Strike pos={transform.position} radius={radius} dmg={damage} mask={mask.value}");
 
         // 범위 데미지 (즉시 1회)
-        int hitCount = Physics2D.OverlapCircleNonAlloc(
+        int hitCount = Physics2DCompat.OverlapCircleNonAlloc(
             (Vector2)transform.position,
             radius,
             _hits,

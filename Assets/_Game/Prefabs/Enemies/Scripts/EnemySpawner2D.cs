@@ -1,5 +1,4 @@
-﻿// UTF-8
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 // [구현 원리 요약]
@@ -37,7 +36,9 @@ public sealed class EnemySpawner2D : MonoBehaviour
     [SerializeField] private int maxAliveEnemies = 40;
 
     [Header("안전장치(레거시 호환)")]
+#pragma warning disable CS0414 // 레거시 호환용 인스펙터 플래그, 추후 사용 대비 보존
     [SerializeField] private bool ensureEnemyRegistry = true;
+#pragma warning restore CS0414
 
     [Header("디버그")]
     [SerializeField] private bool verboseLog = false;
