@@ -2,188 +2,215 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace _Game.Scripts.UI.HUD
+/// <summary>
+/// 인게임 HUD 슬롯 1칸 표시 전용.
+/// 상태에 따라 프레임 / 아이콘 / 텍스트만 갱신한다.
+/// 기존 호출부 호환을 위해 다양한 메서드 시그니처를 함께 제공한다.
+/// </summary>
+public sealed class HudSkillSlotUI : MonoBehaviour
 {
-    /// <summary>
-    /// 인게임 하단 스킬 슬롯 1칸 표시 전용.
-    /// 표시만 담당하고, 실제 스킬 발동 로직은 넣지 않는다.
-    /// 궁극기/지원 궁극기는 현재 "참조용 자리"로도 사용할 수 있다.
-    /// </summary>
-    public sealed class HudSkillSlotUI : MonoBehaviour
+    private enum SlotState
     {
-        [Header("기본 참조")]
-        [SerializeField, Tooltip("슬롯 테두리 이미지")]
-        private Image frame_Image;
+        Empty,
+        Filled,
+        Locked,
+        Placeholder
+    }
 
-        [SerializeField, Tooltip("스킬 아이콘 이미지")]
-        private Image icon_Image;
+    [Header("참조")]
+    [Tooltip("슬롯 아이콘 이미지")]
+    [SerializeField] private Image iconImage;
 
-        [SerializeField, Tooltip("쿨타임 마스크 이미지 (Fill Amount 사용)")]
-        private Image cooldown_Mask_Image;
+    [Tooltip("슬롯 프레임 이미지")]
+    [SerializeField] private Image frameImage;
 
-        [SerializeField, Tooltip("입력키 텍스트")]
-        private TextMeshProUGUI key_Text;
+    [Tooltip("슬롯 이름 텍스트")]
+    [SerializeField] private TMP_Text labelText;
 
-        [SerializeField, Tooltip("레벨 또는 강화 수치 텍스트")]
-        private TextMeshProUGUI level_Text;
+    [Tooltip("슬롯 보조 텍스트(레벨, 설명, 개수 등)")]
+    [SerializeField] private TMP_Text subLabelText;
 
-        [SerializeField, Tooltip("잠금 상태 아이콘")]
-        private GameObject lock_Object;
+    [Header("프레임 스프라이트")]
+    [Tooltip("빈 슬롯 프레임")]
+    [SerializeField] private Sprite emptyFrameSprite;
 
-        [SerializeField, Tooltip("비활성 오버레이")]
-        private GameObject disabled_Overlay_Object;
+    [Tooltip("일반 슬롯 프레임")]
+    [SerializeField] private Sprite filledFrameSprite;
 
-        [Header("상태")]
-        [SerializeField, Tooltip("현재 빈 슬롯인지 여부")]
-        private bool is_Empty = true;
+    [Tooltip("잠김 슬롯 프레임")]
+    [SerializeField] private Sprite lockedFrameSprite;
 
-        [SerializeField, Tooltip("현재 잠금 상태인지 여부")]
-        private bool is_Locked = false;
+    [Header("아이콘 색상")]
+    [Tooltip("빈 슬롯 아이콘 색상")]
+    [SerializeField] private Color emptyIconColor = new Color(1f, 1f, 1f, 0.18f);
 
-        [SerializeField, Tooltip("현재 미구현/참조 전용 상태인지 여부")]
-        private bool is_Placeholder = false;
+    [Tooltip("일반 슬롯 아이콘 색상")]
+    [SerializeField] private Color filledIconColor = Color.white;
 
-        /// <summary>
-        /// 빈 슬롯 상태로 초기화.
-        /// </summary>
-        public void SetEmpty(string key_Label = "")
+    [Tooltip("잠김 슬롯 아이콘 색상")]
+    [SerializeField] private Color lockedIconColor = new Color(1f, 1f, 1f, 0.35f);
+
+    private SlotState currentState = SlotState.Empty;
+
+    /// <summary>
+    /// 빈 슬롯으로 표시
+    /// </summary>
+    public void SetEmpty(string label = "")
+    {
+        currentState = SlotState.Empty;
+        ApplyState(null, label, string.Empty);
+    }
+
+    /// <summary>
+    /// 자리 표시 슬롯으로 표시
+    /// </summary>
+    public void SetPlaceholder(string label = "")
+    {
+        currentState = SlotState.Placeholder;
+        ApplyState(null, label, string.Empty);
+    }
+
+    /// <summary>
+    /// 자리 표시 슬롯으로 표시 (호환 오버로드)
+    /// </summary>
+    public void SetPlaceholder(Sprite iconSprite, string label)
+    {
+        currentState = SlotState.Placeholder;
+        ApplyState(iconSprite, label, string.Empty);
+    }
+
+    /// <summary>
+    /// 잠김 슬롯으로 표시
+    /// </summary>
+    public void SetLocked(string label = "")
+    {
+        currentState = SlotState.Locked;
+        ApplyState(null, label, string.Empty);
+    }
+
+    /// <summary>
+    /// 실제 스킬 슬롯으로 표시
+    /// </summary>
+    public void SetSkill(Sprite iconSprite, string label = "")
+    {
+        currentState = SlotState.Filled;
+        ApplyState(iconSprite, label, string.Empty);
+    }
+
+    /// <summary>
+    /// 실제 스킬 슬롯으로 표시 (호환 오버로드)
+    /// </summary>
+    public void SetSkill(Sprite iconSprite, string label, string subLabel)
+    {
+        currentState = SlotState.Filled;
+        ApplyState(iconSprite, label, subLabel);
+    }
+
+    /// <summary>
+    /// 이전 답변에서 제시한 이름도 같이 지원
+    /// </summary>
+    public void Set_Empty(string label = "")
+    {
+        SetEmpty(label);
+    }
+
+    /// <summary>
+    /// 이전 답변에서 제시한 이름도 같이 지원
+    /// </summary>
+    public void Set_Placeholder(string label = "")
+    {
+        SetPlaceholder(label);
+    }
+
+    /// <summary>
+    /// 이전 답변에서 제시한 이름도 같이 지원
+    /// </summary>
+    public void Set_Placeholder(Sprite iconSprite, string label)
+    {
+        SetPlaceholder(iconSprite, label);
+    }
+
+    /// <summary>
+    /// 이전 답변에서 제시한 이름도 같이 지원
+    /// </summary>
+    public void Set_Filled(Sprite iconSprite, string label = "")
+    {
+        SetSkill(iconSprite, label);
+    }
+
+    /// <summary>
+    /// 이전 답변에서 제시한 이름도 같이 지원
+    /// </summary>
+    public void Set_Filled(Sprite iconSprite, string label, string subLabel)
+    {
+        SetSkill(iconSprite, label, subLabel);
+    }
+
+    /// <summary>
+    /// 슬롯 상태를 실제 UI에 반영
+    /// </summary>
+    private void ApplyState(Sprite iconSprite, string label, string subLabel)
+    {
+        if (labelText != null)
         {
-            is_Empty = true;
-            is_Locked = false;
-            is_Placeholder = false;
-
-            if (icon_Image != null)
-            {
-                icon_Image.enabled = false;
-                icon_Image.sprite = null;
-            }
-
-            if (key_Text != null)
-            {
-                key_Text.text = key_Label;
-            }
-
-            if (level_Text != null)
-            {
-                level_Text.text = string.Empty;
-            }
-
-            if (cooldown_Mask_Image != null)
-            {
-                cooldown_Mask_Image.fillAmount = 0f;
-                cooldown_Mask_Image.gameObject.SetActive(false);
-            }
-
-            if (lock_Object != null)
-            {
-                lock_Object.SetActive(false);
-            }
-
-            if (disabled_Overlay_Object != null)
-            {
-                disabled_Overlay_Object.SetActive(true);
-            }
+            labelText.text = label;
         }
 
-        /// <summary>
-        /// 일반 스킬 슬롯 표시.
-        /// </summary>
-        public void SetSkill(Sprite icon_Sprite, string key_Label = "", string level_Label = "")
+        if (subLabelText != null)
         {
-            is_Empty = false;
-            is_Locked = false;
-            is_Placeholder = false;
-
-            if (icon_Image != null)
-            {
-                icon_Image.enabled = true;
-                icon_Image.sprite = icon_Sprite;
-            }
-
-            if (key_Text != null)
-            {
-                key_Text.text = key_Label;
-            }
-
-            if (level_Text != null)
-            {
-                level_Text.text = level_Label;
-            }
-
-            if (cooldown_Mask_Image != null)
-            {
-                cooldown_Mask_Image.fillAmount = 0f;
-                cooldown_Mask_Image.gameObject.SetActive(true);
-            }
-
-            if (lock_Object != null)
-            {
-                lock_Object.SetActive(false);
-            }
-
-            if (disabled_Overlay_Object != null)
-            {
-                disabled_Overlay_Object.SetActive(false);
-            }
+            subLabelText.text = subLabel;
         }
 
-        /// <summary>
-        /// 궁극기/지원 궁극기처럼 아직 미구현인 슬롯을
-        /// "참조용 자리" 상태로 표시한다.
-        /// </summary>
-        public void SetPlaceholder(Sprite icon_Sprite, string key_Label = "")
+        switch (currentState)
         {
-            is_Empty = false;
-            is_Locked = true;
-            is_Placeholder = true;
-
-            if (icon_Image != null)
+            case SlotState.Empty:
             {
-                icon_Image.enabled = true;
-                icon_Image.sprite = icon_Sprite;
-                icon_Image.color = new Color(1f, 1f, 1f, 0.45f);
+                ApplyFrame(emptyFrameSprite);
+                ApplyIcon(null, emptyIconColor, false);
+                break;
             }
 
-            if (key_Text != null)
+            case SlotState.Placeholder:
             {
-                key_Text.text = key_Label;
+                ApplyFrame(emptyFrameSprite);
+                ApplyIcon(iconSprite, emptyIconColor, iconSprite != null);
+                break;
             }
 
-            if (level_Text != null)
+            case SlotState.Locked:
             {
-                level_Text.text = string.Empty;
+                ApplyFrame(lockedFrameSprite);
+                ApplyIcon(null, lockedIconColor, false);
+                break;
             }
 
-            if (cooldown_Mask_Image != null)
+            case SlotState.Filled:
             {
-                cooldown_Mask_Image.fillAmount = 0f;
-                cooldown_Mask_Image.gameObject.SetActive(false);
-            }
-
-            if (lock_Object != null)
-            {
-                lock_Object.SetActive(true);
-            }
-
-            if (disabled_Overlay_Object != null)
-            {
-                disabled_Overlay_Object.SetActive(true);
+                ApplyFrame(filledFrameSprite);
+                ApplyIcon(iconSprite, filledIconColor, iconSprite != null);
+                break;
             }
         }
+    }
 
-        /// <summary>
-        /// 쿨타임 표시 갱신.
-        /// remainingRatio = 1이면 가득 막힘, 0이면 사용 가능.
-        /// </summary>
-        public void SetCooldown(float remainingRatio)
-        {
-            if (cooldown_Mask_Image == null)
-            {
-                return;
-            }
+    /// <summary>
+    /// 프레임 갱신
+    /// </summary>
+    private void ApplyFrame(Sprite sprite)
+    {
+        if (frameImage == null) return;
+        frameImage.sprite = sprite;
+    }
 
-            cooldown_Mask_Image.gameObject.SetActive(true);
-            cooldown_Mask_Image.fillAmount = Mathf.Clamp01(remainingRatio);
-        }
+    /// <summary>
+    /// 아이콘 갱신
+    /// </summary>
+    private void ApplyIcon(Sprite sprite, Color color, bool enabledState)
+    {
+        if (iconImage == null) return;
+
+        iconImage.sprite = sprite;
+        iconImage.color = color;
+        iconImage.enabled = enabledState;
     }
 }

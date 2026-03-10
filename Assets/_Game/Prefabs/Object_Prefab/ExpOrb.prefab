@@ -179,5 +179,6 @@ MonoBehaviour:
   magnetCurvePower: 2
   pickupDistance: 0.3
   rb: {fileID: 0}
+  col: {fileID: 0}
   useRigidbodyIfExists: 1
-  debugLog: 1
+  debugLog: 0
