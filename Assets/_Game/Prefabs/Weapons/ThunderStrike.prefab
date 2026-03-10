@@ -133,4 +133,5 @@ MonoBehaviour:
   thunderDuration: 0.5
   visualRoot: {fileID: 0}
   visualScaleMultiplier: 1
-  debugLog: 1
+  debugLog: 0
+  _lastRadius: 1.5

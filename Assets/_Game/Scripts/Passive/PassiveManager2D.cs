@@ -1,13 +1,27 @@
+// ──────────────────────────────────────────────
+// PassiveManager2D.cs
+// 기존 패시브 시스템 매니저
+// (새 시스템 전환 완료 후 PlayerSkillLoadout으로 대체 예정)
+// ──────────────────────────────────────────────
+
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public sealed class PassiveManager2D : MonoBehaviour
 {
-    [SerializeField] private PassiveCatalogSO catalog;
-    [SerializeField] private Transform owner;
+    [Header("=== 참조 ===")]
+
+    [SerializeField, Tooltip("패시브 카탈로그 SO (패시브 목록)")]
+    private PassiveCatalogSO catalog;
+
+    [SerializeField, Tooltip("패시브 효과 적용 대상")]
+    private Transform owner;
+
+    // ── 런타임 레벨 배열 ───────────────────────
 
     private int[] _levels;
 
+    /// <summary>현재 보유 중인 패시브 개수</summary>
     public int AcquiredCount
     {
         get
@@ -20,6 +34,8 @@ public sealed class PassiveManager2D : MonoBehaviour
         }
     }
 
+    // ── 초기화 ─────────────────────────────────
+
     private void Awake()
     {
         if (owner == null) owner = transform;
@@ -27,6 +43,8 @@ public sealed class PassiveManager2D : MonoBehaviour
         int count = System.Enum.GetValues(typeof(PassiveKind)).Length;
         _levels = new int[count];
     }
+
+    // ── 조회 ───────────────────────────────────
 
     public int GetLevel(PassiveKind kind)
     {
@@ -43,6 +61,8 @@ public sealed class PassiveManager2D : MonoBehaviour
         return cur >= max;
     }
 
+    // ── 업그레이드 ─────────────────────────────
+
     public void Upgrade(PassiveConfigSO p)
     {
         if (p == null) return;
@@ -57,35 +77,39 @@ public sealed class PassiveManager2D : MonoBehaviour
         RecomputeAndApply();
     }
 
+    // ── 스탯 재계산 ───────────────────────────
+
     private void RecomputeAndApply()
     {
         var stats = owner != null ? owner.GetComponentInParent<PlayerCombatStats2D>() : null;
         if (stats == null && owner != null)
             stats = owner.gameObject.AddComponent<PlayerCombatStats2D>();
 
-        float atkBonus = SumPercent(PassiveKind.AttackDamage);
-        float defBonus = SumPercent(PassiveKind.Defense);
-        float cdBonus  = SumPercent(PassiveKind.CooldownReduction);
-        float msBonus  = SumPercent(PassiveKind.MoveSpeed);
-        float prBonus  = SumPercent(PassiveKind.PickupRange);
+        float atkBonus  = SumPercent(PassiveKind.AttackDamage);
+        float defBonus  = SumPercent(PassiveKind.Defense);
+        float cdBonus   = SumPercent(PassiveKind.CooldownReduction);
+        float msBonus   = SumPercent(PassiveKind.MoveSpeed);
+        float prBonus   = SumPercent(PassiveKind.PickupRange);
         float areaBonus = SumPercent(PassiveKind.SkillArea);
         float elemBonus = SumPercent(PassiveKind.ElementDamage);
 
-        // 합연산 → 배율화 (캡은 여기서 걸어버림)
+        // 합연산 → 배율화 (캡 적용)
         stats.SetDamageMul(1f + atkBonus);
-        stats.SetIncomingDamageMul(1f - Mathf.Clamp(defBonus, 0f, 0.60f)); // 최대 60% 감소까지만
-        stats.SetCooldownMul(1f - Mathf.Clamp(cdBonus, 0f, 0.60f));        // 쿨감도 60% 상한
+        stats.SetIncomingDamageMul(1f - Mathf.Clamp(defBonus, 0f, 0.60f));
+        stats.SetCooldownMul(1f - Mathf.Clamp(cdBonus, 0f, 0.60f));
         stats.SetMoveSpeedMul(1f + Mathf.Clamp(msBonus, 0f, 1.00f));
         stats.SetPickupRangeMul(1f + Mathf.Clamp(prBonus, 0f, 2.00f));
         stats.SetAreaMul(1f + Mathf.Clamp(areaBonus, 0f, 1.00f));
         stats.SetElementDamageMul(1f + Mathf.Clamp(elemBonus, 0f, 1.00f));
 
-        // 최대체력(정수)
+        // 최대체력 (정수)
         int hpAdd = SumInt(PassiveKind.MaxHp);
         var hp = owner != null ? owner.GetComponentInParent<PlayerHealth>() : null;
         if (hp != null)
             hp.SetMaxHpBonus(hpAdd, healToFull: true);
     }
+
+    // ── 수치 합산 ──────────────────────────────
 
     private float SumPercent(PassiveKind kind)
     {
