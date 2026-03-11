@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: "\uD68C\uC804\uAC80"
   visualDescriptionKr: "\uD68C\uC804\uAC80: (\uB808\uBCA81 \uB3D9\uC791 \uC124\uBA85\uC744
     \uC5EC\uAE30\uC5D0 \uC791\uC131)"
-  icon: {fileID: 0}
+  icon: {fileID: -1587626762484512987, guid: 4fb378f9657ff1f43b7bd5c9ad8b7691, type: 3}
   weaponPrefab: {fileID: 5202396342664615971, guid: 132d97a48597a024ebc3e83fc8d48d68,
     type: 3}
   maxLevel: 8
@@ -34,8 +34,8 @@ MonoBehaviour:
     explosionRadius: 0
     childSpeed: 0
     hitInterval: 0.25
-    orbitRadius: 0
-    orbitAngularSpeed: 0
+    orbitRadius: 2
+    orbitAngularSpeed: 180
     returnSpeed: 0
     turnSpeedDeg: 0
   - cooldown: 0
@@ -51,8 +51,8 @@ MonoBehaviour:
     explosionRadius: 0
     childSpeed: 0
     hitInterval: 0.25
-    orbitRadius: 0
-    orbitAngularSpeed: 0
+    orbitRadius: 2
+    orbitAngularSpeed: 180
     returnSpeed: 0
     turnSpeedDeg: 0
   - cooldown: 0
@@ -68,8 +68,8 @@ MonoBehaviour:
     explosionRadius: 0
     childSpeed: 0
     hitInterval: 0.25
-    orbitRadius: 0
-    orbitAngularSpeed: 0
+    orbitRadius: 2
+    orbitAngularSpeed: 180
     returnSpeed: 0
     turnSpeedDeg: 0
   - cooldown: 0
@@ -85,8 +85,8 @@ MonoBehaviour:
     explosionRadius: 0
     childSpeed: 0
     hitInterval: 0.25
-    orbitRadius: 0
-    orbitAngularSpeed: 0
+    orbitRadius: 2
+    orbitAngularSpeed: 180
     returnSpeed: 0
     turnSpeedDeg: 0
   - cooldown: 0
@@ -102,8 +102,8 @@ MonoBehaviour:
     explosionRadius: 0
     childSpeed: 0
     hitInterval: 0.25
-    orbitRadius: 0
-    orbitAngularSpeed: 0
+    orbitRadius: 2
+    orbitAngularSpeed: 180
     returnSpeed: 0
     turnSpeedDeg: 0
   - cooldown: 0
@@ -119,8 +119,8 @@ MonoBehaviour:
     explosionRadius: 0
     childSpeed: 0
     hitInterval: 0.25
-    orbitRadius: 0
-    orbitAngularSpeed: 0
+    orbitRadius: 2
+    orbitAngularSpeed: 180
     returnSpeed: 0
     turnSpeedDeg: 0
   - cooldown: 0
@@ -136,8 +136,8 @@ MonoBehaviour:
     explosionRadius: 0
     childSpeed: 0
     hitInterval: 0.25
-    orbitRadius: 0
-    orbitAngularSpeed: 0
+    orbitRadius: 2
+    orbitAngularSpeed: 180
     returnSpeed: 0
     turnSpeedDeg: 0
   - cooldown: 0
@@ -153,7 +153,7 @@ MonoBehaviour:
     explosionRadius: 0
     childSpeed: 0
     hitInterval: 0.25
-    orbitRadius: 0
-    orbitAngularSpeed: 0
+    orbitRadius: 2
+    orbitAngularSpeed: 180
     returnSpeed: 0
     turnSpeedDeg: 0

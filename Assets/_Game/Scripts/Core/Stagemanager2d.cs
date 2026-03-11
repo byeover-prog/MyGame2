@@ -82,6 +82,9 @@ public sealed class StageManager2D : MonoBehaviour
     /// <summary> 스테이지가 진행 중인지 </summary>
     public bool IsActive => _stageActive;
 
+    /// <summary> 보스 등장까지 남은 시간(초). HUD 타이머용. </summary>
+    public float RemainingSeconds => Mathf.Max(0f, bossSpawnSec - ElapsedTime);
+
     // ───────── 생명주기 ─────────
 
     private void Awake()

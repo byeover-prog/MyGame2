@@ -16,5 +16,15 @@ MonoBehaviour:
   skillType: 0
   displayName: "\uC6D4\uB95C\uAC80"
   icon: {fileID: -1587626762484512987, guid: 4fb378f9657ff1f43b7bd5c9ad8b7691, type: 3}
+  tagKr: "\uBB3C\uB9AC"
   maxLevel: 8
+  descLv1: "\uD50C\uB808\uC774\uC5B4 \uC8FC\uBCC0\uC5D0\uC11C \uD68C\uC804\uD558\uB294
+    \uC6D4\uB95C\uAC80\uC744 \uC18C\uD658 \uD569\uB2C8\uB2E4."
+  descLv2: "\uAC80\uC758 \uAC2F\uC218 1 \uC99D\uAC00"
+  descLv3: "\uAC80\uC758 \uAC2F\uC218 1 \uC99D\uAC00"
+  descLv4: "\uAC80\uC758 \uAC2F\uC218 1 \uC99D\uAC00"
+  descLv5: "\uAC80\uC758 \uAC2F\uC218 1 \uC99D\uAC00"
+  descLv6: "\uAC80\uC758 \uAC2F\uC218 1 \uC99D\uAC00"
+  descLv7: "\uAC80\uC758 \uAC2F\uC218 1 \uC99D\uAC00"
+  descLv8: "\uAC80\uC758 \uAC2F\uC218 1 \uC99D\uAC00"
   passiveStatType: 0

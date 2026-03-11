@@ -68,6 +68,7 @@ public sealed class LevelableSkillMarker2D : MonoBehaviour, ILevelableSkill
             var mb = all[i];
             if (mb == null) continue;
             if (mb == this) continue;
+            if (mb is LevelableSkillMarker2D) continue; // ★ 무한 재귀 방지
 
             var t = mb.GetType();
 

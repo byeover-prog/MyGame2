@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: "\uC218\uB9AC\uAC80"
   visualDescriptionKr: "\uC218\uB9AC\uAC80: (\uB808\uBCA81 \uB3D9\uC791 \uC124\uBA85\uC744
     \uC5EC\uAE30\uC5D0 \uC791\uC131)"
-  icon: {fileID: 0}
-  weaponPrefab: {fileID: 2099485024945684144, guid: a50c3d3f4f45ddb408f522717ed1cfb8,
+  icon: {fileID: 7765474139541862038, guid: 6f3a2dc3b8c39044ea36eccc87dffac0, type: 3}
+  weaponPrefab: {fileID: 6383786055516329131, guid: a50c3d3f4f45ddb408f522717ed1cfb8,
     type: 3}
   maxLevel: 8
   levels:
