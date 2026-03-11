@@ -2,14 +2,10 @@
 // LevelUpRewardApplier.cs
 // 레벨업 카드 선택 결과를 실제 게임 데이터에 반영
 //
-// 현재 구현 범위:
-//   - 스킬 카드: TryAddSkill / TryUpgradeSkill 호출
-//   - 대체 카드 (Heal/Gold/Invincible/BonusExp): 로그 출력만
-//     → 실제 적용은 다음 단계에서 구현
-//
-// 사용법:
-//   Systems > LevelUpSystem 오브젝트에 AddComponent
-//   Inspector에서 PlayerSkillLoadout 할당
+// 구현 범위:
+//   - 액티브 카드: PlayerSkillLoadout + CommonSkillManager2D 동시 반영
+//   - 패시브 카드: PlayerSkillLoadout + PlayerStatRuntimeApplier2D 즉시 재계산
+//   - 대체 카드: Heal / Gold / Invincible / BonusExp 실제 적용
 // ──────────────────────────────────────────────
 
 using UnityEngine;
@@ -20,35 +16,46 @@ namespace _Game.LevelUp
 {
     public sealed class LevelUpRewardApplier : MonoBehaviour
     {
-        // ── 참조 ───────────────────────────────────
-
         [Header("=== 플레이어 참조 ===")]
 
         [SerializeField, Tooltip("플레이어 스킬 로드아웃")]
         private PlayerSkillLoadout loadout;
 
-        // TODO: 실제 적용 시 아래 참조 활성화
-        // [SerializeField, Tooltip("플레이어 체력 컴포넌트")]
-        // private PlayerHealth playerHealth;
-        //
-        // [SerializeField, Tooltip("플레이어 재화 컴포넌트")]
-        // private MonoBehaviour playerCurrency;
-        //
-        // [SerializeField, Tooltip("플레이어 경험치 컴포넌트")]
-        // private PlayerExp playerExperience;
+        [SerializeField, Tooltip("패시브 적용 후 실제 스탯을 다시 계산할 컴포넌트")]
+        private PlayerStatRuntimeApplier2D statRuntimeApplier;
 
-        // ════════════════════════════════════════════
-        //  외부 API
-        // ════════════════════════════════════════════
+        [SerializeField, Tooltip("체력 회복/무적 적용 대상")]
+        private PlayerHealth playerHealth;
 
-        /// <summary>
-        /// 카드 데이터를 받아 실제 보상을 적용한다.
-        /// 성공하면 true, 실패하면 false.
-        /// </summary>
+        [SerializeField, Tooltip("즉시 경험치 적용 대상")]
+        private PlayerExp playerExp;
+
+        [SerializeField, Tooltip("재화 적용 대상")]
+        private PlayerCurrency2D playerCurrency;
+
+        [Header("=== 액티브 스킬 런타임 연결 ===")]
+
+        [SerializeField, Tooltip("실제 무기 프리팹을 스폰/업그레이드할 공통 스킬 매니저")]
+        private CommonSkillManager2D commonSkillManager;
+
+        [SerializeField, Tooltip("SkillDefinitionSO를 CommonSkillConfigSO로 변환할 카탈로그")]
+        private CommonSkillCatalogSO commonSkillCatalog;
+
+        private void Awake()
+        {
+            if (loadout == null) loadout = FindFirstObjectByType<PlayerSkillLoadout>();
+            if (statRuntimeApplier == null) statRuntimeApplier = FindFirstObjectByType<PlayerStatRuntimeApplier2D>();
+            if (playerHealth == null) playerHealth = FindFirstObjectByType<PlayerHealth>();
+            if (playerExp == null) playerExp = FindFirstObjectByType<PlayerExp>();
+            if (playerCurrency == null) playerCurrency = FindFirstObjectByType<PlayerCurrency2D>();
+            if (commonSkillManager == null) commonSkillManager = FindFirstObjectByType<CommonSkillManager2D>();
+            if (commonSkillCatalog == null && commonSkillManager != null)
+                commonSkillCatalog = commonSkillManager.Catalog;
+        }
+
         public bool Apply(LevelUpCardData cardData)
         {
-            if (cardData == null)
-                return false;
+            if (cardData == null) return false;
 
             switch (cardData.RewardType)
             {
@@ -56,67 +63,129 @@ namespace _Game.LevelUp
                     return ApplySkillCard(cardData);
 
                 case LevelUpRewardType.Heal:
-                    // TODO: playerHealth.Heal(cardData.HealAmount);
+                    if (playerHealth == null) { Debug.LogWarning("[RewardApplier] playerHealth 미할당", this); return false; }
+                    playerHealth.Heal(cardData.HealAmount);
                     Debug.Log($"[RewardApplier] 체력 회복: +{cardData.HealAmount}", this);
                     return true;
 
                 case LevelUpRewardType.Gold:
-                    // TODO: playerCurrency.AddGold(cardData.GoldAmount);
+                    if (playerCurrency == null) { Debug.LogWarning("[RewardApplier] playerCurrency 미할당", this); return false; }
+                    playerCurrency.AddGold(cardData.GoldAmount);
                     Debug.Log($"[RewardApplier] 재화 획득: +{cardData.GoldAmount}", this);
                     return true;
 
                 case LevelUpRewardType.Invincible:
-                    // TODO: invincibleSystem.Activate(cardData.InvincibleDuration);
-                    Debug.Log($"[RewardApplier] 무적: {cardData.InvincibleDuration}초", this);
+                    if (playerHealth == null) { Debug.LogWarning("[RewardApplier] playerHealth 미할당", this); return false; }
+                    playerHealth.ActivateTemporaryInvincibility(cardData.InvincibleDuration);
+                    Debug.Log($"[RewardApplier] 무적: {cardData.InvincibleDuration:0.#}초", this);
                     return true;
 
                 case LevelUpRewardType.BonusExp:
-                    // TODO: playerExperience.AddExp(cardData.BonusExpAmount);
-                    Debug.Log($"[RewardApplier] 경험치: +{cardData.BonusExpAmount}", this);
+                    if (playerExp == null) { Debug.LogWarning("[RewardApplier] playerExp 미할당", this); return false; }
+                    playerExp.AddExp(cardData.BonusExpAmount);
+                    Debug.Log($"[RewardApplier] 즉시 경험치: +{cardData.BonusExpAmount}", this);
                     return true;
 
                 default:
-                    Debug.LogWarning($"[RewardApplier] 알 수 없는 보상 타입: {cardData.RewardType}", this);
+                    Debug.LogWarning($"[RewardApplier] 알 수 없는 보상: {cardData.RewardType}", this);
                     return false;
             }
         }
 
-        // ════════════════════════════════════════════
-        //  내부 로직
-        // ════════════════════════════════════════════
-
-        /// <summary>
-        /// 스킬 카드 보상을 적용한다.
-        /// 미보유면 신규 획득, 보유 중이면 레벨업.
-        /// </summary>
         private bool ApplySkillCard(LevelUpCardData cardData)
         {
-            if (loadout == null)
+            if (loadout == null || cardData.SkillDefinition == null)
             {
-                Debug.LogWarning("[RewardApplier] loadout 미할당", this);
+                Debug.LogWarning("[RewardApplier] loadout 또는 SkillDefinition 누락", this);
                 return false;
             }
 
-            if (cardData.SkillDefinition == null)
+            SkillDefinitionSO definition = cardData.SkillDefinition;
+            string skillId = definition.SkillId;
+
+            // ★ 액티브: 런타임 매핑 확인 먼저
+            CommonSkillConfigSO runtimeSkillConfig = null;
+
+            if (definition.SkillType == SkillType.Active)
             {
-                Debug.LogWarning("[RewardApplier] SkillDefinition이 null", this);
+                if (commonSkillManager == null)
+                {
+                    Debug.LogWarning("[RewardApplier] commonSkillManager 미할당", this);
+                    return false;
+                }
+
+                if (!TryResolveCommonSkill(definition, out runtimeSkillConfig))
+                {
+                    Debug.LogWarning($"[RewardApplier] 액티브 매핑 실패: {skillId} ({definition.DisplayName})", this);
+                    return false;
+                }
+            }
+            else if (definition.SkillType == SkillType.Passive)
+            {
+                if (statRuntimeApplier == null)
+                {
+                    Debug.LogWarning("[RewardApplier] statRuntimeApplier 미할당", this);
+                    return false;
+                }
+            }
+
+            // 로드아웃 반영
+            bool alreadyOwned = loadout.HasSkill(skillId);
+            bool changed;
+
+            if (alreadyOwned)
+            {
+                changed = loadout.TryUpgradeSkill(skillId);
+                if (!changed)
+                {
+                    Debug.Log($"[RewardApplier] 강화 실패(최대레벨): {cardData.Title}", this);
+                    return false;
+                }
+            }
+            else
+            {
+                changed = loadout.TryAddSkill(definition);
+                if (!changed)
+                {
+                    Debug.Log($"[RewardApplier] 획득 실패(슬롯 가득): {cardData.Title}", this);
+                    return false;
+                }
+            }
+
+            // ★ 실제 런타임 반영
+            if (definition.SkillType == SkillType.Active)
+            {
+                commonSkillManager.Upgrade(runtimeSkillConfig);
+                Debug.Log($"[RewardApplier] 액티브 반영: {cardData.Title} ({(alreadyOwned ? "강화" : "획득")})", this);
+            }
+            else if (definition.SkillType == SkillType.Passive)
+            {
+                statRuntimeApplier.ReapplyFromLoadout();
+                Debug.Log($"[RewardApplier] 패시브 반영: {cardData.Title} ({(alreadyOwned ? "강화" : "획득")})", this);
+            }
+
+            return true;
+        }
+
+        private bool TryResolveCommonSkill(SkillDefinitionSO definition, out CommonSkillConfigSO config)
+        {
+            config = null;
+            if (definition == null) return false;
+
+            if (commonSkillCatalog == null && commonSkillManager != null)
+                commonSkillCatalog = commonSkillManager.Catalog;
+
+            if (commonSkillCatalog == null) return false;
+            if (!commonSkillCatalog.TryResolve(definition, out config)) return false;
+            if (config == null) return false;
+
+            if (config.weaponPrefab == null)
+            {
+                Debug.LogWarning($"[RewardApplier] weaponPrefab 비어있음: {config.name}", this);
                 return false;
             }
 
-            string skillId = cardData.SkillDefinition.SkillId;
-
-            // 이미 보유 중이면 레벨업
-            if (loadout.HasSkill(skillId))
-            {
-                bool upgraded = loadout.TryUpgradeSkill(skillId);
-                Debug.Log($"[RewardApplier] 스킬 강화: {cardData.Title} → {(upgraded ? "성공" : "실패(최대레벨)")}", this);
-                return upgraded;
-            }
-
-            // 미보유면 신규 획득
-            bool added = loadout.TryAddSkill(cardData.SkillDefinition);
-            Debug.Log($"[RewardApplier] 스킬 획득: {cardData.Title} → {(added ? "성공" : "실패(슬롯 가득)")}", this);
-            return added;
+            return true;
         }
     }
 }

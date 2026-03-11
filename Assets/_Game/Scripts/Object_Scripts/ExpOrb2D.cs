@@ -27,12 +27,9 @@ public sealed class ExpOrb2D : MonoBehaviour
     [SerializeField] private bool debugLog = false;
 
     private PlayerExp _playerExp;
-
-    // 풀링(프로젝트에 맞춰 유지)
+    private PlayerCombatStats2D _playerStats;
     private ExpOrbPool _pool;
     private GameObject _prefabKey;
-
-    // 수집 1회 방지
     private bool _collected;
 
     private void Reset()
@@ -88,27 +85,31 @@ public sealed class ExpOrb2D : MonoBehaviour
 
     private void CachePlayer(bool forceRefreshExp)
     {
-        // 1) 플레이어 트랜스폼 확보
         if (player == null)
         {
-            var go = GameObject.FindGameObjectWithTag(playerTag);
+            GameObject go = GameObject.FindGameObjectWithTag(playerTag);
             if (go != null) player = go.transform;
         }
 
         if (player == null) return;
 
-        // 2) PlayerExp 확보(중요: Parent까지 포함해서 찾는다)
         if (forceRefreshExp || _playerExp == null)
         {
-            // (a) player 자신
             if (!player.TryGetComponent(out _playerExp))
             {
-                // (b) 부모 체인(대부분 여기서 잡힘: player가 자식 트랜스폼으로 잡힌 경우)
                 _playerExp = player.GetComponentInParent<PlayerExp>();
-
-                // (c) 자식(비활성 포함)
                 if (_playerExp == null)
                     _playerExp = player.GetComponentInChildren<PlayerExp>(true);
+            }
+        }
+
+        if (forceRefreshExp || _playerStats == null)
+        {
+            if (!player.TryGetComponent(out _playerStats))
+            {
+                _playerStats = player.GetComponentInParent<PlayerCombatStats2D>();
+                if (_playerStats == null)
+                    _playerStats = player.GetComponentInChildren<PlayerCombatStats2D>(true);
             }
         }
     }
@@ -124,8 +125,9 @@ public sealed class ExpOrb2D : MonoBehaviour
 
         Vector2 orbPos = transform.position;
         Vector2 playerPos = player.position;
-
         float dist = Vector2.Distance(orbPos, playerPos);
+
+        float finalMagnetRange = magnetRange * (_playerStats != null ? _playerStats.PickupRangeMul : 1f);
 
         if (dist <= pickupDistance)
         {
@@ -133,13 +135,13 @@ public sealed class ExpOrb2D : MonoBehaviour
             return;
         }
 
-        if (dist > magnetRange)
+        if (dist > finalMagnetRange)
         {
             if (rb != null) rb.linearVelocity = Vector2.zero;
             return;
         }
 
-        float t = 1f - Mathf.Clamp01(dist / magnetRange);
+        float t = 1f - Mathf.Clamp01(dist / Mathf.Max(0.01f, finalMagnetRange));
         float curved = Mathf.Pow(t, magnetCurvePower);
 
         float speed = Mathf.Lerp(magnetMinSpeed, magnetMaxSpeed, curved);
@@ -155,7 +157,6 @@ public sealed class ExpOrb2D : MonoBehaviour
         if (_collected) return;
         _collected = true;
 
-        // 연속 수집 방지: 먼저 물리/콜라이더 차단
         if (col != null) col.enabled = false;
         if (rb != null)
         {
@@ -185,7 +186,6 @@ public sealed class ExpOrb2D : MonoBehaviour
 
     private void ReturnToPool()
     {
-        // 핵심: 반드시 비활성으로 내려서 재수집 루프 방지
         gameObject.SetActive(false);
 
         if (_pool != null && _prefabKey != null)

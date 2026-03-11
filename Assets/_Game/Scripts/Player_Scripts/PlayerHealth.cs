@@ -4,6 +4,7 @@
 /// [구현 원리 요약]
 /// 플레이어 체력을 관리합니다.
 /// - 피격 시 무적 + 피격 이펙트(HitFlash2D) + 즉시 넉백(1프레임 위치 밀기)
+/// - 회복 / 임시 무적 / 받는 피해 배율 지원
 /// - 사망 시 RunSignals.PlayerDead를 발행합니다.
 /// - FixedUpdate를 사용하지 않습니다(PlayerMover2D와 rb.linearVelocity 충돌 방지).
 /// </summary>
@@ -28,6 +29,10 @@ public sealed class PlayerHealth : MonoBehaviour
     [Tooltip("피격 시 밀려나는 거리(월드 유닛)입니다. 0이면 넉백 없음.")]
     [Min(0f)]
     [SerializeField] private float knockbackDistance = 0.3f;
+
+    [Header("추가 스탯")]
+    [Tooltip("받는 피해 배율을 읽을 전투 스탯 컴포넌트입니다.")]
+    [SerializeField] private PlayerCombatStats2D combatStats;
 
     [Header("사망 처리")]
     [Tooltip("사망 시 충돌/트리거를 끊기 위해 콜라이더를 끕니다.")]
@@ -64,6 +69,9 @@ public sealed class PlayerHealth : MonoBehaviour
 
         if (hitFlash == null) hitFlash = GetComponent<HitFlash2D>();
         if (hitFlash == null) hitFlash = GetComponentInChildren<HitFlash2D>();
+
+        if (combatStats == null) combatStats = GetComponent<PlayerCombatStats2D>();
+        if (combatStats == null) combatStats = GetComponentInParent<PlayerCombatStats2D>();
     }
 
     public void SetMaxHpBonus(int bonus, bool healToFull)
@@ -75,40 +83,65 @@ public sealed class PlayerHealth : MonoBehaviour
         else currentHp = Mathf.Min(currentHp, maxHp);
     }
 
-    /// <summary>
-    /// 피격 (넉백 없음). 기존 호환용.
-    /// </summary>
+    // ── 회복 (A4 대체 카드용) ──────────────────
+
+    /// <summary>체력을 즉시 회복합니다.</summary>
+    public void Heal(int amount)
+    {
+        if (_isDead) return;
+        if (amount <= 0) return;
+
+        int prev = currentHp;
+        currentHp = Mathf.Clamp(currentHp + amount, 0, maxHp);
+
+        if (debugLog)
+            Debug.Log($"[PlayerHealth] 회복 {amount} | HP {prev} -> {currentHp}/{maxHp}", this);
+    }
+
+    // ── 임시 무적 (A4 대체 카드용) ────────────
+
+    /// <summary>지정 시간 동안 무적 상태를 부여합니다.</summary>
+    public void ActivateTemporaryInvincibility(float duration)
+    {
+        if (_isDead) return;
+        if (duration <= 0f) return;
+
+        _invincibleUntil = Mathf.Max(_invincibleUntil, Time.time + duration);
+
+        if (debugLog)
+            Debug.Log($"[PlayerHealth] 임시 무적 {duration:0.##}초", this);
+    }
+
+    // ── 피격 ───────────────────────────────────
+
+    /// <summary>피격 (넉백 없음). 기존 호환용.</summary>
     public void TakeDamage(int amount)
     {
         if (_isDead) return;
         if (amount <= 0) return;
         if (IsInvincible) return;
 
-        currentHp = Mathf.Max(0, currentHp - amount);
+        int finalDamage = ApplyIncomingDamageMultiplier(amount);
+        currentHp = Mathf.Max(0, currentHp - finalDamage);
         _invincibleUntil = Time.time + invincibleDuration;
 
-        // 피격 플래시
         if (hitFlash != null)
             hitFlash.Play();
 
         if (debugLog)
-            Debug.Log($"[PlayerHealth] 피해 {amount} | HP {currentHp}/{maxHp}", this);
+            Debug.Log($"[PlayerHealth] 피해 {finalDamage} | HP {currentHp}/{maxHp}", this);
 
         if (currentHp <= 0)
             Die();
     }
 
-    /// <summary>
-    /// 피격 (넉백 포함). 적의 위치를 넘기면 반대 방향으로 즉시 밀립니다.
-    /// FixedUpdate 없이 transform.position을 1회 밀어서 PlayerMover2D와 충돌하지 않습니다.
-    /// </summary>
+    /// <summary>피격 (넉백 포함). 적의 위치를 넘기면 반대 방향으로 즉시 밀립니다.</summary>
     public void TakeDamage(int amount, Vector2 sourcePosition)
     {
         if (_isDead) return;
         if (amount <= 0) return;
         if (IsInvincible) return;
 
-        // 즉시 넉백 (1프레임 위치 밀기 — FixedUpdate/velocity 간섭 없음)
         if (knockbackDistance > 0f)
         {
             Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
@@ -119,7 +152,17 @@ public sealed class PlayerHealth : MonoBehaviour
         TakeDamage(amount);
     }
 
-    // FixedUpdate 없음 — PlayerMover2D가 rb.linearVelocity를 독점 관리합니다.
+    /// <summary>받는 피해에 방어력 배율을 적용합니다.</summary>
+    private int ApplyIncomingDamageMultiplier(int rawDamage)
+    {
+        if (combatStats == null)
+            return rawDamage;
+
+        float finalDamage = rawDamage * combatStats.IncomingDamageMul;
+        return Mathf.Max(1, Mathf.RoundToInt(finalDamage));
+    }
+
+    // ── 사망 ───────────────────────────────────
 
     private void Die()
     {

@@ -43,7 +43,6 @@ GameObject:
   - component: {fileID: 6586279961466465895}
   - component: {fileID: 1792456682493019364}
   - component: {fileID: 8724967591035018975}
-  - component: {fileID: 911591105033881747}
   - component: {fileID: 7515130154375018046}
   - component: {fileID: 4953276060644670849}
   - component: {fileID: 6163186266483944776}
@@ -181,52 +180,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &911591105033881747
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4612122562724480527}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.16, y: 1.16}
-    newSize: {x: 0.35, y: 0.56}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.35, y: 0.56}
-  m_EdgeRadius: 0
 --- !u!114 &7515130154375018046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -242,6 +195,7 @@ MonoBehaviour:
   startLevel: 1
   baseExpToLevelUp: 10
   expIncreasePerLevel: 5
+  combatStats: {fileID: 0}
   fireLegacyEvent: 0
   verboseLog: 1
 --- !u!114 &4953276060644670849
@@ -259,6 +213,9 @@ MonoBehaviour:
   maxHp: 100
   currentHp: 100
   invincibleDuration: 0.5
+  hitFlash: {fileID: 0}
+  knockbackDistance: 0.3
+  combatStats: {fileID: 0}
   disableColliderOnDead: 1
   disableRigidbodyOnDead: 1
   debugLog: 1
@@ -280,7 +237,21 @@ MonoBehaviour:
   dashDistance: 2.5
   dashDuration: 0.2
   dashCooldown: 2
+  mapBoundsCollider: {fileID: 0}
+  manualBounds:
+    serializedVersion: 2
+    x: -20
+    y: -20
+    width: 40
+    height: 40
+  boundaryMargin: 0.5
+  useBoundary: 1
   rb: {fileID: 8724967591035018975}
+  animator: {fileID: 0}
+  spriteRenderer: {fileID: 0}
+  combatStats: {fileID: 0}
+  walkOnSpeed: 0.05
+  walkOffSpeed: 0.02
 --- !u!114 &5945316706138724838
 MonoBehaviour:
   m_ObjectHideFlags: 0

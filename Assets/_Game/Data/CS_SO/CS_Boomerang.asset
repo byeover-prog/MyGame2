@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: "\uBD80\uBA54\uB791"
   visualDescriptionKr: "\uBD80\uBA54\uB791: (\uB808\uBCA81 \uB3D9\uC791 \uC124\uBA85\uC744
     \uC5EC\uAE30\uC5D0 \uC791\uC131)"
-  icon: {fileID: 0}
+  icon: {fileID: -7928876641947680184, guid: b12bdcfcaf91d2f43a7473682d706037, type: 3}
   weaponPrefab: {fileID: 1771662915146988037, guid: 0645ebaa09e98f94b98f86b4c5a56a51,
     type: 3}
   maxLevel: 8

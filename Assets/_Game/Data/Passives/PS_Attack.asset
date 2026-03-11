@@ -12,9 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 235301bbe7e69ce438640b7a5297e910, type: 3}
   m_Name: PS_Attack
   m_EditorClassIdentifier: Assembly-CSharp::_Game.Skills.SkillDefinitionSO
-  skillId: 
-  skillType: 0
-  displayName: 
+  skillId: passive_attack_power
+  skillType: 1
+  displayName: "\uAE30\uBCF8 \uACF5\uACA9\uB825 \uC99D\uAC00"
   icon: {fileID: 0}
+  tagKr: 
   maxLevel: 8
-  passiveStatType: 0
+  descLv1: 
+  descLv2: 
+  descLv3: 
+  descLv4: 
+  descLv5: 
+  descLv6: 
+  descLv7: 
+  descLv8: 
+  passiveStatType: 1

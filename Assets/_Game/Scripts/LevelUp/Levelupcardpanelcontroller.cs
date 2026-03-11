@@ -4,7 +4,7 @@
 //
 // 시간 정지/복구는 이 클래스가 하지 않는다.
 // LevelUpFlowCoordinator가 큐 단위로 관리한다.
-// Close 시 코디네이터에 닫힘을 통보할 뿐이다.
+// 보상 적용이 실패하면 패널을 닫지 않고 다시 선택 가능 상태로 되돌린다.
 // ──────────────────────────────────────────────
 
 using System.Collections.Generic;
@@ -14,15 +14,11 @@ namespace _Game.LevelUp.UI
 {
     public sealed class LevelUpCardPanelController : MonoBehaviour
     {
-        // ── 참조 ───────────────────────────────────
-
         [Header("=== 패널 루트 ===")]
-
         [SerializeField, Tooltip("패널 전체를 On/Off할 루트 오브젝트")]
         private GameObject panelRoot;
 
         [Header("=== 카드 4장 ===")]
-
         [SerializeField, Tooltip("카드 뷰 슬롯 1")]
         private LevelUpNewCardView cardView1;
 
@@ -36,30 +32,18 @@ namespace _Game.LevelUp.UI
         private LevelUpNewCardView cardView4;
 
         [Header("=== 보상 적용 ===")]
-
         [SerializeField, Tooltip("카드 선택 시 보상을 적용하는 서비스")]
         private LevelUpRewardApplier rewardApplier;
 
         [Header("=== 흐름 코디네이터 ===")]
-
         [SerializeField, Tooltip("큐/시간 관리를 담당하는 코디네이터 (닫힘 통보용)")]
         private LevelUpFlowCoordinator flowCoordinator;
-
-        // ── 내부 상태 ─────────────────────────────
 
         private readonly List<LevelUpCardData> currentCards = new List<LevelUpCardData>(4);
         private bool isOpen;
 
         public bool IsOpen => isOpen;
 
-        // ════════════════════════════════════════════
-        //  외부 API
-        // ════════════════════════════════════════════
-
-        /// <summary>
-        /// 카드 데이터를 받아 패널을 연다.
-        /// 시간 정지는 코디네이터가 이미 처리한 상태.
-        /// </summary>
         public void Open(List<LevelUpCardData> cards)
         {
             if (cards == null || cards.Count == 0)
@@ -84,10 +68,6 @@ namespace _Game.LevelUp.UI
             isOpen = true;
         }
 
-        /// <summary>
-        /// 패널을 닫는다.
-        /// 시간 복구는 하지 않는다 — 코디네이터가 큐 종료 시 처리.
-        /// </summary>
         public void Close()
         {
             if (!isOpen)
@@ -97,14 +77,9 @@ namespace _Game.LevelUp.UI
             SetPanelVisible(false);
             isOpen = false;
 
-            // 코디네이터에 닫힘 통보 (시간 복구는 코디네이터 판단)
             if (flowCoordinator != null)
                 flowCoordinator.NotifyPanelClosed();
         }
-
-        // ════════════════════════════════════════════
-        //  내부 로직
-        // ════════════════════════════════════════════
 
         private void BindCards()
         {
@@ -143,12 +118,15 @@ namespace _Game.LevelUp.UI
             bool applied = rewardApplier != null && rewardApplier.Apply(selectedCard);
 
             Debug.Log(
-                $"[CardPanel] 카드 선택 | " +
-                $"index={index} | " +
-                $"type={selectedCard.RewardType} | " +
-                $"title={selectedCard.Title} | " +
-                $"applied={applied}",
+                $"[CardPanel] 카드 선택 | index={index} | type={selectedCard.RewardType} | title={selectedCard.Title} | applied={applied}",
                 this);
+
+            if (!applied)
+            {
+                Debug.LogWarning($"[CardPanel] 보상 적용 실패 → 패널 유지: {selectedCard.Title}", this);
+                SetCardInteractable(true);
+                return;
+            }
 
             Close();
         }

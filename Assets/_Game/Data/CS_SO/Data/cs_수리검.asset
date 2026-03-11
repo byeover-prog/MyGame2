@@ -16,5 +16,16 @@ MonoBehaviour:
   skillType: 0
   displayName: "\uB098\uC120\uD615 \uC218\uB9AC\uAC80"
   icon: {fileID: 7765474139541862038, guid: 6f3a2dc3b8c39044ea36eccc87dffac0, type: 3}
+  tagKr: "\uBB3C\uB9AC"
   maxLevel: 8
+  descLv1: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC801\uC744 \uB300\uC0C1\uC73C\uB85C
+    \uC801\uB4E4 \uC0AC\uC774\uC5D0 \uD295\uAE30\uB294 \uC218\uB9AC\uAC80\uC744 \uD22C\uCC99
+    \uD569\uB2C8\uB2E4."
+  descLv2: "\uD22C\uC0AC\uCCB4 \uAC2F\uC218 1 \uC99D\uAC00"
+  descLv3: "\uD22C\uC0AC\uCCB4 \uAC2F\uC218 1 \uC99D\uAC00"
+  descLv4: "\uD295\uAE30\uB294 \uD69F\uC218 1 \uC99D\uAC00"
+  descLv5: "\uD295\uAE30\uB294 \uD69F\uC218 1 \uC99D\uAC00"
+  descLv6: "\uD295\uAE30\uB294 \uD69F\uC218 1 \uC99D\uAC00"
+  descLv7: "\uD295\uAE30\uB294 \uD69F\uC218 1 \uC99D\uAC00"
+  descLv8: "\uD295\uAE30\uB294 \uD69F\uC218 1 \uC99D\uAC00"
   passiveStatType: 0
