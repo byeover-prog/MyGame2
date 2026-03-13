@@ -81,10 +81,23 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         if (!circleTrigger.isTrigger)
             circleTrigger.isTrigger = true;
 
+        // ★ Rigidbody2D가 없으면 OnTriggerEnter2D/Exit2D가 호출되지 않음
+        var rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            rb = gameObject.AddComponent<Rigidbody2D>();
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.gravityScale = 0f;
+        }
+        else if (rb.bodyType != RigidbodyType2D.Kinematic)
+        {
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.gravityScale = 0f;
+        }
+
         if (areaSpriteRenderer == null)
             areaSpriteRenderer = GetComponent<SpriteRenderer>();
 
-        // effectVfx 자동 탐색: 인스펙터에 안 넣었으면 자식에서 찾기
         if (effectVfx == null)
             effectVfx = GetComponentInChildren<ParticleSystem>(true);
 
@@ -273,6 +286,18 @@ public sealed class ArrowRainArea2D : MonoBehaviour
     {
         if (circleTrigger != null)
             circleTrigger.radius = radius;
+
+        // ★ 스프라이트도 콜라이더 크기에 맞춰 스케일
+        if (areaSpriteRenderer != null && areaSpriteRenderer.sprite != null)
+        {
+            float spriteWorldSize = areaSpriteRenderer.sprite.bounds.size.x;
+            if (spriteWorldSize > 0.001f)
+            {
+                float desiredDiameter = radius * 2f;
+                float scale = desiredDiameter / spriteWorldSize;
+                areaSpriteRenderer.transform.localScale = new Vector3(scale, scale, 1f);
+            }
+        }
     }
 
     private void ApplyAreaAlpha()

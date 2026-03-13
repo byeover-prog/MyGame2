@@ -31,7 +31,7 @@ MonoBehaviour:
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 0
+    explosionRadius: 2
     childSpeed: 0
     hitInterval: 0.25
     orbitRadius: 0
