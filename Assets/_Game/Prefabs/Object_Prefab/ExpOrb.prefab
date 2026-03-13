@@ -173,8 +173,8 @@ MonoBehaviour:
   expValue: 1
   player: {fileID: 0}
   playerTag: Player
-  magnetRange: 4
-  magnetMinSpeed: 1.8
+  magnetRange: 4.5
+  magnetMinSpeed: 2.5
   magnetMaxSpeed: 9
   magnetCurvePower: 2
   pickupDistance: 0.3
