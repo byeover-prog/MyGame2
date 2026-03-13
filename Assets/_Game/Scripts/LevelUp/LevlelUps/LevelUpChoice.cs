@@ -1,4 +1,5 @@
 using UnityEngine;
+using _Game.Skills;
 
 public enum LevelUpChoiceType
 {
@@ -14,6 +15,7 @@ public sealed class LevelUpChoice
     public WeaponDefinitionSO Weapon { get; }
     public CommonSkillConfigSO CommonSkill { get; }
     public PassiveConfigSO Passive { get; }
+    public SkillDefinitionSO PassiveDefinition { get; }
 
     public int NextLevel { get; }
     public string Id { get; }
@@ -52,6 +54,19 @@ public sealed class LevelUpChoice
         Passive = passive;
         NextLevel = nextLevel;
         Id = passive != null ? passive.kind.ToString() : "";
+        Title = title;
+        Description = description;
+        Tag = tagKr;
+        Icon = icon;
+    }
+
+    // ★ SkillDefinitionSO 기반 패시브 생성자
+    public LevelUpChoice(SkillDefinitionSO passiveDef, int nextLevel, string title, string description, string tagKr, Sprite icon)
+    {
+        Type = LevelUpChoiceType.Passive;
+        PassiveDefinition = passiveDef;
+        NextLevel = nextLevel;
+        Id = passiveDef != null ? passiveDef.SkillId : "";
         Title = title;
         Description = description;
         Tag = tagKr;

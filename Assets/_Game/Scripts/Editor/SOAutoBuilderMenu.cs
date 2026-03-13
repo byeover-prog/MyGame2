@@ -95,8 +95,8 @@ public static class SOAutoBuilderMenu
         CreateSkillSO("passive_move_speed",      "이동속도 증가",     SkillType.Passive, PassiveStatType.MoveSpeedPercent,     "PassiveDef_MoveSpeed",      PassiveFolder);
         CreateSkillSO("passive_defense",         "방어력 증가",       SkillType.Passive, PassiveStatType.DefensePercent,       "PassiveDef_Defense",        PassiveFolder);
         CreateSkillSO("passive_max_hp",          "최대 체력 증가",    SkillType.Passive, PassiveStatType.MaxHpFlat,            "PassiveDef_MaxHp",          PassiveFolder);
-        CreateSkillSO("passive_element_damage",  "속성 피해 증가",    SkillType.Passive, PassiveStatType.ElementDamagePercent, "PassiveDef_ElementDamage",  PassiveFolder);
-        CreateSkillSO("passive_gold_gain",       "재화 획득량 증가",  SkillType.Passive, PassiveStatType.GoldGainPercent,      "PassiveDef_GoldGain",       PassiveFolder);
+        CreateSkillSO("passive_skill_haste",    "스킬 가속 증가",    SkillType.Passive, PassiveStatType.SkillHastePercent, "PassiveDef_SkillHaste",  PassiveFolder);
+        CreateSkillSO("passive_skill_area",     "스킬 범위 증가",  SkillType.Passive, PassiveStatType.SkillAreaPercent,      "PassiveDef_SkillArea",       PassiveFolder);
         CreateSkillSO("passive_exp_gain",        "경험치 획득량 증가",SkillType.Passive, PassiveStatType.ExpGainPercent,       "PassiveDef_ExpGain",        PassiveFolder);
 
         AssetDatabase.SaveAssets();
