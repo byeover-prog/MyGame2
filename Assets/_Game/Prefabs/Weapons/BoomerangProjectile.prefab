@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 5767354764339404154}
   - component: {fileID: 735654324422084155}
   - component: {fileID: 1121678731948288416}
-  - component: {fileID: 5223043172017737808}
   - component: {fileID: -2779735152273170524}
   - component: {fileID: -8673239630998233534}
   m_Layer: 15
@@ -87,13 +86,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -7928876641947680184, guid: b12bdcfcaf91d2f43a7473682d706037,
-    type: 3}
+  m_Sprite: {fileID: 21300000, guid: b1c0edccaed6a14469403f6769db5409, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 7.43, y: 10.24}
+  m_Size: {x: 2.56, y: 2.56}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -173,7 +171,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
-  debugSkillId: 
+  debugSkillId: Weapon_Boomerang
   maxLevel: 8
   level: 0
   forwardLevelToChildren: 1
@@ -184,27 +182,6 @@ MonoBehaviour:
   - UpgradeLevel
   - OnLevelChanged
   log: 1
---- !u!114 &5223043172017737808
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6195577076014076753}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
-  col: {fileID: 5767354764339404154}
-  ignoreOwnerCollision: 1
-  mode: 0
-  homingTurnSpeed: 0
-  homingRange: 0
-  ricochetCount: 0
-  ricochetRange: 0
-  pierce: 1
-  destroyOnHit: 1
 --- !u!114 &-2779735152273170524
 MonoBehaviour:
   m_ObjectHideFlags: 0

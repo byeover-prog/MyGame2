@@ -64,4 +64,30 @@ public static class SkillBalanceService2D
     // 공통 수치 적용(너 프로젝트의 "P" 구조체/클래스에 맞춰서 연결하면 됨)
     // 여기서는 '대표 필드 이름'으로만 작성해두고,
     // 실제 적용 지점(공통 Weapon 베이스)에서 row 값을 P에 덮어쓰면 된다.
+
+    /// <summary>
+    /// SkillBalanceBootstrap2D에서 이미 파싱된 DB를 직접 넘겨받는다.
+    /// LoadFromText()와 동일하게 _map을 채우고 _loaded를 true로 전환.
+    /// </summary>
+    public static void LoadFromDB(SkillBalanceDB2D db)
+    {
+        _map.Clear();
+        _loaded = false;
+
+        if (db == null || db.skills == null || db.skills.Length == 0)
+        {
+            Debug.LogWarning("[Balance] LoadFromDB: DB가 비어있습니다.");
+            return;
+        }
+
+        for (int i = 0; i < db.skills.Length; i++)
+        {
+            var row = db.skills[i];
+            if (row == null || !row.HasId()) continue;
+            _map[row.id] = row;
+        }
+
+        _loaded = true;
+        Debug.Log($"[Balance] LoadFromDB 완료: {_map.Count}개 스킬 오버라이드");
+    }
 }

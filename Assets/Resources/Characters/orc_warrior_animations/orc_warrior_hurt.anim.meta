@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8d979e8f451746742a85bd26ab6dc109
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/orc_warrior_animations/orc_warrior_hurt.anim
+  uploadId: 854212

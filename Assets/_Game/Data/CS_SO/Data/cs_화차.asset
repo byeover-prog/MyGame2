@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 235301bbe7e69ce438640b7a5297e910, type: 3}
+  m_Name: "cs_\uD654\uCC28"
+  m_EditorClassIdentifier: Assembly-CSharp::_Game.Skills.SkillDefinitionSO
+  skillId: weapon_arrowrain
+  skillType: 0
+  displayName: "\uD654\uCC28"
+  icon: {fileID: 21300000, guid: 51b5aefdef4b2f34797b0b015be49213, type: 3}
+  tagKr: "\uBB3C\uB9AC"
+  maxLevel: 8
+  descLv1: "\uCCB4\uB825\uC774 \uB192\uC740 \uC801\uC744 \uB300\uC0C1\uC73C\uB85C
+    \uD654\uCC28\uC5D0\uC11C \uBC1C\uC0AC\uB418\uB294 \uBB34\uC218\uD788 \uB9CE\uC740
+    \uD654\uC0B4\uBE44\uAC00 \uB5A8\uC5B4\uC9D1\uB2C8\uB2E4."
+  descLv2: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uD53C\uD574 \uAC04\uACA9 \uAC10\uC18C"
+  descLv3: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uD53C\uD574 \uAC04\uACA9 \uAC10\uC18C"
+  descLv4: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uD53C\uD574 \uAC04\uACA9 \uAC10\uC18C"
+  descLv5: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uD53C\uD574 \uAC04\uACA9 \uAC10\uC18C"
+  descLv6: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uD53C\uD574 \uAC04\uACA9 \uAC10\uC18C"
+  descLv7: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uD53C\uD574 \uAC04\uACA9 \uAC10\uC18C"
+  descLv8: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uD53C\uD574 \uAC04\uACA9 \uAC10\uC18C"
+  passiveStatType: 0

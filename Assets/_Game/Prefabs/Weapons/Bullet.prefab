@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 4210520205365246454}
   - component: {fileID: 7607180598719141599}
   - component: {fileID: 5075641016109977471}
-  - component: {fileID: -2583533023364400868}
   m_Layer: 15
   m_Name: Bullet
   m_TagString: Untagged
@@ -86,8 +85,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 2208703988740019828, guid: d09e894908f01d643ad80ad95152281a,
-    type: 3}
+  m_Sprite: {fileID: 21300000, guid: e9915338b3a581146af06c5ef29c74a7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -184,7 +182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
-  debugSkillId: 
+  debugSkillId: Weapon_Musket
   maxLevel: 8
   level: 0
   forwardLevelToChildren: 1
@@ -195,24 +193,3 @@ MonoBehaviour:
   - UpgradeLevel
   - OnLevelChanged
   log: 1
---- !u!114 &-2583533023364400868
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5761721769350010560}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
-  col: {fileID: 5290630893758884752}
-  ignoreOwnerCollision: 1
-  mode: 0
-  homingTurnSpeed: 0
-  homingRange: 0
-  ricochetCount: 0
-  ricochetRange: 0
-  pierce: 1
-  destroyOnHit: 1

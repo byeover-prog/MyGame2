@@ -3,17 +3,17 @@ guid: 36689240a53ab7e4d8ef4d1af6744c84
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6905929645522730374
-    second: "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_0"
+      213: -844393136425847589
+    second: Homing_0
   - first:
-      213: -7962129576163575028
-    second: "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_1"
+      213: -7276763047703519501
+    second: Homing_1
   - first:
-      213: -7597556066151516487
-    second: "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_2"
+      213: -1420383225612202292
+    second: Homing_2
   - first:
-      213: -4396558489682429733
-    second: "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_3"
+      213: 2786838054580826321
+    second: Homing_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,29 +109,29 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_0"
+      name: Homing_0
       rect:
         serializedVersion: 2
-        x: 130
-        y: 29
+        x: 259
+        y: 32
         width: 747
         height: 987
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a7247ca93953920a0800000000000000
-      internalID: -6905929645522730374
+      spriteID: bd43f8c8aec1844f0800000000000000
+      internalID: -844393136425847589
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_1"
+      name: Homing_1
       rect:
         serializedVersion: 2
         x: 578
@@ -139,21 +139,21 @@ TextureImporter:
         width: 11
         height: 8
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c0b732de555d08190800000000000000
-      internalID: -7962129576163575028
+      spriteID: 3fe51f2ef8eb30b90800000000000000
+      internalID: -7276763047703519501
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_2"
+      name: Homing_2
       rect:
         serializedVersion: 2
         x: 612
@@ -161,21 +161,21 @@ TextureImporter:
         width: 17
         height: 43
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9b6bcebe20f009690800000000000000
-      internalID: -7597556066151516487
+      spriteID: cce06785bf8c94ce0800000000000000
+      internalID: -1420383225612202292
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_3"
+      name: Homing_3
       rect:
         serializedVersion: 2
         x: 559
@@ -183,15 +183,15 @@ TextureImporter:
         width: 13
         height: 12
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: bd8304cf8594cf2c0800000000000000
-      internalID: -4396558489682429733
+      spriteID: 1d0b4d10276dca620800000000000000
+      internalID: 2786838054580826321
       vertices: []
       indices: 
       edges: []
@@ -200,7 +200,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: c7a0e1a260344d244a9dfd932c91c8e3
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -210,10 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_0": -6905929645522730374
-      "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_1": -7962129576163575028
-      "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_2": -7597556066151516487
-      "\uC774\uBBF8\uC9C0\uD48D \uAE30\uBC18_3": -4396558489682429733
+      Homing_0: -844393136425847589
+      Homing_1: -7276763047703519501
+      Homing_2: -1420383225612202292
+      Homing_3: 2786838054580826321
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

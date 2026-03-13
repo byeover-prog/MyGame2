@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8b0e9b4151b459a4298e30e2747963be
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/bird1_animations/ac_bird1.controller
+  uploadId: 854212

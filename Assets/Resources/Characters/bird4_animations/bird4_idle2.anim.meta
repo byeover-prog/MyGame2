@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a80dd63616099634d96fb77be8261ac0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/bird4_animations/bird4_idle2.anim
+  uploadId: 854212

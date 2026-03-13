@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 235301bbe7e69ce438640b7a5297e910, type: 3}
+  m_Name: PS_PickupRange
+  m_EditorClassIdentifier: Assembly-CSharp::_Game.Skills.SkillDefinitionSO
+  skillId: passive_pickup_range
+  skillType: 1
+  displayName: "\uD53D\uC5C5 \uBC94\uC704 \uC99D\uAC00"
+  icon: {fileID: 4670659182519850944, guid: ed4b427fc4f55ac49a7bd6335c5f5e35, type: 3}
+  tagKr: 
+  maxLevel: 8
+  descLv1: 
+  descLv2: 
+  descLv3: 
+  descLv4: 
+  descLv5: 
+  descLv6: 
+  descLv7: 
+  descLv8: 
+  passiveStatType: 2

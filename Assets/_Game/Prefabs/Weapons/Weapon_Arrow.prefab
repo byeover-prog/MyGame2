@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81e56da059626c14b905312064d4028d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArrowShotWeapon2D
-  config: {fileID: 11400000, guid: 4088b3e748714a645b500e9ab2afb4b7, type: 2}
+  config: {fileID: 11400000, guid: 83f8c539e8d41ca488af464b3b892413, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536
@@ -57,6 +57,10 @@ MonoBehaviour:
   fireJitterDelayMax: 0.1
   projectileSortingBase: 0
   projectileSortingStepPerKind: 10
+  fallbackCooldownSeconds: 1
+  fallbackDamage: 10
+  fallbackProjectileSpeed: 12
+  fallbackProjectileLife: 2
   pool: {fileID: 8379743531263422238}
   spawnPoint: {fileID: 5714409839044760080}
 --- !u!114 &8379743531263422238
@@ -72,6 +76,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectilePool2D
   prefab: {fileID: 3809372804871011955, guid: c59f2bc8b62758e459bdbc51d56ffeb5, type: 3}
+  prewarmCount: 20
+  prewarmPerFrame: 3
+  prewarmOnStart: 1
+  maxCount: 200
 --- !u!1 &4665874027049863316
 GameObject:
   m_ObjectHideFlags: 0

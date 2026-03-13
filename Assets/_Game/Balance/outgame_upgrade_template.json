@@ -1,0 +1,93 @@
+{
+    "version": 1,
+    "_설명": "아웃게임(로비) 재화 강화 세이브 데이터. 기본 스킬/패시브/궁극기는 인게임 레벨업이 아니라 여기서 관리.",
+
+    "currency": {
+        "gold": 0,
+        "soul_stone": 0
+    },
+
+    "basicSkillUpgrades": [
+        {
+            "skillId": "weapon_arrow",
+            "level": 1,
+            "maxLevel": 10,
+            "_comment": "레벨당 데미지/쿨감 등은 skill_balance.json의 PerLevel 값 참조"
+        },
+        {
+            "skillId": "weapon_boomerang",
+            "level": 1,
+            "maxLevel": 10
+        },
+        {
+            "skillId": "weapon_bullet",
+            "level": 1,
+            "maxLevel": 10
+        }
+    ],
+
+    "passiveUpgrades": [
+        {
+            "passiveId": "passive_attack_damage",
+            "level": 0,
+            "maxLevel": 10
+        },
+        {
+            "passiveId": "passive_defense",
+            "level": 0,
+            "maxLevel": 10
+        },
+        {
+            "passiveId": "passive_max_hp",
+            "level": 0,
+            "maxLevel": 10
+        },
+        {
+            "passiveId": "passive_move_speed",
+            "level": 0,
+            "maxLevel": 5
+        },
+        {
+            "passiveId": "passive_cooldown_reduction",
+            "level": 0,
+            "maxLevel": 10
+        },
+        {
+            "passiveId": "passive_pickup_range",
+            "level": 0,
+            "maxLevel": 5
+        },
+        {
+            "passiveId": "passive_skill_area",
+            "level": 0,
+            "maxLevel": 5
+        },
+        {
+            "passiveId": "passive_element_damage",
+            "level": 0,
+            "maxLevel": 10
+        }
+    ],
+
+    "ultimateUpgrades": [
+        {
+            "characterId": "hayul",
+            "ultimateId": "ult_hayul_thunder",
+            "level": 1,
+            "maxLevel": 5
+        },
+        {
+            "characterId": "yoonseol",
+            "ultimateId": "ult_yoonseol_ice",
+            "level": 1,
+            "maxLevel": 5
+        }
+    ],
+
+    "upgradeCosts": {
+        "_comment": "레벨별 강화 비용 테이블. 인덱스 = 현재 레벨 (0부터).",
+        "basicSkill": [100, 200, 400, 800, 1500, 2500, 4000, 6000, 9000, 13000],
+        "passive":    [50, 100, 200, 400, 700, 1200, 2000, 3000, 5000, 8000],
+        "ultimate":   [500, 1500, 4000, 10000, 25000]
+    }
+}

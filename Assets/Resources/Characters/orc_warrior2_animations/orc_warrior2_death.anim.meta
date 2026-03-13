@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 79f9e0dcad8b6fc4aab1816ff27b233c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/orc_warrior2_animations/orc_warrior2_death.anim
+  uploadId: 854212

@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 4020582295785281833}
   - component: {fileID: 1281644234998683652}
   - component: {fileID: 1534040017305913308}
-  - component: {fileID: -860772033551373037}
   - component: {fileID: 3809372804871011955}
   m_Layer: 15
   m_Name: ArrowProjectile
@@ -86,8 +85,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -8438435414053321817, guid: c162335258a880a43a85181ba3b019a4,
-    type: 3}
+  m_Sprite: {fileID: 21300000, guid: 68e1f20514059064880a904f4cfb141e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -135,7 +133,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.17, y: 1.24}
+    oldSize: {x: 2.56, y: 2.56}
     newSize: {x: 6.17, y: 1.24}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -182,7 +180,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
-  debugSkillId: 
+  debugSkillId: Weapon_Arrow
   maxLevel: 8
   level: 0
   forwardLevelToChildren: 1
@@ -193,27 +191,6 @@ MonoBehaviour:
   - UpgradeLevel
   - OnLevelChanged
   log: 1
---- !u!114 &-860772033551373037
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7796759533629522074}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 651d748d6d2897949955482cd91cf5b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UniversalProjectile2D
-  col: {fileID: 4020582295785281833}
-  ignoreOwnerCollision: 1
-  mode: 0
-  homingTurnSpeed: 0
-  homingRange: 0
-  ricochetCount: 0
-  ricochetRange: 0
-  pierce: 0
-  destroyOnHit: 1
 --- !u!114 &3809372804871011955
 MonoBehaviour:
   m_ObjectHideFlags: 0
