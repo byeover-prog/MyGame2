@@ -25,6 +25,9 @@ public sealed class ThunderTalismanProjectile2D : PooledObject2D
     // ★ 콜백: Vector2 = 적의 위치, int = 데미지, float = 범위
     private System.Action<Vector2> _thunderCallback;
 
+    // ★ 중복 히트 방지 플래그
+    private bool _hasHit;
+
     private void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -33,6 +36,7 @@ public sealed class ThunderTalismanProjectile2D : PooledObject2D
     private void OnEnable()
     {
         _age = 0f;
+        _hasHit = false;
         if (rb != null) rb.linearVelocity = Vector2.zero;
     }
 
@@ -77,7 +81,10 @@ public sealed class ThunderTalismanProjectile2D : PooledObject2D
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other == null) return;
+        if (_hasHit) return;  // ★ 같은 프레임 다중 콜라이더 중복 방지
         if (!DamageUtil2D.IsInLayerMask(other.gameObject.layer, _enemyMask)) return;
+
+        _hasHit = true;
 
         // ★ 핵심 수정: "적의 위치"를 콜백에 전달 (부적 위치가 아님!)
         // 적의 Transform 중심 위치로 번개가 떨어져야 자연스러움

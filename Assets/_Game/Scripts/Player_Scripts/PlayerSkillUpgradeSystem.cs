@@ -379,8 +379,8 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
                 return $"아이템 획득 범위 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
             case PassiveKind.MaxHp:
                 return $"최대 체력 +{lp.addInt}";
-            case PassiveKind.ElementDamage:
-                return $"속성 피해 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
+            case PassiveKind.ExpGain:
+                return $"경험치 획득량 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
             case PassiveKind.SkillArea:
                 return $"스킬 범위 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
             default:

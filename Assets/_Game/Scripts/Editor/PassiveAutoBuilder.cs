@@ -5,12 +5,7 @@ using UnityEngine;
 
 /// <summary>
 /// 패시브 8종 SO 자동 생성 도구.
-///
-/// [Issue 5 수정] struct 값 복사 버그 해결.
-/// 원인 : Action&lt;PassiveLevelParams&gt; 람다에서 struct를 값 전달 → 내부 수정이 원본 p에 미반영.
-///        결과로 so.levels[i]에 default(0)가 저장되어 패시브 수치가 0%로 표시됨.
-/// 수정 : Func&lt;PassiveLevelParams&gt; 팩토리 패턴으로 변경.
-///        매번 완성된 struct를 반환값으로 받으므로 복사 손실 없음.
+/// 설계 문서 기준 수치 적용.
 /// </summary>
 public static class PassiveAutoBuilder
 {
@@ -31,15 +26,15 @@ public static class PassiveAutoBuilder
 
         catalog.passives.Clear();
 
-        // [수정] Func<PassiveLevelParams> 팩토리 패턴: 완성된 struct를 반환값으로 받음
-        CreateOrUpdate(catalog, PassiveKind.AttackDamage,      "공격력",      () => new PassiveLevelParams { addPercent = 0.06f, addInt = 0  });
-        CreateOrUpdate(catalog, PassiveKind.Defense,            "방어력",      () => new PassiveLevelParams { addPercent = 0.04f, addInt = 0  });
-        CreateOrUpdate(catalog, PassiveKind.CooldownReduction,  "쿨타임 감소", () => new PassiveLevelParams { addPercent = 0.05f, addInt = 0  });
-        CreateOrUpdate(catalog, PassiveKind.MoveSpeed,          "이동속도",    () => new PassiveLevelParams { addPercent = 0.05f, addInt = 0  });
-        CreateOrUpdate(catalog, PassiveKind.PickupRange,        "픽업 범위",   () => new PassiveLevelParams { addPercent = 0.10f, addInt = 0  });
-        CreateOrUpdate(catalog, PassiveKind.MaxHp,              "최대 체력",   () => new PassiveLevelParams { addPercent = 0f,    addInt = 10 });
-        CreateOrUpdate(catalog, PassiveKind.ElementDamage,      "속성 피해",   () => new PassiveLevelParams { addPercent = 0.06f, addInt = 0  });
-        CreateOrUpdate(catalog, PassiveKind.SkillArea,          "스킬 범위",   () => new PassiveLevelParams { addPercent = 0.06f, addInt = 0  });
+        // 설계 문서 기준 수치
+        CreateOrUpdate(catalog, PassiveKind.AttackDamage,      "공격력 증가",       8, () => new PassiveLevelParams { addPercent = 0.10f, addInt = 0  });
+        CreateOrUpdate(catalog, PassiveKind.Defense,            "방어력 증가",       8, () => new PassiveLevelParams { addPercent = 0.10f, addInt = 0  });
+        CreateOrUpdate(catalog, PassiveKind.CooldownReduction,  "스킬 가속 증가",   8, () => new PassiveLevelParams { addPercent = 0.10f, addInt = 0  });
+        CreateOrUpdate(catalog, PassiveKind.MoveSpeed,          "이동속도 증가",     8, () => new PassiveLevelParams { addPercent = 0.05f, addInt = 0  });
+        CreateOrUpdate(catalog, PassiveKind.PickupRange,        "픽업 범위 증가",    8, () => new PassiveLevelParams { addPercent = 0.20f, addInt = 0  });
+        CreateOrUpdate(catalog, PassiveKind.MaxHp,              "최대 체력 증가",    8, () => new PassiveLevelParams { addPercent = 0f,    addInt = 20 });
+        CreateOrUpdate(catalog, PassiveKind.ExpGain,            "경험치 획득량 증가", 8, () => new PassiveLevelParams { addPercent = 0.10f, addInt = 0  });
+        CreateOrUpdate(catalog, PassiveKind.SkillArea,          "스킬 범위 증가",    5, () => new PassiveLevelParams { addPercent = 0.05f, addInt = 0  });
 
         EditorUtility.SetDirty(catalog);
         AssetDatabase.SaveAssets();
@@ -48,15 +43,11 @@ public static class PassiveAutoBuilder
         Debug.Log("[PassiveAutoBuilder] 완료. PassiveCatalog_Prototype 갱신. 경로: " + Folder);
     }
 
-    /// <summary>
-    /// 패시브 SO를 생성하거나 기존 것을 갱신한다.
-    /// factory: 레벨 1개의 수치를 담은 PassiveLevelParams를 반환하는 팩토리.
-    ///          모든 레벨에 동일한 증가량을 적용(레벨별 다른 수치가 필요하면 SO 에디터에서 직접 수정).
-    /// </summary>
     private static void CreateOrUpdate(
         PassiveCatalogSO catalog,
         PassiveKind kind,
         string displayName,
+        int maxLevel,
         System.Func<PassiveLevelParams> factory)
     {
         string path = $"{Folder}/Passive_{kind}.asset";
@@ -69,13 +60,12 @@ public static class PassiveAutoBuilder
 
         so.kind = kind;
         so.displayName = displayName;
-        so.maxLevel = 8;
+        so.maxLevel = maxLevel;
 
-        if (so.levels == null || so.levels.Length != 8)
-            so.levels = new PassiveLevelParams[8];
+        if (so.levels == null || so.levels.Length != maxLevel)
+            so.levels = new PassiveLevelParams[maxLevel];
 
-        // [수정] factory()가 완성된 struct를 반환 → 값 복사 손실 없음
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < maxLevel; i++)
             so.levels[i] = factory();
 
         catalog.passives.Add(so);
