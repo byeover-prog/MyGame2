@@ -27,11 +27,11 @@ public sealed class PlayerBaseStatProfileSO : ScriptableObject
     [SerializeField] private int maxHpFlat;
 
     [Header("=== 속성/보상 ===")]
-    [Tooltip("속성 피해 보너스(%)")]
-    [SerializeField] private float elementDamagePercent;
+    [Tooltip("스킬 가속 보너스(%)")]
+    [SerializeField] private float skillHastePercent;
 
-    [Tooltip("재화 획득량 보너스(%)")]
-    [SerializeField] private float goldGainPercent;
+    [Tooltip("스킬 범위 보너스(%)")]
+    [SerializeField] private float skillAreaPercent;
 
     [Tooltip("경험치 획득량 보너스(%)")]
     [SerializeField] private float expGainPercent;
@@ -45,8 +45,8 @@ public sealed class PlayerBaseStatProfileSO : ScriptableObject
             MoveSpeedPercent     = moveSpeedPercent,
             PickupRangePercent   = pickupRangePercent,
             MaxHpFlat            = maxHpFlat,
-            ElementDamagePercent = elementDamagePercent,
-            GoldGainPercent      = goldGainPercent,
+            SkillHastePercent = skillHastePercent,
+            SkillAreaPercent      = skillAreaPercent,
             ExpGainPercent       = expGainPercent,
         };
     }

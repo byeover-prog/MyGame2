@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using _Game.Skills;
 
 [DisallowMultipleComponent]
 public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
@@ -182,8 +183,13 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
                 break;
 
             case LevelUpChoiceType.Passive:
-                if (passiveManager != null && choice.Passive != null)
-                    passiveManager.Upgrade(choice.Passive);
+                if (passiveManager != null)
+                {
+                    if (choice.PassiveDefinition != null)
+                        passiveManager.Upgrade(choice.PassiveDefinition);
+                    else if (choice.Passive != null)
+                        passiveManager.Upgrade(choice.Passive);
+                }
                 break;
         }
     }
@@ -330,10 +336,11 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         {
             var p = passiveCatalog.passives[i];
             if (p == null) continue;
+            if (p.PassiveStatType == PassiveStatType.None) continue;
 
             if (passiveManager.IsMaxLevel(p)) continue;
 
-            int cur = passiveManager.GetLevel(p.kind);
+            int cur = passiveManager.GetLevel(p.PassiveStatType);
             bool acquired = cur > 0;
             if (!acquired && !HasFreePassiveSlot()) continue;
 
@@ -345,50 +352,36 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
         int pick = _candidate[UnityEngine.Random.Range(0, _candidate.Count)];
         var cfg = passiveCatalog.passives[pick];
 
-        int curLv = passiveManager.GetLevel(cfg.kind);
-        int maxLv = Mathf.Max(1, (int)cfg.maxLevel);
+        int curLv = passiveManager.GetLevel(cfg.PassiveStatType);
+        int maxLv = Mathf.Max(1, cfg.MaxLevel);
         int nextLv = Mathf.Clamp(curLv + 1, 1, maxLv);
 
-        string passiveName = string.IsNullOrWhiteSpace(cfg.displayName) ? cfg.name : cfg.displayName;
+        string passiveName = string.IsNullOrWhiteSpace(cfg.DisplayName) ? cfg.name : cfg.DisplayName;
 
         // [Issue 5 수정] "Lv." 표기 제거: 패시브 이름만 타이틀로 사용
         string title = passiveName;
 
-        // [Issue 5] 수치 표기 필수: SO의 다음 레벨 params에서 자동 생성
-        // PassiveAutoBuilder struct 버그 수정 후 0%가 아닌 실제 값이 표시됨
-        var lp = cfg.GetLevelParams(nextLv);
-        string desc = BuildPassiveDesc(cfg.kind, passiveName, lp);
+        // 설명: PassiveStatType 기반으로 자동 생성
+        string desc = BuildPassiveDescFromStat(cfg.PassiveStatType, passiveName);
 
-        return new LevelUpChoice(cfg, nextLv, title, desc, "패시브", cfg.icon);
+        return new LevelUpChoice(cfg, nextLv, title, desc, "패시브", cfg.Icon);
     }
 
-    // [Issue 5] 패시브 카드 설명: 수치 명시, Lv. 표기 없음
-    private static string BuildPassiveDesc(PassiveKind kind, string kindName, PassiveLevelParams lp)
+    // 패시브 카드 설명: PassiveStatType 기반
+    private static string BuildPassiveDescFromStat(PassiveStatType stat, string name)
     {
-        switch (kind)
+        return stat switch
         {
-            case PassiveKind.AttackDamage:
-                return $"{kindName} +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
-            case PassiveKind.Defense:
-                return $"피해 감소 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
-            case PassiveKind.CooldownReduction:
-                return $"쿨타임 -{Mathf.RoundToInt(lp.addPercent * 100f)}%";
-            case PassiveKind.MoveSpeed:
-                return $"이동속도 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
-            case PassiveKind.PickupRange:
-                return $"아이템 획득 범위 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
-            case PassiveKind.MaxHp:
-                return $"최대 체력 +{lp.addInt}";
-            case PassiveKind.ExpGain:
-                return $"경험치 획득량 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
-            case PassiveKind.SkillArea:
-                return $"스킬 범위 +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
-            default:
-                // 범용 처리: addInt가 0이면 퍼센트, 0이 아니면 정수
-                if (lp.addInt != 0)
-                    return $"{kindName} +{lp.addInt}";
-                return $"{kindName} +{Mathf.RoundToInt(lp.addPercent * 100f)}%";
-        }
+            PassiveStatType.AttackPowerPercent => $"{name} +10%",
+            PassiveStatType.DefensePercent     => $"피해 감소 (방어력 +10)",
+            PassiveStatType.SkillHastePercent  => $"스킬 가속 +10",
+            PassiveStatType.MoveSpeedPercent   => $"이동속도 +5%",
+            PassiveStatType.PickupRangePercent => $"아이템 획득 범위 +20%",
+            PassiveStatType.MaxHpFlat          => $"최대 체력 +20",
+            PassiveStatType.ExpGainPercent     => $"경험치 획득량 +10%",
+            PassiveStatType.SkillAreaPercent   => $"스킬 범위 +5%",
+            _ => name
+        };
     }
 
     // ============================
