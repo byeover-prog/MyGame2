@@ -79,8 +79,9 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
         float areaMul    = ToMul(baseSnapshot.SkillAreaPercent) * ToMul(passiveSnapshot.SkillAreaPercent);
         float expMul     = ToMul(baseSnapshot.ExpGainPercent) * ToMul(passiveSnapshot.ExpGainPercent);
 
-        float totalDefensePercent = Mathf.Max(0f, baseSnapshot.DefensePercent + passiveSnapshot.DefensePercent);
-        float incomingDamageMul = Mathf.Clamp(1f - (totalDefensePercent / 100f), 0.1f, 1f);
+        // ★ LoL 유효체력 공식: 받는피해 = 초기피해 × 100/(100+방어력)
+        float totalDefense = Mathf.Max(0f, baseSnapshot.DefensePercent + passiveSnapshot.DefensePercent);
+        float incomingDamageMul = Mathf.Clamp(100f / (100f + totalDefense), 0.1f, 1f);
 
         combatStats.SetDamageMul(attackMul);
         combatStats.SetMoveSpeedMul(moveMul);
@@ -100,7 +101,7 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
         {
             Debug.Log(
                 $"[StatApplier] ATKx{attackMul:0.00} | MOVEx{moveMul:0.00} | PICKUPx{pickupMul:0.00} | " +
-                $"DEF%={totalDefensePercent:0.##} | HP+{baseSnapshot.MaxHpFlat + passiveSnapshot.MaxHpFlat} | " +
+                $"DEF%={totalDefense:0.##} | HP+{baseSnapshot.MaxHpFlat + passiveSnapshot.MaxHpFlat} | " +
                 $"HASTEx{hasteMul:0.00} | AREAx{areaMul:0.00} | EXPx{expMul:0.00}",
                 this);
         }
