@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponUpgradeCardSO
   slotIndex: -1
   weaponNameKr: "\uC815\uD654\uAD6C"
-  weaponId: weapon_homming
+  weaponId: weapon_homing
   type: 0
   value:
     addInt: 0

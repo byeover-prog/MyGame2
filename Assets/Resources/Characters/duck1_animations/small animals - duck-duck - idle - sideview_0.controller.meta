@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 820afd8dedfa9f44fb29e373616f66a7
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/duck1_animations/small animals - duck-duck
+    - idle - sideview_0.controller
+  uploadId: 854212

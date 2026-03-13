@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 04cefc0e88e229c41b52e88d0eebdf7c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Characters/orc_mage_animations/orc_mage_hurt.anim
+  uploadId: 854212

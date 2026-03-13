@@ -1,0 +1,211 @@
+{
+    "version": 4,
+    "_설명": "아웃게임(로비) 재화(냥) 강화 세이브 데이터.",
+
+    "_formulas": {
+        "attackDamage": "최종 피해량 = (기본 공격력 + 추가 고정 공격력) × (1 + 공격력 증가% / 100)",
+        "defense": "받는 피해량 = 초기 피해량 × 100 / (100 + 방어력)",
+        "skillHaste": "최종 쿨타임 = 기본 쿨타임 × 100 / (100 + 스킬 가속)",
+        "_note_defense": "방어력 100 → 피해 50% 감소(2배 버팀), 200 → 66.7% 감소(3배 버팀)",
+        "_note_haste": "가속 100 → 2배 자주 사용, 200 → 3배 자주 사용. 쿨감 100% 무한발사 원천 차단."
+    },
+
+    "currency": {
+        "nyang": 0,
+        "soul_stone": 0
+    },
+
+    "basicSkillUpgrades": {
+        "_comment": "캐릭터별 기본 스킬 강화. 4개 축을 개별적으로 강화한다.",
+        "characters": [
+            {
+                "characterId": "yoonseol",
+                "skillId": "weapon_balsi",
+                "_name": "발시(윤설 기본 스킬)",
+                "damageUp": {
+                    "_desc": "피해량 증가 (레벨당 2%, 최대 100레벨)",
+                    "level": 0,
+                    "maxLevel": 40,
+                    "percentPerLevel": 5
+                },
+                "skillHaste": {
+                    "_desc": "스킬 가속 증가 (레벨당 5, 최대 12레벨=가속60). 공식: 최종 쿨타임 = 기본 쿨타임 × 100/(100+가속)",
+                    "hastePerLevel": 5,
+                    "level": 0,
+                    "maxLevel": 12
+                },
+                "castCount": {
+                    "_desc": "시전 횟수 증가 (최대 2회)",
+                    "level": 0,
+                    "maxLevel": 2
+                },
+                "skillRange": {
+                    "_desc": "스킬 범위 증가 (레벨당 3%, 최대 10레벨=30%)",
+                    "percentPerLevel": 3,
+                    "level": 0,
+                    "maxLevel": 10
+                }
+            },
+            {
+                "characterId": "hayul",
+                "skillId": "weapon_thundertalisman",
+                "_name": "낙뢰부(하율 기본 스킬)",
+                "damageUp": {
+                    "_desc": "피해량 증가 (레벨당 2%, 최대 100레벨)",
+                    "level": 0,
+                    "maxLevel": 40,
+                    "percentPerLevel": 5
+                },
+                "skillHaste": {
+                    "_desc": "스킬 가속 증가 (레벨당 5, 최대 12레벨=가속60)",
+                    "hastePerLevel": 5,
+                    "level": 0,
+                    "maxLevel": 12
+                },
+                "castCount": {
+                    "_desc": "시전 횟수 증가 (최대 2회)",
+                    "level": 0,
+                    "maxLevel": 2
+                },
+                "skillRange": {
+                    "_desc": "스킬 범위 증가 (레벨당 3%, 최대 10레벨=30%)",
+                    "percentPerLevel": 3,
+                    "level": 0,
+                    "maxLevel": 10
+                }
+            },
+            {
+                "characterId": "harin",
+                "skillId": "weapon_harin_slash",
+                "_name": "좌격요세(하린 기본 스킬)",
+                "damageUp": {
+                    "_desc": "피해량 증가 (레벨당 2%, 최대 100레벨)",
+                    "level": 0,
+                    "maxLevel": 40,
+                    "percentPerLevel": 5
+                },
+                "skillHaste": {
+                    "_desc": "스킬 가속 증가 (레벨당 5, 최대 12레벨=가속60)",
+                    "hastePerLevel": 5,
+                    "level": 0,
+                    "maxLevel": 12
+                },
+                "castCount": {
+                    "_desc": "시전 횟수 증가 (최대 2회)",
+                    "level": 0,
+                    "maxLevel": 2
+                },
+                "skillRange": {
+                    "_desc": "스킬 범위 증가 (레벨당 3%, 최대 10레벨=30%)",
+                    "percentPerLevel": 3,
+                    "level": 0,
+                    "maxLevel": 10
+                }
+            }
+        ]
+    },
+
+    "passiveUpgrades": {
+        "_comment": "인게임 패시브. 레벨만 증가시키는 구조. 아웃게임에서 냥으로 강화.",
+        "passives": [
+            {
+                "passiveId": "passive_attack_damage",
+                "_name": "1.공격력 증가",
+                "_formula": "(기본 공격력 + 고정) × (1 + 레벨×10% / 100). 합연산이라 후반 효율 완만.",
+                "percentPerLevel": 10,
+                "level": 0,
+                "maxLevel": 50
+            },
+            {
+                "passiveId": "passive_defense",
+                "_name": "2.방어력 증가",
+                "_formula": "받는 피해 = 초기 피해 × 100/(100+방어력). LoL 유효체력 방식.",
+                "percentPerLevel": 10,
+                "level": 0,
+                "maxLevel": 10
+            },
+            {
+                "passiveId": "passive_pickup_range",
+                "_name": "3.픽업범위 증가 (총 160%)",
+                "percentPerLevel": 20,
+                "level": 0,
+                "maxLevel": 8
+            },
+            {
+                "passiveId": "passive_max_hp",
+                "_name": "4.최대체력 증가",
+                "percentPerLevel": 10,
+                "level": 0,
+                "maxLevel": 10
+            },
+            {
+                "passiveId": "passive_move_speed",
+                "_name": "5.이동속도 증가",
+                "percentPerLevel": 5,
+                "level": 0,
+                "maxLevel": 10
+            },
+            {
+                "passiveId": "passive_skill_area",
+                "_name": "6.스킬 범위(투사체 크기) 증가",
+                "percentPerLevel": 5,
+                "level": 0,
+                "maxLevel": 5
+            },
+            {
+                "passiveId": "passive_exp_gain",
+                "_name": "7.경험치 획득량 증가",
+                "percentPerLevel": 10,
+                "level": 0,
+                "maxLevel": 10
+            },
+            {
+                "passiveId": "passive_skill_haste",
+                "_name": "8.스킬 가속 증가",
+                "_formula": "최종 쿨타임 = 기본 쿨타임 × 100/(100+스킬가속). 가속100→2배빈도, 200→3배. 무한발사 원천차단.",
+                "hastePerLevel": 10,
+                "level": 0,
+                "maxLevel": 8,
+                "_maxTotalHaste": 80,
+                "_note": "인게임 패시브 최대 8레벨×10=가속80. 기본스킬 강화 가속(최대60)과 합산하면 최대 가속140. 쿨타임=기본×100/240=약58%감소. 설계 상한 60% 이내."
+            }
+        ]
+    },
+
+    "ultimateUpgrades": {
+        "_comment": "궁극기 강화: 레벨만 증가. 레벨1 상승마다 효율 폭주 주의. 궁극기/지원 궁극기 쿨타임은 4분.",
+        "ultimates": [
+            {
+                "characterId": "yoonseol",
+                "ultimateId": "ult_yoonseol_ice",
+                "_name": "혹한의 집념 (윤설 궁극기)",
+                "level": 1,
+                "maxLevel": 50
+            },
+            {
+                "characterId": "hayul",
+                "ultimateId": "ult_hayul_thunder",
+                "_name": "천강뇌전부 (하율 궁극기)",
+                "level": 1,
+                "maxLevel": 50
+            },
+            {
+                "characterId": "harin",
+                "ultimateId": "ult_harin_slash",
+                "_name": "월광쇄도 (하린 궁극기)",
+                "level": 1,
+                "maxLevel": 50
+            }
+        ]
+    },
+
+    "upgradeCosts": {
+        "_comment": "레벨별 강화 비용(냥). 인덱스 = 현재 레벨(0부터). 50레벨 항목은 추후 확장.",
+        "basicSkill_damage":    [100, 200, 400, 800, 1500, 2500, 4000, 6000, 9000, 13000],
+        "basicSkill_haste":     [150, 300, 600, 1200, 2000, 3500, 5500, 8000, 12000, 17000],
+        "basicSkill_castCount": [500, 3000],
+        "basicSkill_range":     [100, 200, 400, 800, 1500, 2500, 4000, 6000, 9000, 13000],
+        "passive":              [50, 100, 200, 400, 700, 1200, 2000, 3000, 5000, 8000],
+        "ultimate":             [500, 1000, 1500, 2500, 4000, 6000, 8500, 12000, 16000, 21000]
+    }
+}

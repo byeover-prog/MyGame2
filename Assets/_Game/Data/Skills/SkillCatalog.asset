@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d86f2b71cac180f48a55ab916e0cc211, type: 3}
+  m_Name: SkillCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::_Game.Skills.SkillCatalogSO
+  allSkills:
+  - {fileID: 11400000, guid: b3c03d550358b5040a089e0339ae9cda, type: 2}
+  - {fileID: 11400000, guid: 671edf0589d49224580f541659c4fc19, type: 2}
+  - {fileID: 11400000, guid: 2ca1df0e39e31234bbce2ca479e3fc26, type: 2}
+  - {fileID: 11400000, guid: 5b13854fb90655345aa2a635855d6284, type: 2}
+  - {fileID: 11400000, guid: 47cb3ce091af939488a381d6e550b91e, type: 2}
+  - {fileID: 11400000, guid: 0e33f1795fe5a4c43afd637281175b05, type: 2}
+  - {fileID: 11400000, guid: cb2d2aceac0f2a34a8b7eda9c7dd02ae, type: 2}
+  - {fileID: 11400000, guid: 80de6dc2306fc454b89dfb0dd1cff600, type: 2}
+  - {fileID: 11400000, guid: d09c565a35cf9c140ab0233606c1d8d4, type: 2}
+  - {fileID: 11400000, guid: 1210efabb3202a340b753238d19f43b2, type: 2}
+  - {fileID: 11400000, guid: 29b025eae95122c49bc41fde9a3fd1cc, type: 2}
+  - {fileID: 11400000, guid: bd92560af42f7164681480ebb739c072, type: 2}
+  - {fileID: 11400000, guid: 7e75e06389ca68c40ba66f12515e122d, type: 2}
+  - {fileID: 11400000, guid: 1c020eec07fbd664ca269f15332a86ab, type: 2}
+  - {fileID: 11400000, guid: 141bfdc3bf06f18448c13b00b1a41987, type: 2}
+  - {fileID: 11400000, guid: 5edd036b24544d640944a75ac3223b77, type: 2}

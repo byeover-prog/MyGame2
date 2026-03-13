@@ -3,8 +3,8 @@ guid: b12bdcfcaf91d2f43a7473682d706037
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7928876641947680184
-    second: "ChatGPT Image 2026\uB144 2\uC6D4 12\uC77C \uC624\uD6C4 03_00_16_0"
+      213: 6946876648732156625
+    second: Boomerang_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "ChatGPT Image 2026\uB144 2\uC6D4 12\uC77C \uC624\uD6C4 03_00_16_0"
+      name: Boomerang_0
       rect:
         serializedVersion: 2
-        x: 300
-        y: 248
+        x: 303
+        y: 247
         width: 410
-        height: 569
+        height: 570
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 84201d004b8f6f190800000000000000
-      internalID: -7928876641947680184
+      spriteID: 1d2e2228183486060800000000000000
+      internalID: 6946876648732156625
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 59d7acc9fe96a294b9bb1bdae7e71156
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "ChatGPT Image 2026\uB144 2\uC6D4 12\uC77C \uC624\uD6C4 03_00_16_0": -7928876641947680184
+      Boomerang_0: 6946876648732156625
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

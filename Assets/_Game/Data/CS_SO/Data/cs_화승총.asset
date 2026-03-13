@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 235301bbe7e69ce438640b7a5297e910, type: 3}
+  m_Name: "cs_\uD654\uC2B9\uCD1D"
+  m_EditorClassIdentifier: Assembly-CSharp::_Game.Skills.SkillDefinitionSO
+  skillId: weapon_bullet
+  skillType: 0
+  displayName: "\uD654\uC2B9\uCD1D"
+  icon: {fileID: 21300000, guid: e9915338b3a581146af06c5ef29c74a7, type: 3}
+  tagKr: "\uBB3C\uB9AC"
+  maxLevel: 8
+  descLv1: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC801\uC744 \uB300\uC0C1\uC73C\uB85C
+    \uC801\uB4E4\uC744 \uAD00\uD1B5\uD558\uB294 \uCD1D\uC54C\uC744 \uBC1C\uC0AC \uD569\uB2C8\uB2E4."
+  descLv2: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04
+    \uAC10\uC18C"
+  descLv3: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04
+    \uAC10\uC18C"
+  descLv4: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04
+    \uAC10\uC18C"
+  descLv5: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04
+    \uAC10\uC18C"
+  descLv6: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04
+    \uAC10\uC18C"
+  descLv7: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04
+    \uAC10\uC18C"
+  descLv8: "\uD53C\uD574\uB7C9 \uC99D\uAC00 + \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04
+    \uAC10\uC18C"
+  passiveStatType: 0

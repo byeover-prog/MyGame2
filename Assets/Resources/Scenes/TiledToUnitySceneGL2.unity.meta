@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: eaa6a6c323d34b64092b8413124fc816
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267533
+  packageName: Epic RPG World - Grass Land 2.0
+  packageVersion: 1.9
+  assetPath: Assets/Resources/Scenes/TiledToUnitySceneGL2.unity
+  uploadId: 854212

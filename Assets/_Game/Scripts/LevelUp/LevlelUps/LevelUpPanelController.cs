@@ -12,7 +12,6 @@ public sealed class LevelUpPanelController : MonoBehaviour
     [SerializeField] private CommonSkillManager2D commonSkillManager;
 
     [Header("Passives")]
-    [SerializeField] private PassiveCatalogSO passiveCatalog;
     [SerializeField] private PassiveManager2D passiveManager;
 
     [Header("Slot Limits")]

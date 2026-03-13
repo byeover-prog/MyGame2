@@ -1,0 +1,124 @@
+{
+    "version": 1,
+    "_설명": "캐릭터 기본 스테이터스. 캐릭터 레벨(최대 50)에 따라 기본 능력치가 올라간다.",
+
+    "characters": [
+        {
+            "id": "yoonseol",
+            "displayName": "윤설",
+            "element": "빙결",
+            "basicSkillId": "weapon_balsi",
+            "ultimateId": "ult_yoonseol_ice",
+            "passiveName": "혹한의 사수",
+
+            "baseStats": {
+                "maxHp": 200,
+                "attack": 20,
+                "defense": 10,
+                "moveSpeed": 5.0,
+                "pickupRange": 2.0
+            },
+            "growthPerLevel": {
+                "_comment": "레벨당 증가하는 고정 수치. 최대 레벨 50.",
+                "maxHp": 8,
+                "attack": 1,
+                "defense": 1,
+                "moveSpeed": 0.0,
+                "pickupRange": 0.0
+            },
+            "maxLevel": 50
+        },
+        {
+            "id": "hayul",
+            "displayName": "하율",
+            "element": "전기",
+            "basicSkillId": "weapon_thundertalisman",
+            "ultimateId": "ult_hayul_thunder",
+            "passiveName": "도술",
+
+            "baseStats": {
+                "maxHp": 180,
+                "attack": 22,
+                "defense": 8,
+                "moveSpeed": 5.2,
+                "pickupRange": 2.0
+            },
+            "growthPerLevel": {
+                "maxHp": 7,
+                "attack": 1,
+                "defense": 1,
+                "moveSpeed": 0.0,
+                "pickupRange": 0.0
+            },
+            "maxLevel": 50
+        },
+        {
+            "id": "harin",
+            "displayName": "하린",
+            "element": "음",
+            "basicSkillId": "weapon_harin_slash",
+            "ultimateId": "ult_harin_slash",
+            "passiveName": "본국검법",
+
+            "baseStats": {
+                "maxHp": 220,
+                "attack": 18,
+                "defense": 12,
+                "moveSpeed": 4.8,
+                "pickupRange": 2.0
+            },
+            "growthPerLevel": {
+                "maxHp": 9,
+                "attack": 1,
+                "defense": 1,
+                "moveSpeed": 0.0,
+                "pickupRange": 0.0
+            },
+            "maxLevel": 50
+        }
+    ],
+
+    "elementEffects": {
+        "_comment": "3인 스쿼드 시스템: 메인 캐릭터 기본 스킬에 지원 1/2의 속성 효과가 부여됨",
+        "빙결": {
+            "desc": "기본 스킬에 공격력 10% 추가 데미지 + 적 이동속도 20% 감소",
+            "bonusDamagePercent": 10,
+            "slowPercent": 20
+        },
+        "전기": {
+            "desc": "기본 스킬 피해량의 5%를 주 대상 주변 최대 5명에게 전파",
+            "chainDamagePercent": 5,
+            "maxChainTargets": 5
+        },
+        "음": {
+            "desc": "메인 캐릭터에게 모든 피해 흡혈 5% 부여",
+            "lifeStealPercent": 5
+        },
+        "바람": {
+            "desc": "대쉬 횟수 +1, 대쉬 쿨타임 20% 감소",
+            "extraDash": 1,
+            "dashCooldownReductionPercent": 20
+        },
+        "땅": {
+            "desc": "5초간 피해 미수 시 최대 체력 10% 보호막",
+            "shieldPercent": 10,
+            "noDamageSeconds": 5
+        },
+        "물": {
+            "desc": "메인 캐릭터 방어력 20% 증가",
+            "defensePercent": 20
+        },
+        "화염": {
+            "desc": "기본 스킬 적중 시 화상(도트 피해), 총 데미지 = 공격력의 10%",
+            "burnDamagePercent": 10
+        },
+        "양": {
+            "desc": "메인 캐릭터 체력 재생 (수치 조정 중)",
+            "hpRegenPerSecond": 1
+        },
+        "물리": {
+            "desc": "메인 캐릭터 공격력 10% 증가",
+            "attackPercent": 10
+        }
+    }
+}

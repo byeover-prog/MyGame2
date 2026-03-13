@@ -180,4 +180,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThunderTalismanProjectile2D
   spriteAngleOffset: 0
-  rb: {fileID: 0}
+  rb: {fileID: 3889720598415413662}
