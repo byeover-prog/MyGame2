@@ -75,8 +75,8 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
         float attackMul  = ToMul(baseSnapshot.AttackPowerPercent) * ToMul(passiveSnapshot.AttackPowerPercent);
         float moveMul    = ToMul(baseSnapshot.MoveSpeedPercent) * ToMul(passiveSnapshot.MoveSpeedPercent);
         float pickupMul  = ToMul(baseSnapshot.PickupRangePercent) * ToMul(passiveSnapshot.PickupRangePercent);
-        float elementMul = ToMul(baseSnapshot.ElementDamagePercent) * ToMul(passiveSnapshot.ElementDamagePercent);
-        float goldMul    = ToMul(baseSnapshot.GoldGainPercent) * ToMul(passiveSnapshot.GoldGainPercent);
+        float hasteMul = ToMul(baseSnapshot.SkillHastePercent) * ToMul(passiveSnapshot.SkillHastePercent);
+        float areaMul    = ToMul(baseSnapshot.SkillAreaPercent) * ToMul(passiveSnapshot.SkillAreaPercent);
         float expMul     = ToMul(baseSnapshot.ExpGainPercent) * ToMul(passiveSnapshot.ExpGainPercent);
 
         float totalDefensePercent = Mathf.Max(0f, baseSnapshot.DefensePercent + passiveSnapshot.DefensePercent);
@@ -85,14 +85,10 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
         combatStats.SetDamageMul(attackMul);
         combatStats.SetMoveSpeedMul(moveMul);
         combatStats.SetPickupRangeMul(pickupMul);
-        combatStats.SetElementDamageMul(elementMul);
-        combatStats.SetGoldGainMul(goldMul);
+        combatStats.SetCooldownMul(hasteMul);
+        combatStats.SetAreaMul(areaMul);
         combatStats.SetExpGainMul(expMul);
         combatStats.SetIncomingDamageMul(incomingDamageMul);
-
-        // 쿨타임/범위는 현재 패시브에 없으므로 기본값 유지
-        combatStats.SetCooldownMul(1f);
-        combatStats.SetAreaMul(1f);
 
         if (playerHealth != null)
         {
@@ -105,7 +101,7 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
             Debug.Log(
                 $"[StatApplier] ATKx{attackMul:0.00} | MOVEx{moveMul:0.00} | PICKUPx{pickupMul:0.00} | " +
                 $"DEF%={totalDefensePercent:0.##} | HP+{baseSnapshot.MaxHpFlat + passiveSnapshot.MaxHpFlat} | " +
-                $"ELEMx{elementMul:0.00} | GOLDx{goldMul:0.00} | EXPx{expMul:0.00}",
+                $"HASTEx{hasteMul:0.00} | AREAx{areaMul:0.00} | EXPx{expMul:0.00}",
                 this);
         }
     }

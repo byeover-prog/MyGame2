@@ -44,8 +44,8 @@ namespace _Game.Skills
             new() { statType = PassiveStatType.PickupRangePercent,   baseValue = 10f,  valuePerLevel = 10f },
             new() { statType = PassiveStatType.MoveSpeedPercent,     baseValue = 5f,   valuePerLevel = 5f  },
             new() { statType = PassiveStatType.DefensePercent,       baseValue = 10f,  valuePerLevel = 10f },
-            new() { statType = PassiveStatType.ElementDamagePercent, baseValue = 10f,  valuePerLevel = 10f },
-            new() { statType = PassiveStatType.GoldGainPercent,      baseValue = 10f,  valuePerLevel = 10f },
+            new() { statType = PassiveStatType.SkillHastePercent, baseValue = 10f,  valuePerLevel = 10f },
+            new() { statType = PassiveStatType.SkillAreaPercent,      baseValue = 10f,  valuePerLevel = 10f },
             new() { statType = PassiveStatType.ExpGainPercent,       baseValue = 10f,  valuePerLevel = 10f },
 
             // ── 정수형 ─────────────────────────

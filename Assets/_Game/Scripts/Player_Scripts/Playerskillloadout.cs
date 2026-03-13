@@ -287,12 +287,12 @@ namespace _Game.Player
                     snapshot.MaxHpFlat += Mathf.RoundToInt(value);
                     break;
 
-                case PassiveStatType.ElementDamagePercent:
-                    snapshot.ElementDamagePercent += value;
+                case PassiveStatType.SkillHastePercent:
+                    snapshot.SkillHastePercent += value;
                     break;
 
-                case PassiveStatType.GoldGainPercent:
-                    snapshot.GoldGainPercent += value;
+                case PassiveStatType.SkillAreaPercent:
+                    snapshot.SkillAreaPercent += value;
                     break;
 
                 case PassiveStatType.ExpGainPercent:
