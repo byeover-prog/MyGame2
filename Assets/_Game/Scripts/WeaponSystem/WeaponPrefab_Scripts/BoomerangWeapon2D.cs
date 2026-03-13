@@ -52,7 +52,6 @@ public sealed class BoomerangWeapon2D : CommonSkillWeapon2D
     {
         if (pool == null || owner == null)
         {
-            // ✅ IEnumerator에서는 return; 금지 → yield break; 로 종료
             yield break;
         }
 
@@ -61,19 +60,26 @@ public sealed class BoomerangWeapon2D : CommonSkillWeapon2D
         Vector2 origin = spawnPoint != null ? (Vector2)spawnPoint.position : (Vector2)owner.position;
         Vector2 dir = (target != null) ? (target.Position - origin).normalized : Vector2.right;
 
+        // ★ 타겟까지의 실제 거리 + 살짝 오버슈트 (설계: "대상이 있던 곳 보다 살짝 멀리 날라가고 돌아와야 한다")
+        float targetDist = (target != null) ? Vector2.Distance(origin, target.Position) : 3f;
+        float overshoot = 1.5f;
+        float actualMaxDist = targetDist + overshoot;
+
         int count = Mathf.Max(1, P.projectileCount);
-        float spread = Mathf.Max(0f, P.spreadAngleDeg);
+        float speed = Mathf.Max(0.5f, P.projectileSpeed);
+
+        // ★ 복귀 속도: 나가는 속도의 1.2배 (빠르게 돌아오도록)
+        float backSpeed = speed * 1.2f;
+
+        // ★ 수명: 왕복에 충분한 시간 확보 (나가기 + 돌아오기 + 여유)
+        float estimatedLife = (actualMaxDist / speed) + (actualMaxDist / backSpeed) + 1f;
 
         for (int i = 0; i < count; i++)
         {
-            float t = (count == 1) ? 0f : (i - (count - 1) * 0.5f);
-            float ang = spread * t;
-            Vector2 d = Quaternion.Euler(0f, 0f, ang) * dir;
-
             var proj = pool.Get<BoomerangProjectile2D>(origin, Quaternion.identity);
-            proj.Init(owner, d, enemyMask, P.damage, P.projectileSpeed, Mathf.Max(0.1f, P.returnSpeed), P.maxDistance, P.lifeSeconds);
+            proj.Init(owner, dir, enemyMask, P.damage, speed, backSpeed, actualMaxDist, estimatedLife);
 
-            float z = Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg;
+            float z = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
             proj.transform.rotation = Quaternion.Euler(0f, 0f, z);
 
             if (spinDegreesPerSecond != 0f)

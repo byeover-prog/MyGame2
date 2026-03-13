@@ -1,41 +1,38 @@
 // ──────────────────────────────────────────────
 // PassiveStatType.cs
 // 패시브 스킬이 적용하는 능력치 종류 (8종)
+// ★ 설계 문서 기준으로 수정
 // ──────────────────────────────────────────────
 
 namespace _Game.Skills
 {
-    /// <summary>
-    /// 패시브 스킬이 영향을 주는 능력치 종류.
-    /// PassiveBalanceTableSO에서 밸런스 수치를 관리한다.
-    /// </summary>
     public enum PassiveStatType
     {
         /// <summary>미지정 (액티브 스킬용)</summary>
         None = 0,
 
-        /// <summary>공격력 % 증가</summary>
-        AttackPowerPercent,
+        /// <summary>1. 공격력 % 증가 (레벨당 10%)</summary>
+        AttackPowerPercent = 1,
 
-        /// <summary>픽업 범위 % 증가</summary>
-        PickupRangePercent,
+        /// <summary>3. 픽업 범위 % 증가 (레벨당 20%)</summary>
+        PickupRangePercent = 2,
 
-        /// <summary>이동속도 % 증가</summary>
-        MoveSpeedPercent,
+        /// <summary>5. 이동속도 % 증가 (레벨당 5%)</summary>
+        MoveSpeedPercent = 3,
 
-        /// <summary>방어력 % 증가</summary>
-        DefensePercent,
+        /// <summary>2. 방어력 % 증가 (레벨당 10%, LoL 유효체력 공식)</summary>
+        DefensePercent = 4,
 
-        /// <summary>최대 체력 정수 증가</summary>
-        MaxHpFlat,
+        /// <summary>4. 최대 체력 정수 증가 (레벨당 +20)</summary>
+        MaxHpFlat = 5,
 
-        /// <summary>속성 피해 % 증가</summary>
-        ElementDamagePercent,
+        /// <summary>8. 스킬 가속 증가 (레벨당 10%, 쿨타임=기본×100/(100+가속))</summary>
+        SkillHastePercent = 6,
 
-        /// <summary>재화 획득량 % 증가</summary>
-        GoldGainPercent,
+        /// <summary>6. 스킬 범위 % 증가 (레벨당 5%)</summary>
+        SkillAreaPercent = 7,
 
-        /// <summary>경험치 획득량 % 증가</summary>
-        ExpGainPercent
+        /// <summary>7. 경험치 획득량 % 증가 (레벨당 10%)</summary>
+        ExpGainPercent = 8
     }
 }
