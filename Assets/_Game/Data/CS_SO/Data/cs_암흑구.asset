@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: weapon_darkorb
   skillType: 0
   displayName: "\uC554\uD751\uAD6C"
-  icon: {fileID: 5483859174317454229, guid: 05f490a76fb99b740808d59b96bfa856, type: 3}
+  icon: {fileID: 21300000, guid: 41bfc0b6086aaba4ab653aa14f378615, type: 3}
   tagKr: "\uC74C"
   maxLevel: 8
   descLv1: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC801\uC744 \uB300\uC0C1\uC73C\uB85C

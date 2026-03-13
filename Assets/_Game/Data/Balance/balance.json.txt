@@ -1,57 +1,145 @@
 {
-  "skills": [
-    {
-      "id": "weapon_shuriken",
-      "levels": [
-        { "cooldown": 1.80, "damage": 10, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 1, "bounce": 2 },
-        { "cooldown": 1.75, "damage": 10, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 2, "bounce": 2 },
-        { "cooldown": 1.70, "damage": 11, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 2 },
-        { "cooldown": 1.65, "damage": 12, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 3 },
-        { "cooldown": 1.60, "damage": 13, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 4 },
-        { "cooldown": 1.55, "damage": 14, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 5 },
-        { "cooldown": 1.50, "damage": 15, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 6 },
-        { "cooldown": 1.45, "damage": 16, "projectileSpeed": 10, "turnSpeedDeg": 900, "count": 3, "bounce": 6 }
-      ]
-    },
-    {
-      "id": "weapon_homing",
-      "levels": [
-        { "cooldown": 3.00, "damage": 8, "projectileSpeed": 8.5, "turnSpeedDeg": 1080, "hits": 1 },
-        { "cooldown": 2.95, "damage": 8, "projectileSpeed": 8.5, "turnSpeedDeg": 1080, "hits": 2 },
-        { "cooldown": 2.90, "damage": 9, "projectileSpeed": 8.6, "turnSpeedDeg": 1080, "hits": 3 },
-        { "cooldown": 2.85, "damage": 9, "projectileSpeed": 8.6, "turnSpeedDeg": 1080, "hits": 4 },
-        { "cooldown": 2.80, "damage": 10, "projectileSpeed": 8.7, "turnSpeedDeg": 1080, "hits": 5 },
-        { "cooldown": 2.75, "damage": 10, "projectileSpeed": 8.7, "turnSpeedDeg": 1080, "hits": 6 },
-        { "cooldown": 2.70, "damage": 11, "projectileSpeed": 8.8, "turnSpeedDeg": 1080, "hits": 7 },
-        { "cooldown": 2.65, "damage": 11, "projectileSpeed": 8.8, "turnSpeedDeg": 1080, "hits": 8 }
-      ]
-    },
-    {
-      "id": "weapon_darkorb",
-      "levels": [
-        { "cooldown": 4.00, "damage": 20, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 0 },
-        { "cooldown": 3.95, "damage": 20, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 1 },
-        { "cooldown": 3.90, "damage": 20, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 2 },
-        { "cooldown": 3.85, "damage": 20, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 },
-        { "cooldown": 3.80, "damage": 23, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 },
-        { "cooldown": 3.75, "damage": 26, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 },
-        { "cooldown": 3.70, "damage": 29, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 },
-        { "cooldown": 3.65, "damage": 32, "projectileSpeed": 6.5, "travelDistance": 6.0, "explosionRadius": 1.6, "splitAngleDeg": 35, "maxSplitGen": 3 }
-      ]
-    },
-
-    {
-      "id": "weapon_thundertalisman",
-      "levels": [
-        { "cooldown": 1.40, "damage": 18, "projectileSpeed": 10.0, "life": 1.8, "count": 1, "explosionRadius": 2.6 },
-        { "cooldown": 1.34, "damage": 20, "projectileSpeed": 10.6, "life": 1.8, "count": 1, "explosionRadius": 2.8 },
-        { "cooldown": 1.28, "damage": 22, "projectileSpeed": 11.2, "life": 1.8, "count": 1, "explosionRadius": 3.0 },
-        { "cooldown": 1.22, "damage": 24, "projectileSpeed": 11.8, "life": 1.8, "count": 1, "explosionRadius": 3.2 },
-        { "cooldown": 1.16, "damage": 26, "projectileSpeed": 12.4, "life": 1.8, "count": 1, "explosionRadius": 3.4 },
-        { "cooldown": 1.10, "damage": 28, "projectileSpeed": 13.0, "life": 1.8, "count": 1, "explosionRadius": 3.6 },
-        { "cooldown": 1.04, "damage": 30, "projectileSpeed": 13.6, "life": 1.8, "count": 1, "explosionRadius": 3.8 },
-        { "cooldown": 0.98, "damage": 32, "projectileSpeed": 14.2, "life": 1.8, "count": 1, "explosionRadius": 4.0 }
-      ]
-    }
-  ]
+    "_comment": "비선형 레벨업 스킬용 레벨별 테이블. 공통_스킬_시스템 설계 문서 기준.",
+    "skills": [
+        {
+            "id": "weapon_arrow",
+            "_name": "곡궁(보스전 특화) — 레벨당 투사체+1, 부챗꼴 발사",
+            "levels": [
+                { "cooldown": 1.0, "damage": 20, "projectileSpeed": 9.5, "life": 1.7, "count": 1 },
+                { "cooldown": 1.0, "damage": 20, "projectileSpeed": 9.8, "life": 1.7, "count": 2 },
+                { "cooldown": 1.0, "damage": 20, "projectileSpeed": 10.1, "life": 1.7, "count": 3 },
+                { "cooldown": 1.0, "damage": 20, "projectileSpeed": 10.4, "life": 1.7, "count": 4 },
+                { "cooldown": 1.0, "damage": 20, "projectileSpeed": 10.7, "life": 1.7, "count": 5 },
+                { "cooldown": 1.0, "damage": 20, "projectileSpeed": 11.0, "life": 1.7, "count": 6 },
+                { "cooldown": 1.0, "damage": 20, "projectileSpeed": 11.3, "life": 1.7, "count": 7 },
+                { "cooldown": 1.0, "damage": 20, "projectileSpeed": 11.6, "life": 1.7, "count": 8 }
+            ]
+        },
+        {
+            "id": "weapon_arrowrain",
+            "_name": "화차(화살비) — 틱 데미지 5, 총 타격 10회, 레벨당 타격+1·데미지+1",
+            "levels": [
+                { "cooldown": 4.0, "damage": 5,  "hitInterval": 0.3, "duration": 3.0, "explosionRadius": 2.0, "totalHits": 10 },
+                { "cooldown": 4.0, "damage": 6,  "hitInterval": 0.3, "duration": 3.3, "explosionRadius": 2.1, "totalHits": 11 },
+                { "cooldown": 4.0, "damage": 7,  "hitInterval": 0.3, "duration": 3.6, "explosionRadius": 2.2, "totalHits": 12 },
+                { "cooldown": 4.0, "damage": 8,  "hitInterval": 0.3, "duration": 3.9, "explosionRadius": 2.3, "totalHits": 13 },
+                { "cooldown": 4.0, "damage": 9,  "hitInterval": 0.3, "duration": 4.2, "explosionRadius": 2.4, "totalHits": 14 },
+                { "cooldown": 4.0, "damage": 10, "hitInterval": 0.3, "duration": 4.5, "explosionRadius": 2.5, "totalHits": 15 },
+                { "cooldown": 4.0, "damage": 11, "hitInterval": 0.3, "duration": 4.8, "explosionRadius": 2.6, "totalHits": 16 },
+                { "cooldown": 4.0, "damage": 12, "hitInterval": 0.3, "duration": 5.1, "explosionRadius": 2.7, "totalHits": 17 }
+            ]
+        },
+        {
+            "id": "weapon_bullet",
+            "_name": "화승총(총알) — 직선 관통형, 레벨당 데미지+5",
+            "levels": [
+                { "cooldown": 2.5, "damage": 20, "projectileSpeed": 11.0, "life": 1.4 },
+                { "cooldown": 2.5, "damage": 25, "projectileSpeed": 11.4, "life": 1.4 },
+                { "cooldown": 2.5, "damage": 30, "projectileSpeed": 11.8, "life": 1.4 },
+                { "cooldown": 2.5, "damage": 35, "projectileSpeed": 12.2, "life": 1.4 },
+                { "cooldown": 2.5, "damage": 40, "projectileSpeed": 12.6, "life": 1.4 },
+                { "cooldown": 2.5, "damage": 45, "projectileSpeed": 13.0, "life": 1.4 },
+                { "cooldown": 2.5, "damage": 50, "projectileSpeed": 13.4, "life": 1.4 },
+                { "cooldown": 2.5, "damage": 55, "projectileSpeed": 13.8, "life": 1.4 }
+            ]
+        },
+        {
+            "id": "weapon_boomerang",
+            "_name": "부메랑 — 가장 먼 적 대상, Lv2부터 발사간격 0.3초, 레벨당 시전 횟수+1",
+            "levels": [
+                { "cooldown": 3.0, "damage": 10, "projectileSpeed": 7.5, "count": 1, "burstInterval": 0.0 },
+                { "cooldown": 3.0, "damage": 10, "projectileSpeed": 7.75, "count": 2, "burstInterval": 0.3 },
+                { "cooldown": 3.0, "damage": 10, "projectileSpeed": 8.0, "count": 3, "burstInterval": 0.3 },
+                { "cooldown": 3.0, "damage": 10, "projectileSpeed": 8.25, "count": 4, "burstInterval": 0.3 },
+                { "cooldown": 3.0, "damage": 10, "projectileSpeed": 8.5, "count": 5, "burstInterval": 0.3 },
+                { "cooldown": 3.0, "damage": 10, "projectileSpeed": 8.75, "count": 6, "burstInterval": 0.3 },
+                { "cooldown": 3.0, "damage": 10, "projectileSpeed": 9.0, "count": 7, "burstInterval": 0.3 },
+                { "cooldown": 3.0, "damage": 10, "projectileSpeed": 9.25, "count": 8, "burstInterval": 0.3 }
+            ]
+        },
+        {
+            "id": "weapon_shuriken",
+            "_name": "나선형 수리검 — Lv2-3 투사체+1(최대3), Lv4-8 튕김+1·데미지+2",
+            "levels": [
+                { "cooldown": 2.0, "damage": 15, "projectileSpeed": 10.5, "count": 1, "bounce": 2 },
+                { "cooldown": 2.0, "damage": 15, "projectileSpeed": 10.5, "count": 2, "bounce": 2 },
+                { "cooldown": 2.0, "damage": 15, "projectileSpeed": 10.5, "count": 3, "bounce": 2 },
+                { "cooldown": 2.0, "damage": 17, "projectileSpeed": 10.5, "count": 3, "bounce": 3 },
+                { "cooldown": 2.0, "damage": 19, "projectileSpeed": 10.5, "count": 3, "bounce": 4 },
+                { "cooldown": 2.0, "damage": 21, "projectileSpeed": 10.5, "count": 3, "bounce": 5 },
+                { "cooldown": 2.0, "damage": 23, "projectileSpeed": 10.5, "count": 3, "bounce": 6 },
+                { "cooldown": 2.0, "damage": 25, "projectileSpeed": 10.5, "count": 3, "bounce": 7 }
+            ]
+        },
+        {
+            "id": "weapon_rotatesword",
+            "_name": "월륜검(회전검) — 지속 4초, 틱간격 0.5초, 레벨당 검 갯수+1",
+            "levels": [
+                { "cooldown": 4.0, "damage": 5, "count": 1, "active": 4.0, "hitInterval": 0.5, "orbitRadius": 1.8, "orbitSpeed": 220 },
+                { "cooldown": 4.0, "damage": 5, "count": 2, "active": 4.0, "hitInterval": 0.5, "orbitRadius": 1.88, "orbitSpeed": 232 },
+                { "cooldown": 4.0, "damage": 5, "count": 3, "active": 4.0, "hitInterval": 0.5, "orbitRadius": 1.96, "orbitSpeed": 244 },
+                { "cooldown": 4.0, "damage": 5, "count": 4, "active": 4.0, "hitInterval": 0.5, "orbitRadius": 2.04, "orbitSpeed": 256 },
+                { "cooldown": 4.0, "damage": 5, "count": 5, "active": 4.0, "hitInterval": 0.5, "orbitRadius": 2.12, "orbitSpeed": 268 },
+                { "cooldown": 4.0, "damage": 5, "count": 6, "active": 4.0, "hitInterval": 0.5, "orbitRadius": 2.20, "orbitSpeed": 280 },
+                { "cooldown": 4.0, "damage": 5, "count": 7, "active": 4.0, "hitInterval": 0.5, "orbitRadius": 2.28, "orbitSpeed": 292 },
+                { "cooldown": 4.0, "damage": 5, "count": 8, "active": 4.0, "hitInterval": 0.5, "orbitRadius": 2.36, "orbitSpeed": 304 }
+            ]
+        },
+        {
+            "id": "weapon_homing",
+            "_name": "정화구(호밍/보스 특화) — 수명 타격 3회, 레벨당 수명 타격+1",
+            "levels": [
+                { "cooldown": 2.0, "damage": 20, "projectileSpeed": 8.8, "turnSpeedDeg": 1080, "hits": 3 },
+                { "cooldown": 2.0, "damage": 20, "projectileSpeed": 8.8, "turnSpeedDeg": 1080, "hits": 4 },
+                { "cooldown": 2.0, "damage": 20, "projectileSpeed": 8.9, "turnSpeedDeg": 1080, "hits": 5 },
+                { "cooldown": 2.0, "damage": 20, "projectileSpeed": 8.9, "turnSpeedDeg": 1080, "hits": 6 },
+                { "cooldown": 2.0, "damage": 20, "projectileSpeed": 9.0, "turnSpeedDeg": 1080, "hits": 7 },
+                { "cooldown": 2.0, "damage": 20, "projectileSpeed": 9.0, "turnSpeedDeg": 1080, "hits": 8 },
+                { "cooldown": 2.0, "damage": 20, "projectileSpeed": 9.1, "turnSpeedDeg": 1080, "hits": 9 },
+                { "cooldown": 2.0, "damage": 20, "projectileSpeed": 9.1, "turnSpeedDeg": 1080, "hits": 10 }
+            ]
+        },
+        {
+            "id": "weapon_darkorb",
+            "_name": "암흑구(폭발형) — Lv2-4 분열+1, Lv5-8 폭발데미지+2.5",
+            "levels": [
+                { "cooldown": 3.0, "damage": 10,   "projectileSpeed": 6.2, "explosionRadius": 1.8, "maxSplitGen": 0 },
+                { "cooldown": 3.0, "damage": 10,   "projectileSpeed": 6.2, "explosionRadius": 1.8, "maxSplitGen": 1 },
+                { "cooldown": 3.0, "damage": 10,   "projectileSpeed": 6.2, "explosionRadius": 1.8, "maxSplitGen": 2 },
+                { "cooldown": 3.0, "damage": 10,   "projectileSpeed": 6.2, "explosionRadius": 1.8, "maxSplitGen": 3 },
+                { "cooldown": 3.0, "damage": 12.5, "projectileSpeed": 6.2, "explosionRadius": 1.8, "maxSplitGen": 3 },
+                { "cooldown": 3.0, "damage": 15,   "projectileSpeed": 6.2, "explosionRadius": 1.8, "maxSplitGen": 3 },
+                { "cooldown": 3.0, "damage": 17.5, "projectileSpeed": 6.2, "explosionRadius": 1.8, "maxSplitGen": 3 },
+                { "cooldown": 3.0, "damage": 20,   "projectileSpeed": 6.2, "explosionRadius": 1.8, "maxSplitGen": 3 }
+            ]
+        },
+        {
+            "id": "weapon_thundertalisman",
+            "_name": "낙뢰부 — 하율 기본 스킬(전기 속성)",
+            "levels": [
+                { "cooldown": 1.80, "damage": 16, "projectileSpeed": 10.5, "life": 1.8, "count": 1, "explosionRadius": 2.4 },
+                { "cooldown": 1.74, "damage": 18, "projectileSpeed": 10.9, "life": 1.8, "count": 1, "explosionRadius": 2.55 },
+                { "cooldown": 1.68, "damage": 20, "projectileSpeed": 11.3, "life": 1.8, "count": 1, "explosionRadius": 2.7 },
+                { "cooldown": 1.62, "damage": 22, "projectileSpeed": 11.7, "life": 1.8, "count": 1, "explosionRadius": 2.85 },
+                { "cooldown": 1.56, "damage": 24, "projectileSpeed": 12.1, "life": 1.8, "count": 1, "explosionRadius": 3.0 },
+                { "cooldown": 1.50, "damage": 26, "projectileSpeed": 12.5, "life": 1.8, "count": 1, "explosionRadius": 3.15 },
+                { "cooldown": 1.44, "damage": 28, "projectileSpeed": 12.9, "life": 1.8, "count": 1, "explosionRadius": 3.3 },
+                { "cooldown": 1.38, "damage": 30, "projectileSpeed": 13.3, "life": 1.8, "count": 1, "explosionRadius": 3.45 }
+            ]
+        },
+        {
+            "id": "weapon_balsi",
+            "_name": "발시 — 윤설 기본 스킬(빙결 속성)",
+            "levels": [
+                { "cooldown": 0.90, "damage": 20, "projectileSpeed": 9.8,  "life": 1.7, "count": 1 },
+                { "cooldown": 0.86, "damage": 22, "projectileSpeed": 10.1, "life": 1.7, "count": 1 },
+                { "cooldown": 0.82, "damage": 24, "projectileSpeed": 10.4, "life": 1.7, "count": 1 },
+                { "cooldown": 0.78, "damage": 26, "projectileSpeed": 10.7, "life": 1.7, "count": 1 },
+                { "cooldown": 0.74, "damage": 28, "projectileSpeed": 11.0, "life": 1.7, "count": 1 },
+                { "cooldown": 0.70, "damage": 30, "projectileSpeed": 11.3, "life": 1.7, "count": 1 },
+                { "cooldown": 0.66, "damage": 32, "projectileSpeed": 11.6, "life": 1.7, "count": 1 },
+                { "cooldown": 0.62, "damage": 34, "projectileSpeed": 11.9, "life": 1.7, "count": 1 }
+            ]
+        }
+    ]
 }

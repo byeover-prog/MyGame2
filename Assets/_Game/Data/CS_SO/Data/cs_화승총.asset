@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: weapon_bullet
   skillType: 0
   displayName: "\uD654\uC2B9\uCD1D"
-  icon: {fileID: 2208703988740019828, guid: d09e894908f01d643ad80ad95152281a, type: 3}
+  icon: {fileID: 21300000, guid: e9915338b3a581146af06c5ef29c74a7, type: 3}
   tagKr: "\uBB3C\uB9AC"
   maxLevel: 8
   descLv1: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC801\uC744 \uB300\uC0C1\uC73C\uB85C

@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: weapon_boomerang
   skillType: 0
   displayName: "\uBD80\uBA54\uB791"
-  icon: {fileID: -7928876641947680184, guid: b12bdcfcaf91d2f43a7473682d706037, type: 3}
+  icon: {fileID: 21300000, guid: b1c0edccaed6a14469403f6769db5409, type: 3}
   tagKr: "\uBB3C\uB9AC"
   maxLevel: 8
   descLv1: "\uAC00\uC7A5 \uBA3C \uC801\uC744 \uB300\uC0C1\uC73C\uB85C \uC801\uB4E4\uC744

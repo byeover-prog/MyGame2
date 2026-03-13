@@ -247,6 +247,12 @@ public sealed class OfferService : MonoBehaviour
 
     public void RequestOffers(int? countOverride = null)
     {
+        if (_state == null)
+        {
+            Debug.LogWarning("[OfferService] RequestOffers 무시 — Bind(state) 미호출.", this);
+            return;
+        }
+
         int count = countOverride.HasValue ? Mathf.Max(1, countOverride.Value) : Mathf.Max(1, offerCount);
 
         var offers = BuildOffers(count);
@@ -258,6 +264,12 @@ public sealed class OfferService : MonoBehaviour
 
     private void HandleReroll()
     {
+        if (_state == null)
+        {
+            Debug.LogWarning("[OfferService] Reroll 무시 — 아직 Bind(state)가 호출되지 않았습니다.", this);
+            return;
+        }
+
         RequestOffers();
     }
 

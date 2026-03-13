@@ -103,12 +103,12 @@ TextureImporter:
       name: Bullet_0
       rect:
         serializedVersion: 2
-        x: 140
+        x: 0
         y: 0
         width: 743
         height: 1024
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 4fc705cc042a473468f61ad1da9793fd
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
