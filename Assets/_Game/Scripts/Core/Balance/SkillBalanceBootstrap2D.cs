@@ -127,6 +127,9 @@ namespace _Game.Scripts.Core.Balance
 
             IsReady = true;
 
+            // ★ 핵심: 무기(CommonSkillWeapon2D)가 읽는 SkillBalanceService2D에도 동일 데이터를 전달
+            SkillBalanceService2D.LoadFromDB(db);
+
             if (log)
                 Debug.Log($"[SkillBalanceBootstrap2D] 인덱싱 완료: {_map.Count} skills (source={GetSourceNameSafe(source)})");
         }

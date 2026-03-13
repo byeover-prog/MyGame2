@@ -3,8 +3,8 @@ guid: 4fb378f9657ff1f43b7bd5c9ad8b7691
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1587626762484512987
-    second: OrbitSword_Horizontal_1024_0
+      213: 3449087822831410717
+    second: OrbitSword_Horizontal_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: OrbitSword_Horizontal_1024_0
+      name: OrbitSword_Horizontal_0
       rect:
         serializedVersion: 2
         x: 211
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 52705320fdd97f9e0800000000000000
-      internalID: -1587626762484512987
+      spriteID: d1eddfec91f9ddf20800000000000000
+      internalID: 3449087822831410717
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      OrbitSword_Horizontal_1024_0: -1587626762484512987
+      OrbitSword_Horizontal_0: 3449087822831410717
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

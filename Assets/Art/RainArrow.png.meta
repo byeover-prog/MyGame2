@@ -103,12 +103,12 @@ TextureImporter:
       name: RainArrow_0
       rect:
         serializedVersion: 2
-        x: 298
-        y: 280
-        width: 574
-        height: 515
-      alignment: 9
-      pivot: {x: 0.48954704, y: 0.47572815}
+        x: 43
+        y: 32
+        width: 979
+        height: 987
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 8a5d5d09ee94d9841818437fb9e40f49
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 

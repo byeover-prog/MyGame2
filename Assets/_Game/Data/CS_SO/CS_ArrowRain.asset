@@ -16,8 +16,9 @@ MonoBehaviour:
   displayName: "\uD654\uC0B4\uBE44"
   visualDescriptionKr: "\uD654\uC0B4\uBE44: (\uB808\uBCA81 \uB3D9\uC791 \uC124\uBA85\uC744
     \uC5EC\uAE30\uC5D0 \uC791\uC131)"
-  icon: {fileID: -7548049993707339484, guid: e4865d9dc9adb174aab50cec76e85267, type: 3}
-  weaponPrefab: {fileID: 0}
+  icon: {fileID: 21300000, guid: 51b5aefdef4b2f34797b0b015be49213, type: 3}
+  weaponPrefab: {fileID: 1149503799442702274, guid: a7de142e8af014b4fa5203f27381c25f,
+    type: 3}
   maxLevel: 8
   levels:
   - cooldown: 2.5

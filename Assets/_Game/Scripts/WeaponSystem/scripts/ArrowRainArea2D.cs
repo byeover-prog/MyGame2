@@ -1,6 +1,19 @@
+// UTF-8
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 화살비 장판: 지정 위치에서 일정 시간 동안 범위 내 적에게 틱 데미지.
+///
+/// ■ 연출
+///   - effectVfx(ParticleSystem)를 자식으로 두고, 장판 활성화 시 Play / 비활성화 시 Stop.
+///   - eff_weapon_rainarrow 프리팹을 통째로 자식에 넣으면 됨.
+///
+/// ■ 데미지
+///   - CircleCollider2D(Trigger) 기반 OnTriggerEnter/Exit로 적 추적.
+///   - damageTickInterval 간격으로 범위 내 적에게 damagePerTick 피해.
+///   - Setup()으로 런타임에 모든 파라미터 덮어쓰기 가능.
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class ArrowRainArea2D : MonoBehaviour
 {
@@ -20,33 +33,16 @@ public sealed class ArrowRainArea2D : MonoBehaviour
     [Tooltip("장판 링(테두리) 알파 값. 도트 감성 유지용(과한 글로우/블러 금지).")]
     [SerializeField] private float areaAlpha = 0.55f;
 
-    [Header("낙하 화살(연출 전용)")]
-    [Tooltip("위에서 떨어지는 '연출용' 화살 프리팹(필수). 데미지 판정과 무관합니다.")]
-    [SerializeField] private ArrowRainFallingArrow fallingArrowPrefab;
+    [Header("이펙트(파티클)")]
+    [Tooltip("화살비 파티클 이펙트. eff_weapon_rainarrow를 자식으로 넣고 여기에 루트 ParticleSystem을 연결하세요.\n비워두면 이펙트 없이 데미지만 동작합니다.")]
+    [SerializeField] private ParticleSystem effectVfx;
 
-    [Tooltip("낙하 스폰 간격(초). 값이 작을수록 더 촘촘히 떨어집니다.")]
-    [Min(0.01f)]
-    [SerializeField] private float fallSpawnInterval = 0.06f;
+    [Tooltip("이펙트 크기를 장판 반경에 맞춰 자동 스케일할지 여부")]
+    [SerializeField] private bool scaleVfxToRadius = true;
 
-    [Tooltip("한 번에 살아있을 수 있는 낙하 화살 최대 수(핵심: 풀/성능 보호막).")]
-    [Min(1)]
-    [SerializeField] private int maxSimultaneousFallingArrows = 35;
-
-    [Tooltip("장판 중심 기준으로, 화살이 생성될 높이(Y 오프셋).")]
-    [Min(0f)]
-    [SerializeField] private float spawnHeight = 3.5f;
-
-    [Tooltip("낙하 속도(월드 단위/초).")]
+    [Tooltip("스케일 기준 반경(이 값일 때 scale=1). effectVfx의 원래 크기에 맞춰 설정.")]
     [Min(0.1f)]
-    [SerializeField] private float fallSpeed = 10f;
-
-    [Tooltip("낙하 화살이 자동으로 풀로 돌아가는 시간(초). 짧게 유지하는 게 안전합니다.")]
-    [Min(0.05f)]
-    [SerializeField] private float fallingArrowLifetime = 0.6f;
-
-    [Tooltip("낙하 화살에 랜덤 회전(도 단위)을 적용합니다. 0이면 회전 없음.")]
-    [Range(0f, 360f)]
-    [SerializeField] private float randomRotationDegrees = 20f;
+    [SerializeField] private float vfxBaseRadius = 2.0f;
 
     [Header("데미지(틱 판정)")]
     [Tooltip("원 안에 있는 적에게 피해를 주는 틱 간격(초). 0.2~0.5 권장.")]
@@ -60,23 +56,17 @@ public sealed class ArrowRainArea2D : MonoBehaviour
     [Tooltip("적 레이어만 체크하세요. (원 안의 콜라이더를 이 레이어로 필터링)")]
     [SerializeField] private LayerMask enemyLayerMask;
 
-    [Header("내장 풀(안정성)")]
-    [Tooltip("초기 풀 생성 개수(프레임 스파이크 방지). maxSimultaneousFallingArrows 이하 권장.")]
-    [Min(0)]
-    [SerializeField] private int prewarmCount = 20;
-
+    // ── 내부 상태 ──
     private CircleCollider2D circleTrigger;
-
     private readonly HashSet<Collider2D> enemiesInside = new HashSet<Collider2D>(64);
+    private readonly List<Collider2D> tempSnapshot = new List<Collider2D>(64);
 
     private float tickTimer;
-    private float spawnTimer;
     private float aliveTimer;
 
-    private readonly Queue<ArrowRainFallingArrow> pool = new Queue<ArrowRainFallingArrow>(128);
-    private readonly List<ArrowRainFallingArrow> active = new List<ArrowRainFallingArrow>(128);
-
-    private readonly List<Collider2D> tempToRemove = new List<Collider2D>(16);
+    // ════════════════════════════════════════════
+    //  초기화
+    // ════════════════════════════════════════════
 
     private void Awake()
     {
@@ -94,19 +84,17 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         if (areaSpriteRenderer == null)
             areaSpriteRenderer = GetComponent<SpriteRenderer>();
 
+        // effectVfx 자동 탐색: 인스펙터에 안 넣었으면 자식에서 찾기
+        if (effectVfx == null)
+            effectVfx = GetComponentInChildren<ParticleSystem>(true);
+
         ApplyRadiusToCollider();
         ApplyAreaAlpha();
-
-        if (fallingArrowPrefab == null)
-        {
-            Debug.LogError("[ArrowRainArea2D] 낙하 화살 프리팹이 비어있습니다.", this);
-            enabled = false;
-            return;
-        }
-
-        PrewarmPool();
     }
 
+    // ════════════════════════════════════════════
+    //  외부 API
+    // ════════════════════════════════════════════
 
     /// <summary>
     /// 런타임에서 장판 파라미터를 덮어쓴다.
@@ -121,32 +109,42 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         enemyLayerMask = newEnemyMask;
 
         tickTimer = 0f;
-        spawnTimer = 0f;
         aliveTimer = 0f;
         enemiesInside.Clear();
 
         ApplyRadiusToCollider();
         ApplyAreaAlpha();
+        ApplyVfxScale();
     }
+
+    // ════════════════════════════════════════════
+    //  생명주기
+    // ════════════════════════════════════════════
 
     private void OnEnable()
     {
         tickTimer = 0f;
-        spawnTimer = 0f;
         aliveTimer = 0f;
 
         ApplyRadiusToCollider();
         ApplyAreaAlpha();
+        ApplyVfxScale();
+
+        // ★ 파티클 재생
+        PlayVfx();
     }
 
     private void OnDisable()
     {
-        ReturnAllActiveToPool();
         enemiesInside.Clear();
+
+        // ★ 파티클 정지
+        StopVfx();
     }
 
     private void Update()
     {
+        // ── 지속시간 체크 ──
         if (durationSeconds > 0f)
         {
             aliveTimer += Time.deltaTime;
@@ -157,13 +155,7 @@ public sealed class ArrowRainArea2D : MonoBehaviour
             }
         }
 
-        spawnTimer += Time.deltaTime;
-        while (spawnTimer >= fallSpawnInterval)
-        {
-            spawnTimer -= fallSpawnInterval;
-            TrySpawnFallingArrow();
-        }
-
+        // ── 틱 데미지 ──
         tickTimer += Time.deltaTime;
         if (tickTimer >= damageTickInterval)
         {
@@ -172,122 +164,45 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         }
     }
 
-    private void ApplyRadiusToCollider()
-    {
-        circleTrigger.radius = radius;
-    }
-
-    private void ApplyAreaAlpha()
-    {
-        if (areaSpriteRenderer == null) return;
-        Color c = areaSpriteRenderer.color;
-        c.a = areaAlpha;
-        areaSpriteRenderer.color = c;
-    }
-
-    private void PrewarmPool()
-    {
-        int target = Mathf.Clamp(prewarmCount, 0, Mathf.Max(0, maxSimultaneousFallingArrows));
-        for (int i = 0; i < target; i++)
-        {
-            ArrowRainFallingArrow a = CreateNewArrowInstance();
-            ReturnToPool(a);
-        }
-    }
-
-    private ArrowRainFallingArrow CreateNewArrowInstance()
-    {
-        ArrowRainFallingArrow a = Instantiate(fallingArrowPrefab, transform);
-        a.gameObject.SetActive(false);
-        a.BindOwner(this);
-        return a;
-    }
-
-    private void TrySpawnFallingArrow()
-    {
-        if (active.Count >= maxSimultaneousFallingArrows)
-            return;
-
-        ArrowRainFallingArrow arrow = GetFromPool();
-        Vector2 center = transform.position;
-
-        float angle = Random.value * Mathf.PI * 2f;
-        float dist = Mathf.Sqrt(Random.value) * radius;
-        Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * dist;
-
-        Vector2 spawnPos = center + offset + Vector2.up * spawnHeight;
-
-        float rotZ = 0f;
-        if (randomRotationDegrees > 0f)
-            rotZ = Random.Range(-randomRotationDegrees, randomRotationDegrees);
-
-        arrow.transform.SetPositionAndRotation(spawnPos, Quaternion.Euler(0f, 0f, rotZ));
-        arrow.Launch(new Vector2(0f, -fallSpeed), fallingArrowLifetime);
-
-        active.Add(arrow);
-        arrow.gameObject.SetActive(true);
-    }
-
-    private ArrowRainFallingArrow GetFromPool()
-    {
-        if (pool.Count > 0)
-            return pool.Dequeue();
-
-        return CreateNewArrowInstance();
-    }
-
-    internal void NotifyArrowFinished(ArrowRainFallingArrow arrow)
-    {
-        int idx = active.IndexOf(arrow);
-        if (idx >= 0) active.RemoveAt(idx);
-
-        ReturnToPool(arrow);
-    }
-
-    private void ReturnToPool(ArrowRainFallingArrow arrow)
-    {
-        arrow.gameObject.SetActive(false);
-        pool.Enqueue(arrow);
-    }
-
-    private void ReturnAllActiveToPool()
-    {
-        for (int i = 0; i < active.Count; i++)
-        {
-            ArrowRainFallingArrow a = active[i];
-            if (a != null)
-                ReturnToPool(a);
-        }
-        active.Clear();
-    }
+    // ════════════════════════════════════════════
+    //  데미지
+    // ════════════════════════════════════════════
 
     private void ApplyTickDamage()
     {
         if (damagePerTick <= 0) return;
         if (enemiesInside.Count == 0) return;
 
-        tempToRemove.Clear();
+        // ★ HashSet을 직접 순회하지 않고 스냅샷 리스트로 복사 후 순회
+        tempSnapshot.Clear();
+        tempSnapshot.AddRange(enemiesInside);
 
-        foreach (Collider2D col in enemiesInside)
+        for (int i = 0; i < tempSnapshot.Count; i++)
         {
+            Collider2D col = tempSnapshot[i];
+
             if (col == null)
             {
-                tempToRemove.Add(col);
+                enemiesInside.Remove(col);
                 continue;
             }
 
             if (((1 << col.gameObject.layer) & enemyLayerMask.value) == 0)
                 continue;
 
-            if (col.TryGetComponent<IDamageable2D>(out var dmg))
-            {
-                dmg.TakeDamage(damagePerTick); // ✅ 프로젝트 인터페이스 시그니처에 맞춤
-            }
-        }
+            // IDamageable2D가 콜라이더 자체에 없으면 부모에서도 탐색
+            IDamageable2D dmg = col.GetComponent<IDamageable2D>();
+            if (dmg == null)
+                dmg = col.GetComponentInParent<IDamageable2D>();
 
-        for (int i = 0; i < tempToRemove.Count; i++)
-            enemiesInside.Remove(tempToRemove[i]);
+            if (dmg != null)
+                dmg.TakeDamage(damagePerTick);
+        }
     }
+
+    // ════════════════════════════════════════════
+    //  트리거 (적 진입/이탈 추적)
+    // ════════════════════════════════════════════
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -302,11 +217,76 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         enemiesInside.Remove(other);
     }
 
+    // ════════════════════════════════════════════
+    //  하위 호환 (ArrowRainFallingArrow가 호출함 — 삭제 전까지 유지)
+    // ════════════════════════════════════════════
+
+    /// <summary>
+    /// 구 낙하 화살(ArrowRainFallingArrow)이 수명 종료 시 호출하는 메서드.
+    /// 파티클 방식으로 전환했으므로 더 이상 사용하지 않지만,
+    /// ArrowRainFallingArrow.cs가 프로젝트에 남아있으면 컴파일 에러 방지용으로 유지.
+    /// ArrowRainFallingArrow.cs 삭제 후 이 메서드도 삭제해도 됨.
+    /// </summary>
+    internal void NotifyArrowFinished(ArrowRainFallingArrow arrow)
+    {
+        if (arrow != null)
+            arrow.gameObject.SetActive(false);
+    }
+
+    // ════════════════════════════════════════════
+    //  VFX (파티클)
+    // ════════════════════════════════════════════
+
+    private void PlayVfx()
+    {
+        if (effectVfx == null) return;
+
+        // 이미 재생 중이면 처음부터 다시
+        effectVfx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        effectVfx.Play(true);
+    }
+
+    private void StopVfx()
+    {
+        if (effectVfx == null) return;
+        effectVfx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
+    /// <summary>
+    /// 장판 반경에 맞춰 이펙트 스케일을 조정한다.
+    /// vfxBaseRadius가 2.0이고 현재 radius가 3.0이면 scale = 1.5
+    /// </summary>
+    private void ApplyVfxScale()
+    {
+        if (effectVfx == null) return;
+        if (!scaleVfxToRadius) return;
+
+        float scale = Mathf.Max(0.1f, radius / Mathf.Max(0.1f, vfxBaseRadius));
+        effectVfx.transform.localScale = new Vector3(scale, scale, scale);
+    }
+
+    // ════════════════════════════════════════════
+    //  콜라이더/스프라이트
+    // ════════════════════════════════════════════
+
+    private void ApplyRadiusToCollider()
+    {
+        if (circleTrigger != null)
+            circleTrigger.radius = radius;
+    }
+
+    private void ApplyAreaAlpha()
+    {
+        if (areaSpriteRenderer == null) return;
+        Color c = areaSpriteRenderer.color;
+        c.a = areaAlpha;
+        areaSpriteRenderer.color = c;
+    }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {
         if (radius < 0.1f) radius = 0.1f;
-        if (fallSpawnInterval < 0.01f) fallSpawnInterval = 0.01f;
         if (damageTickInterval < 0.05f) damageTickInterval = 0.05f;
 
         if (circleTrigger == null) circleTrigger = GetComponent<CircleCollider2D>();
@@ -314,9 +294,6 @@ public sealed class ArrowRainArea2D : MonoBehaviour
 
         ApplyRadiusToCollider();
         ApplyAreaAlpha();
-
-        if (prewarmCount > maxSimultaneousFallingArrows)
-            prewarmCount = maxSimultaneousFallingArrows;
     }
 #endif
 }

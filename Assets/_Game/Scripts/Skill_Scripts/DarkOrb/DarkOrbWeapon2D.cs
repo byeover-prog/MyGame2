@@ -58,6 +58,7 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     private Transform _owner;
     private float _nextFireTime;
     private int _level;
+    private PlayerCombatStats2D _stats;
 
     // 인터페이스 오타 대응(필수)
     public void OnAttaced(Transform owner) => OnAttached(owner);
@@ -65,6 +66,11 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     public void OnAttached(Transform owner)
     {
         _owner = owner;
+        if (_owner != null)
+        {
+            _stats = _owner.GetComponent<PlayerCombatStats2D>();
+            if (_stats == null) _stats = _owner.GetComponentInParent<PlayerCombatStats2D>();
+        }
         if (log) Debug.Log($"[DarkOrbWeapon2D] OnAttached owner={owner?.name}", this);
     }
 
@@ -103,7 +109,12 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
         }
 
         Fire(t);
-        _nextFireTime = Time.time + Mathf.Max(0.05f, cooldown);
+
+        // ★ 캐릭터 + 패시브 쿨다운 배율 반영
+        float finalCd = cooldown;
+        if (_stats != null)
+            finalCd *= Mathf.Max(0.05f, _stats.CooldownMul);
+        _nextFireTime = Time.time + Mathf.Max(0.05f, finalCd);
     }
 
     private void Fire(Transform target)
@@ -112,13 +123,19 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
         if (dir.sqrMagnitude < 0.0001f) dir = Vector2.right;
         dir.Normalize();
 
-        // 폭발 데미지 규칙
-        int dmg = Mathf.Max(1, baseExplosionDamage);
+        // ── 폭발 데미지 규칙 ──
+        float dmgF = Mathf.Max(1f, baseExplosionDamage);
         if (_level >= 5)
         {
-            int bonusLevel = _level - 4; // 5->1, 8->4
-            dmg += bonusDamagePerLevelFrom5 * bonusLevel;
+            int bonusLevel = _level - 4; // 5→1, 8→4
+            dmgF += bonusDamagePerLevelFrom5 * bonusLevel;
         }
+
+        // ★ 캐릭터 + 패시브 공격력 배율 반영
+        if (_stats != null)
+            dmgF *= (_stats.DamageMul * _stats.ElementDamageMul);
+
+        int dmg = Mathf.Max(1, Mathf.RoundToInt(dmgF));
 
         // enemyMask 0이면 Enemy 레이어로 보정
         if (enemyMask.value == 0)
