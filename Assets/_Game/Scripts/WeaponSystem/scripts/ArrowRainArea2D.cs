@@ -1,19 +1,18 @@
-// UTF-8
 using UnityEngine;
 
 /// <summary>
-/// 화살비 장판 — 최종 수정판
+/// 화살비 장판 — 진짜 최종판
 /// 
-/// ★ Physics2D.OverlapCircleAll(center, radius, layerMask) 만 사용
-///    ContactFilter2D, OnTriggerEnter2D 전부 제거
-///    가장 단순하고 확실한 방식
+///  핵심 수정: DamageUtil2D.TryApplyDamage() 사용
+///   - 이전: target.TakeDamage() → HP만 깎이고 데미지 팝업 안 뜸
+///   - 수정: DamageUtil2D.TryApplyDamage() → HP 감소 + 데미지 팝업 + 속성 처리
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class ArrowRainArea2D : MonoBehaviour
 {
     [Header("장판(범위)")]
     [Min(0.1f)]
-    [SerializeField] private float radius = 4.0f;
+    [SerializeField] private float radius = 2.0f;
 
     [Min(0f)]
     [SerializeField] private float durationSeconds = 3.0f;
@@ -27,32 +26,30 @@ public sealed class ArrowRainArea2D : MonoBehaviour
     [SerializeField] private ParticleSystem effectVfx;
     [SerializeField] private bool scaleVfxToRadius = true;
     [Min(0.1f)]
-    [SerializeField] private float vfxBaseRadius = 4.0f;
+    [SerializeField] private float vfxBaseRadius = 2.0f;
 
     [Header("데미지(틱 판정)")]
     [Min(0.05f)]
-    [SerializeField] private float damageTickInterval = 0.25f;
+    [SerializeField] private float damageTickInterval = 0.3f;
 
     [Min(0)]
     [SerializeField] private int damagePerTick = 5;
 
     [SerializeField] private LayerMask enemyLayerMask;
 
-    [Header("디버그 (문제 해결 후 끄세요)")]
-    [SerializeField] private bool debugLog = true;
+    [Header("디버그")]
+    [SerializeField] private bool debugLog = false;
 
     // ── 내부 ──
     private CircleCollider2D circleTrigger;
     private float tickTimer;
     private float aliveTimer;
-
-    // ════════════════════════════════════════════
+    private bool _setupDone;
 
     private void Awake()
     {
         circleTrigger = GetComponent<CircleCollider2D>();
-        if (circleTrigger != null)
-            circleTrigger.isTrigger = true;
+        if (circleTrigger != null) circleTrigger.isTrigger = true;
 
         var rb = GetComponent<Rigidbody2D>();
         if (rb != null)
@@ -68,7 +65,7 @@ public sealed class ArrowRainArea2D : MonoBehaviour
     }
 
     // ════════════════════════════════════════════
-    //  Setup (ArrowRainWeapon2D가 호출)
+    //  Setup
     // ════════════════════════════════════════════
 
     public void Setup(float newRadius, float newDurationSeconds,
@@ -83,13 +80,13 @@ public sealed class ArrowRainArea2D : MonoBehaviour
 
         tickTimer  = 0f;
         aliveTimer = 0f;
+        _setupDone = true;
 
         ApplyVisuals();
 
         if (debugLog)
-            Debug.Log($"[ArrowRainArea2D] Setup: radius={radius}, dmg={damagePerTick}, " +
-                      $"tick={damageTickInterval}s, dur={durationSeconds}s, " +
-                      $"mask={enemyLayerMask.value}, pos={transform.position}", this);
+            Debug.Log($"[ArrowRainArea2D] Setup: r={radius:F1}, dmg={damagePerTick}, " +
+                      $"tick={damageTickInterval:F2}s, dur={durationSeconds:F1}s", this);
     }
 
     // ════════════════════════════════════════════
@@ -109,8 +106,8 @@ public sealed class ArrowRainArea2D : MonoBehaviour
             effectVfx.Play(true);
         }
 
-        // ★ 활성화 직후 즉시 첫 틱
-        DoTickDamage();
+        if (_setupDone && damagePerTick > 0)
+            DoTickDamage();
     }
 
     private void OnDisable()
@@ -121,6 +118,8 @@ public sealed class ArrowRainArea2D : MonoBehaviour
 
     private void Update()
     {
+        if (!_setupDone) return;
+
         if (durationSeconds > 0f)
         {
             aliveTimer += Time.deltaTime;
@@ -140,52 +139,34 @@ public sealed class ArrowRainArea2D : MonoBehaviour
     }
 
     // ════════════════════════════════════════════
-    //  ★★★ 핵심: 가장 단순한 데미지 로직 ★★★
+    //  ★★★ 핵심: DamageUtil2D 사용 ★★★
     // ════════════════════════════════════════════
 
     private void DoTickDamage()
     {
-        if (damagePerTick <= 0)
-        {
-            if (debugLog) Debug.LogWarning("[ArrowRainArea2D] damagePerTick이 0 이하!", this);
-            return;
-        }
+        if (damagePerTick <= 0) return;
 
         Vector2 center = (Vector2)transform.position;
-
-        // ★★★ 가장 단순한 API — ContactFilter2D 없음 ★★★
         Collider2D[] hits = Physics2D.OverlapCircleAll(center, radius, enemyLayerMask);
 
-        if (debugLog && hits.Length == 0)
-            Debug.Log($"[ArrowRainArea2D] 적 없음. pos={center}, radius={radius}, mask={enemyLayerMask.value}", this);
+        if (hits.Length == 0) return;
 
         int damaged = 0;
-
         for (int i = 0; i < hits.Length; i++)
         {
             Collider2D col = hits[i];
-            if (col == null) continue;
-            if (!col.gameObject.activeInHierarchy) continue;
+            if (col == null || !col.gameObject.activeInHierarchy) continue;
 
-            // IDamageable2D 찾기: 자기 자신 → 부모
-            IDamageable2D target = col.GetComponent<IDamageable2D>();
-            if (target == null)
-                target = col.GetComponentInParent<IDamageable2D>();
-
-            if (target == null)
-            {
-                if (debugLog) Debug.Log($"[ArrowRainArea2D] IDamageable2D 없음: {col.gameObject.name} (Layer={col.gameObject.layer})", this);
-                continue;
-            }
-
-            if (target.IsDead) continue;
-
-            target.TakeDamage(damagePerTick);
-            damaged++;
+            // ★★★ DamageUtil2D.TryApplyDamage 사용 ★★★
+            // 이것이 HP 감소 + 데미지 팝업 + 속성 이벤트를 전부 처리함
+            // 이전: target.TakeDamage(damagePerTick) → 팝업 안 뜸
+            // 수정: DamageUtil2D.TryApplyDamage() → 팝업 + HP 감소 동시 처리
+            bool applied = DamageUtil2D.TryApplyDamage(col, damagePerTick);
+            if (applied) damaged++;
         }
 
         if (debugLog && damaged > 0)
-            Debug.Log($"[ArrowRainArea2D] ★ 데미지 적중: {damagePerTick} x {damaged}명", this);
+            Debug.Log($"[ArrowRainArea2D] 적중: {damagePerTick} x {damaged}명", this);
     }
 
     // ════════════════════════════════════════════
@@ -221,14 +202,9 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         }
     }
 
-    // ════════════════════════════════════════════
-    //  하위 호환
-    // ════════════════════════════════════════════
-
     internal void NotifyArrowFinished(ArrowRainFallingArrow arrow)
     {
-        if (arrow != null)
-            arrow.gameObject.SetActive(false);
+        if (arrow != null) arrow.gameObject.SetActive(false);
     }
 
 #if UNITY_EDITOR
@@ -236,8 +212,6 @@ public sealed class ArrowRainArea2D : MonoBehaviour
     {
         Gizmos.color = new Color(1f, 0.3f, 0.1f, 0.35f);
         Gizmos.DrawWireSphere(transform.position, radius);
-        Gizmos.color = new Color(1f, 0.3f, 0.1f, 0.1f);
-        Gizmos.DrawSphere(transform.position, radius);
     }
 #endif
 }
