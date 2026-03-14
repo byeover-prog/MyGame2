@@ -7,7 +7,8 @@ using _Game.Player;
 ///
 /// 공식:
 ///   최종 배율 = (1 + 캐릭터%/100) × (1 + 패시브%/100)
-///   최종 방어 = clamp(1 - 총방어%/100, 0.1, 1.0)
+///   최종 방어 = 100 / (100 + 총방어력)             ← LoL 유효체력 공식
+///   스킬 가속 = 100 / (100 + 총가속)               ← LoL 스킬 가속 공식 (상한 60% 감소)
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
@@ -27,8 +28,8 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
     private PlayerHealth playerHealth;
 
     [Header("=== 동작 옵션 ===")]
-    [Tooltip("최대 HP가 바뀔 때 현재 HP도 최대치로 맞출지")]
-    [SerializeField] private bool healToFullWhenMaxHpChanges = true;
+    [Tooltip("★ false 권장! true면 어떤 패시브를 배워도 풀피 회복되는 버그 발생.\n최대 HP 패시브를 배울 때는 증가분만큼만 회복됩니다.")]
+    [SerializeField] private bool healToFullWhenMaxHpChanges = false;
 
     [Tooltip("적용 로그를 보고 싶을 때만 켜세요")]
     [SerializeField] private bool debugLog = false;
@@ -72,29 +73,55 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
     {
         if (combatStats == null) return;
 
+        // ── 공격력 / 이동속도 / 픽업 / 범위 / 경험치: 곱연산 ──
         float attackMul  = ToMul(baseSnapshot.AttackPowerPercent) * ToMul(passiveSnapshot.AttackPowerPercent);
         float moveMul    = ToMul(baseSnapshot.MoveSpeedPercent) * ToMul(passiveSnapshot.MoveSpeedPercent);
         float pickupMul  = ToMul(baseSnapshot.PickupRangePercent) * ToMul(passiveSnapshot.PickupRangePercent);
-        float hasteMul = ToMul(baseSnapshot.SkillHastePercent) * ToMul(passiveSnapshot.SkillHastePercent);
         float areaMul    = ToMul(baseSnapshot.SkillAreaPercent) * ToMul(passiveSnapshot.SkillAreaPercent);
         float expMul     = ToMul(baseSnapshot.ExpGainPercent) * ToMul(passiveSnapshot.ExpGainPercent);
 
-        // ★ LoL 유효체력 공식: 받는피해 = 초기피해 × 100/(100+방어력)
+        // [핵심 수정] 스킬 가속: LoL 공식 — 100/(100+가속)
+        // 기존 코드는 ToMul()로 곱연산하여 쿨다운이 '증가'하는 버그가 있었음.
+        // 예: 가속 10이면 기존=1.1배(쿨다운 10% 증가), 수정=0.909배(쿨다운 9.1% 감소)
+        float totalHaste = Mathf.Max(0f, baseSnapshot.SkillHastePercent + passiveSnapshot.SkillHastePercent);
+        float cooldownMul = 100f / (100f + totalHaste);
+        // 상한: 최대 60% 쿨다운 감소 (설계 문서 기준)
+        cooldownMul = Mathf.Clamp(cooldownMul, 0.4f, 1f);
+
+        // LoL 유효체력 공식: 받는피해 = 초기피해 × 100/(100+방어력)
         float totalDefense = Mathf.Max(0f, baseSnapshot.DefensePercent + passiveSnapshot.DefensePercent);
         float incomingDamageMul = Mathf.Clamp(100f / (100f + totalDefense), 0.1f, 1f);
 
         combatStats.SetDamageMul(attackMul);
         combatStats.SetMoveSpeedMul(moveMul);
         combatStats.SetPickupRangeMul(pickupMul);
-        combatStats.SetCooldownMul(hasteMul);
+        combatStats.SetCooldownMul(cooldownMul);
         combatStats.SetAreaMul(areaMul);
         combatStats.SetExpGainMul(expMul);
         combatStats.SetIncomingDamageMul(incomingDamageMul);
 
+        // [핵심 수정] 체력 회복 버그 수정
+        // 기존: healToFullWhenMaxHpChanges = true → 어떤 패시브든 배우면 풀피 회복
+        // 수정: MaxHp가 실제로 '증가'한 경우에만 증가분만큼 현재 HP 회복
         if (playerHealth != null)
         {
             int maxHpBonus = Mathf.Max(0, baseSnapshot.MaxHpFlat + passiveSnapshot.MaxHpFlat);
-            playerHealth.SetMaxHpBonus(maxHpBonus, healToFullWhenMaxHpChanges);
+            int oldMaxHp = playerHealth.MaxHp;
+
+            // healToFull은 항상 false로 호출 (풀피 회복 방지)
+            playerHealth.SetMaxHpBonus(maxHpBonus, healToFull: false);
+
+            int newMaxHp = playerHealth.MaxHp;
+
+            // MaxHp가 실제로 증가한 경우에만, 증가분만큼 현재 HP도 회복
+            if (newMaxHp > oldMaxHp)
+            {
+                int hpGain = newMaxHp - oldMaxHp;
+                playerHealth.Heal(hpGain);
+
+                if (debugLog)
+                    Debug.Log($"[StatApplier] MaxHP 증가: {oldMaxHp} → {newMaxHp} | 회복량: +{hpGain}", this);
+            }
         }
 
         if (debugLog)
@@ -102,7 +129,7 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
             Debug.Log(
                 $"[StatApplier] ATKx{attackMul:0.00} | MOVEx{moveMul:0.00} | PICKUPx{pickupMul:0.00} | " +
                 $"DEF%={totalDefense:0.##} | HP+{baseSnapshot.MaxHpFlat + passiveSnapshot.MaxHpFlat} | " +
-                $"HASTEx{hasteMul:0.00} | AREAx{areaMul:0.00} | EXPx{expMul:0.00}",
+                $"HASTEx{cooldownMul:0.00}(가속합={totalHaste:0.#}) | AREAx{areaMul:0.00} | EXPx{expMul:0.00}",
                 this);
         }
     }
