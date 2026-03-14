@@ -1,0 +1,185 @@
+<UXML xmlns="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Game/UI/ClearUI/ClearUI%201.uss?fileID=7433441132597879392&amp;guid=bcb7e2e4c45464b49b710bcae067cf33&amp;type=3#ClearUI 1"/>
+    <VisualElement name="root" class="root" style="-unity-font-definition: url(&quot;project://database/Assets/ThirdParty/NanumFontSetup_OTF_BARUNGOTHIC/MaruBuri-Bold.otf?fileID=12800000&amp;guid=fb6c55dec66ad7842a8675f9be114037&amp;type=3#MaruBuri-Bold&quot;);">
+        <VisualElement name="corner-tl" class="corner corner-tl"/>
+        <VisualElement name="corner-tr" class="corner corner-tr"/>
+        <VisualElement name="corner-bl" class="corner corner-bl"/>
+        <VisualElement name="corner-br" class="corner corner-br"/>
+        <VisualElement name="deco-top" class="deco-top">
+            <VisualElement class="deco-line-left"/>
+            <VisualElement class="deco-diamond"/>
+            <VisualElement class="deco-line-right"/>
+        </VisualElement>
+        <VisualElement name="main-layout" class="main-layout">
+            <VisualElement name="left-area" class="left-area" style="justify-content: space-between;">
+                <VisualElement name="title-area" class="title-area">
+                    <VisualElement class="divider-row">
+                        <VisualElement class="divider-line"/>
+                        <VisualElement class="divider-icon"/>
+                        <VisualElement class="divider-line"/>
+                    </VisualElement>
+                    <Label name="chapter-label" text="CHAPTER IV" class="chapter-label" style="font-size: 24px;"/>
+                    <VisualElement name="title-frame" class="title-frame" style="width: 877px;">
+                        <VisualElement class="title-corner title-corner-tl" style="width: 10px; height: 10px;"/>
+                        <VisualElement class="title-corner title-corner-tr" style="width: 10px; height: 10px;"/>
+                        <VisualElement class="title-corner title-corner-bl" style="width: 10px; height: 10px;"/>
+                        <VisualElement class="title-corner title-corner-br" style="width: 10px; height: 10px;"/>
+                        <Label name="title-text" text="STAGE CLEAR" class="title-text" style="font-size: 44px; -unity-text-outline-width: 29px;"/>
+                    </VisualElement>
+                    <Label name="subtitle-text" text="혼돈의 끝, 그 너머" class="subtitle-text" style="font-size: 20px;"/>
+                    <VisualElement class="divider-row">
+                        <VisualElement class="divider-line-dim" style="height: 2px;"/>
+                        <VisualElement class="deco-diamond-small" style="width: 10px; height: 10px;"/>
+                        <VisualElement class="divider-line-dim" style="height: 2px;"/>
+                    </VisualElement>
+                </VisualElement>
+                <VisualElement name="image-area" class="image-area" style="height: 362px; bottom: 0;">
+                    <VisualElement class="img-corner img-corner-tl"/>
+                    <VisualElement class="img-corner img-corner-tr"/>
+                    <VisualElement class="img-corner img-corner-bl"/>
+                    <VisualElement class="img-corner img-corner-br"/>
+                    <VisualElement name="stage-image" class="stage-image" style="bottom: 0;"/>
+                    <VisualElement name="image-info-bar" class="image-info-bar" style="height: 40px;">
+                        <Label name="area-label" text="경복궁 외곽 폐허" class="area-label" style="font-size: 16px;"/>
+                        <Label name="time-label" text="00:24:18" class="time-label" style="font-size: 16px;"/>
+                    </VisualElement>
+                </VisualElement>
+                <VisualElement name="stats-area" class="stats-area" style="height: 160px; bottom: 0;">
+                    <VisualElement name="stat-kill" class="stat-cell">
+                        <VisualElement class="stat-top-line"/>
+                        <Label text="처치" class="stat-label" style="font-size: 20px;"/>
+                        <Label name="kill-value" text="247" class="stat-value" style="font-size: 30px;"/>
+                        <Label text="적 제거" class="stat-sub" style="font-size: 20px;"/>
+                    </VisualElement>
+                    <VisualElement name="stat-grade" class="stat-cell stat-cell-highlight">
+                        <VisualElement class="stat-top-line-gold"/>
+                        <Label text="평가" class="stat-label-gold" style="font-size: 20px;"/>
+                        <Label name="grade-value" text="S" class="stat-value-grade" style="font-size: 30px;"/>
+                        <Label text="최상급" class="stat-sub-gold" style="font-size: 20px;"/>
+                        <VisualElement class="stat-bottom-line-gold"/>
+                    </VisualElement>
+                    <VisualElement name="stat-time" class="stat-cell">
+                        <VisualElement class="stat-top-line"/>
+                        <Label text="소요" class="stat-label" style="font-size: 20px;"/>
+                        <Label name="time-value" text="24:18" class="stat-value" style="font-size: 30px;"/>
+                        <Label text="분 : 초" class="stat-sub" style="font-size: 20px;"/>
+                    </VisualElement>
+                </VisualElement>
+                <VisualElement name="reward-area" class="reward-area" style="bottom: 0;">
+                    <VisualElement class="reward-header">
+                        <VisualElement class="reward-line-short" style="height: 2px;"/>
+                        <Label text="획득 보상" class="reward-header-label" style="font-size: 20px;"/>
+                        <VisualElement class="reward-line-long" style="height: 2px;"/>
+                    </VisualElement>
+                    <VisualElement class="reward-list" style="bottom: 0; height: 160px;">
+                        <VisualElement name="reward-item-1" class="reward-item">
+                            <VisualElement class="reward-item-top-line"/>
+                            <VisualElement name="item-icon-1" class="item-icon" style="width: 80px; height: 80px;"/>
+                            <Label text="귀화도" class="item-name" style="font-size: 15px;"/>
+                            <Label text="희귀" class="item-rarity item-rare" style="font-size: 11px;"/>
+                        </VisualElement>
+                        <VisualElement name="reward-item-2" class="reward-item">
+                            <VisualElement class="reward-item-top-line"/>
+                            <VisualElement name="item-icon-2" class="item-icon" style="width: 80px; height: 80px;"/>
+                            <Label text="봉인된 기록" class="item-name" style="font-size: 15px;"/>
+                            <Label text="일반" class="item-rarity item-common" style="font-size: 11px;"/>
+                        </VisualElement>
+                        <VisualElement name="reward-item-3" class="reward-item">
+                            <VisualElement class="reward-item-top-line"/>
+                            <VisualElement name="item-icon-3" class="item-icon" style="width: 80px; height: 80px;"/>
+                            <Label text="혼의 구슬" class="item-name" style="font-size: 15px;"/>
+                            <Label text="희귀" class="item-rarity item-rare" style="font-size: 11px;"/>
+                        </VisualElement>
+                        <VisualElement name="reward-currency" class="reward-currency">
+                            <VisualElement class="reward-currency-top-line"/>
+                            <VisualElement class="reward-corner reward-corner-tl"/>
+                            <VisualElement class="reward-corner reward-corner-tr"/>
+                            <VisualElement class="reward-corner reward-corner-bl"/>
+                            <VisualElement class="reward-corner reward-corner-br"/>
+                            <Label text="획득 재화" class="currency-header" style="font-size: 15px;"/>
+                            <Label name="currency-nyang-value" text="1,250" class="currency-value" style="font-size: 23px;"/>
+                            <Label text="냥" class="currency-unit" style="font-size: 15px;"/>
+                            <Label name="currency-honryeong" text="+ 혼령 80" class="currency-extra" style="font-size: 15px;"/>
+                        </VisualElement>
+                    </VisualElement>
+                </VisualElement>
+            </VisualElement>
+            <VisualElement name="right-area" class="right-area" style="width: 500px; justify-content: space-between;">
+                <VisualElement name="squad-panel" class="side-panel" style="height: 500px; justify-content: space-between; bottom: -46px;">
+                    <VisualElement class="panel-corner panel-corner-tl" style="width: 10px; height: 10px;"/>
+                    <VisualElement class="panel-corner panel-corner-tr" style="width: 10px; height: 10px;"/>
+                    <Label text="스쿼드" class="panel-label" style="height: 38px; font-size: 25px;"/>
+                    <VisualElement name="squad-main" class="squad-row squad-row-main" style="height: 100px; bottom: 0;">
+                        <VisualElement class="squad-active-bar"/>
+                        <VisualElement name="squad-icon-main" class="squad-icon squad-icon-active" style="width: 80px; height: 80px;"/>
+                        <VisualElement class="squad-info">
+                            <Label text="하율" class="squad-name squad-name-main" style="font-size: 20px;"/>
+                            <Label text="메인 · 전기" class="squad-role" style="font-size: 15px;"/>
+                        </VisualElement>
+                        <Label name="squad-lv-main" text="Lv.34" class="squad-lv" style="font-size: 20px;"/>
+                    </VisualElement>
+                    <VisualElement name="squad-support1" class="squad-row squad-row-support" style="height: 100px; bottom: 0;">
+                        <VisualElement name="squad-icon-1" class="squad-icon squad-icon-inactive" style="width: 80px; height: 80px;"/>
+                        <VisualElement class="squad-info">
+                            <Label text="윤설" class="squad-name squad-name-support" style="font-size: 20px;"/>
+                            <Label text="지원1 · 빙결" class="squad-role squad-role-dim" style="font-size: 15px;"/>
+                        </VisualElement>
+                        <Label name="squad-lv-1" text="Lv.28" class="squad-lv squad-lv-dim" style="font-size: 20px;"/>
+                    </VisualElement>
+                    <VisualElement name="squad-support2" class="squad-row squad-row-support" style="bottom: 0; height: 100px;">
+                        <VisualElement name="squad-icon-2" class="squad-icon squad-icon-inactive" style="width: 80px; height: 80px;"/>
+                        <VisualElement class="squad-info">
+                            <Label text="하린" class="squad-name squad-name-support" style="font-size: 20px;"/>
+                            <Label text="지원2 · 음" class="squad-role squad-role-dim" style="font-size: 15px;"/>
+                        </VisualElement>
+                        <Label name="squad-lv-2" text="Lv.31" class="squad-lv squad-lv-dim" style="font-size: 20px;"/>
+                    </VisualElement>
+                </VisualElement>
+                <VisualElement name="currency-panel" class="side-panel" style="bottom: 0;">
+                    <VisualElement class="panel-corner panel-corner-tl" style="width: 10px; height: 10px;"/>
+                    <VisualElement class="panel-corner panel-corner-br" style="width: 10px; height: 10px;"/>
+                    <Label text="재화 현황" class="panel-label" style="font-size: 15px;"/>
+                    <VisualElement class="currency-row">
+                        <Label text="냥" class="currency-name" style="font-size: 15px;"/>
+                        <VisualElement class="currency-right">
+                            <Label name="nyang-total" text="12,480" class="currency-total" style="font-size: 15px;"/>
+                            <Label name="nyang-gain" text="+1,250" class="currency-gain" style="font-size: 15px;"/>
+                        </VisualElement>
+                    </VisualElement>
+                    <VisualElement class="currency-divider"/>
+                    <VisualElement class="currency-row">
+                        <Label text="혼령" class="currency-name" style="font-size: 15px;"/>
+                        <VisualElement class="currency-right">
+                            <Label name="honryeong-total" text="1,920" class="currency-total" style="font-size: 15px;"/>
+                            <Label name="honryeong-gain" text="+80" class="currency-gain" style="font-size: 15px;"/>
+                        </VisualElement>
+                    </VisualElement>
+                </VisualElement>
+                <VisualElement name="button-area" class="button-area" style="bottom: 0; height: 150px; top: -22px;">
+                    <Button name="btn-next" text="다음&#10;" class="btn-primary" style="height: 80px; font-size: 20px;">
+                        <VisualElement class="btn-top-line"/>
+                        <VisualElement class="btn-corner btn-corner-tl"/>
+                        <VisualElement class="btn-corner btn-corner-tr"/>
+                        <VisualElement class="btn-corner btn-corner-bl"/>
+                        <VisualElement class="btn-corner btn-corner-br"/>
+                    </Button>
+                    <VisualElement class="btn-row" style="bottom: -11px;">
+                        <Button name="btn-retry" text="재도전" class="btn-secondary" style="height: 58px; font-size: 20px; bottom: 0;">
+                            <VisualElement class="btn-corner-dim btn-corner-dim-tl"/>
+                            <VisualElement class="btn-corner-dim btn-corner-dim-br"/>
+                        </Button>
+                        <Button name="btn-base" text="본거지로 귀환" class="btn-secondary" style="font-size: 20px; bottom: 0;">
+                            <VisualElement class="btn-corner-dim btn-corner-dim-tl"/>
+                            <VisualElement class="btn-corner-dim btn-corner-dim-br"/>
+                        </Button>
+                    </VisualElement>
+                </VisualElement>
+            </VisualElement>
+        </VisualElement>
+        <VisualElement name="deco-bottom" class="deco-bottom">
+            <VisualElement class="deco-line-left"/>
+            <VisualElement class="deco-diamond"/>
+            <VisualElement class="deco-line-right"/>
+        </VisualElement>
+    </VisualElement>
+</UXML>
