@@ -56,18 +56,17 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
     protected float cooldownTimer;
 
     private bool _firePending;
-
-    // 런타임 파라미터(= SO 기본값 + JSON 덮어쓰기 + 레벨증가치 반영)
     private CommonSkillLevelParams _runtimeP;
-
-    // 마지막으로 적용된 JSON Row(무기 전용 필드 적용용)
     private SkillBalanceDB2D.SkillRow2D _lastBalanceRow;
+
+    // ★ 패시브 배율 적용을 위한 캐시
+    private PlayerCombatStats2D _ownerStats;
 
     public CommonSkillKind Kind => config != null ? config.kind : 0;
     public int Level => level;
 
-    // 무기들은 이제 P를 통해 "최종 적용 값"을 받는다.
-    protected CommonSkillLevelParams P => _runtimeP;
+    // ★ P가 이제 DamageMul/CooldownMul/AreaMul을 실시간 반영
+    protected CommonSkillLevelParams P => BuildFinalParams();
 
     // --------------------------------------------------------------------
     // [핵심] 무기들이 앞으로 공통으로 쓰는 “스탯 Getter(폴백 포함)”
@@ -130,6 +129,7 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
         cooldownTimer = 0f;
         _firePending = false;
 
+        CacheOwnerStats();
         RefreshRuntimeParams();
         OnLevelChanged();
     }
@@ -137,6 +137,7 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
     public void SetOwner(Transform ownerTr)
     {
         owner = ownerTr;
+        CacheOwnerStats();
     }
 
     public void SetLevel(int newLevel)
@@ -152,11 +153,8 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
     private void RefreshRuntimeParams()
     {
         _lastBalanceRow = null;
-
-        // 1) SO 기본값
         _runtimeP = (config != null) ? config.GetLevelParams(level) : default;
 
-        // 2) JSON 오버라이드
         string id = GetBalanceId();
         if (!string.IsNullOrEmpty(id) && SkillBalanceService2D.IsLoaded)
         {
@@ -166,6 +164,52 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
                 ApplyBalanceRow(row, level, ref _runtimeP);
             }
         }
+    }
+
+    // ★ 런타임 파라미터에 플레이어 패시브 배율을 적용한 최종 값 반환
+    private CommonSkillLevelParams BuildFinalParams()
+    {
+        CommonSkillLevelParams finalParams = _runtimeP;
+
+        CacheOwnerStats();
+        if (_ownerStats == null)
+            return finalParams;
+
+        // 공격력 배율 적용
+        finalParams.damage = Mathf.Max(1, Mathf.RoundToInt(finalParams.damage * _ownerStats.DamageMul));
+
+        // 쿨타임 배율 적용
+        finalParams.cooldown = Mathf.Max(0.01f, finalParams.cooldown * _ownerStats.CooldownMul);
+
+        // 범위 배율 적용
+        finalParams.explosionRadius = ScalePositive(finalParams.explosionRadius, _ownerStats.AreaMul, 0.01f);
+        finalParams.orbitRadius = ScalePositive(finalParams.orbitRadius, _ownerStats.AreaMul, 0f);
+        finalParams.maxDistance = ScalePositive(finalParams.maxDistance, _ownerStats.AreaMul, 0f);
+
+        return finalParams;
+    }
+
+    // ★ owner의 PlayerCombatStats2D 캐시
+    private void CacheOwnerStats()
+    {
+        if (owner == null)
+        {
+            _ownerStats = null;
+            return;
+        }
+
+        if (_ownerStats != null && _ownerStats.gameObject == owner.gameObject)
+            return;
+
+        _ownerStats = owner.GetComponent<PlayerCombatStats2D>();
+        if (_ownerStats == null)
+            _ownerStats = owner.GetComponentInParent<PlayerCombatStats2D>();
+    }
+
+    private static float ScalePositive(float value, float multiplier, float minimum)
+    {
+        if (value <= 0f) return 0f;
+        return Mathf.Max(minimum, value * Mathf.Max(0.01f, multiplier));
     }
 
     private static void ApplyBalanceRow(SkillBalanceDB2D.SkillRow2D row, int level, ref CommonSkillLevelParams p)
