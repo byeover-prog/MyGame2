@@ -19,7 +19,9 @@ public sealed class ArrowRainWeapon2D : CommonSkillWeapon2D
     [SerializeField] private bool isAwakened = false;
     [Min(1)]
     [SerializeField] private int awakenedAreaCount = 4;
+#pragma warning disable 0414
     [SerializeField] private string bossTag = "Boss";
+#pragma warning disable 0414
     [Min(0f)]
     [SerializeField] private float overlapOffset = 0.35f;
 
