@@ -1,3 +1,4 @@
+using _Game.Scripts.Core.Session;
 using UnityEngine;
 using UnityEngine.UIElements;
 using DG.Tweening;
@@ -6,6 +7,7 @@ public class ClearUIController : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
     [SerializeField] private KillCountSource killCountSource;
+    [SerializeField] private SessionGameManager2D SessionManager;
 
     private VisualElement root;
     private Label gradeValue;
@@ -13,6 +15,8 @@ public class ClearUIController : MonoBehaviour
     private Label timeValue;
     private Label nyangGain;
     private Label honryeongGain;
+    private Label _areaLabel;
+    private Label _timeLabel;
 
     void Start()
     {
@@ -22,6 +26,8 @@ public class ClearUIController : MonoBehaviour
         timeValue     = root.Q<Label>("time-value");
         nyangGain     = root.Q<Label>("nyang-gain");
         honryeongGain = root.Q<Label>("honryeong-gain");
+        _areaLabel = root.Q<Label>("area-label");
+        _timeLabel = root.Q<Label>("time-label");
 
         // 버튼 이벤트 연결
         root.Q<Button>("btn-next").clicked  += OnNextStage;
@@ -37,16 +43,22 @@ public class ClearUIController : MonoBehaviour
 #if UNITY_EDITOR
         if (Input.GetKeyDown(KeyCode.F1))
         {
-            ShowClearUI(clearTime: 1458f, nyangReward: 1250, honryeongReward: 80);
+            ShowClearUI(nyangReward: 1250, honryeongReward: 80, stageName: "경복궁 외곽 폐허");
         }
 #endif
     }
-
-    // 외부에서 호출
-    // GameManager나 스테이지 클리어 조건에서 이렇게 호출
-    // clearUIController.ShowClearUI(clearTime: 1458f, nyangReward: 1250, honryeongReward: 80);
-    public void ShowClearUI(float clearTime, int nyangReward, int honryeongReward)
+    
+    public void ShowClearUI(float clearTime, int nyangReward, int honryeongReward, string stageName)
     {
+        if (_areaLabel != null)
+            _areaLabel.text = stageName;
+
+        if (_timeLabel != null)
+        {
+            int minutes = Mathf.FloorToInt(clearTime / 60f);
+            int seconds = Mathf.FloorToInt(clearTime % 60f);
+            _timeLabel.text = $"{minutes:00}:{seconds:00}";
+        }
         // KillCountSource에서 킬 카운트 자동으로 가져오기
         int killCount = killCountSource != null ? killCountSource.KillCount : 0;
 
@@ -71,6 +83,13 @@ public class ClearUIController : MonoBehaviour
             1f, 0.4f
         ).SetEase(Ease.OutQuad)
          .OnComplete(() => PlayGradeEffect(grade));
+    }
+
+    public void ShowClearUI(int nyangReward, int honryeongReward, string stageName)
+    {
+        float clearTime = SessionManager != null ? SessionManager.SessionTime : 0f;
+        
+        ShowClearUI(clearTime, nyangReward, honryeongReward, stageName);
     }
 
     // 등급 계산 (기준은 조율 필요)
