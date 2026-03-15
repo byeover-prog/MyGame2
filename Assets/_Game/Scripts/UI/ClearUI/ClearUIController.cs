@@ -17,6 +17,10 @@ public class ClearUIController : MonoBehaviour
     private Label honryeongGain;
     private Label _areaLabel;
     private Label _timeLabel;
+    private Label _nyangTotal;
+    private Label _honryeongTotal;
+    private Label _currencyNyangValue;
+    private Label _currencyHonryeong;
 
     void Start()
     {
@@ -28,6 +32,10 @@ public class ClearUIController : MonoBehaviour
         honryeongGain = root.Q<Label>("honryeong-gain");
         _areaLabel = root.Q<Label>("area-label");
         _timeLabel = root.Q<Label>("time-label");
+        _nyangTotal         = root.Q<Label>("nyang-total");
+        _honryeongTotal     = root.Q<Label>("honryeong-total");
+        _currencyNyangValue = root.Q<Label>("currency-nyang-value");
+        _currencyHonryeong  = root.Q<Label>("currency-honryeong");
 
         // 버튼 이벤트 연결
         root.Q<Button>("btn-next").clicked  += OnNextStage;
@@ -71,6 +79,19 @@ public class ClearUIController : MonoBehaviour
         timeValue.text     = FormatTime(clearTime);
         nyangGain.text     = "+" + nyangReward.ToString("N0");
         honryeongGain.text = "+" + honryeongReward.ToString();
+        
+        int baseNyang  = CurrencyManager.Instance != null ? CurrencyManager.Instance.BaseNyang  : 0;
+        int baseSpirit = CurrencyManager.Instance != null ? CurrencyManager.Instance.BaseSpirit : 0;
+
+        if (_nyangTotal != null)
+            _nyangTotal.text = baseNyang.ToString("N0");
+        if (_honryeongTotal != null)
+            _honryeongTotal.text = baseSpirit.ToString("N0");
+
+        if (_currencyNyangValue != null)
+            _currencyNyangValue.text = nyangReward.ToString("N0");
+        if (_currencyHonryeong != null)
+            _currencyHonryeong.text = $"+ 혼령 {honryeongReward}";
 
         // UI 표시
         root.style.display = DisplayStyle.Flex;
@@ -161,18 +182,21 @@ public class ClearUIController : MonoBehaviour
     // 버튼 이벤트
     void OnNextStage()
     {
+        CurrencyManager.Instance?.SaveStageClearRewards();
         FadeOutAndDo(() => Debug.Log("다음 관문으로 이동"));
         // SceneManager.LoadScene("NextStage");
     }
 
     void OnRetry()
     {
+        CurrencyManager.Instance?.SaveStageClearRewards();
         FadeOutAndDo(() => Debug.Log("재도전"));
         // SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     void OnGoToBase()
     {
+        CurrencyManager.Instance?.SaveStageClearRewards();
         FadeOutAndDo(() => Debug.Log("본거지로 귀환"));
         // SceneManager.LoadScene("Base");
     }
