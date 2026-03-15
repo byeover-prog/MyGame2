@@ -8,6 +8,7 @@ public class ClearUIController : MonoBehaviour
     [SerializeField] private UIDocument uiDocument;
     [SerializeField] private KillCountSource killCountSource;
     [SerializeField] private SessionGameManager2D SessionManager;
+    [SerializeField] private CharacterCatalogSO catalog;
 
     private VisualElement root;
     private Label gradeValue;
@@ -21,6 +22,10 @@ public class ClearUIController : MonoBehaviour
     private Label _honryeongTotal;
     private Label _currencyNyangValue;
     private Label _currencyHonryeong;
+    
+    private Label _squadNameMain, _squadName1, _squadName2;
+    private Label _squadLvMain, _squadLv1, _squadLv2;
+    private VisualElement _squadIconMain, _squadIcon1, _squadIcon2;
 
     void Start()
     {
@@ -36,6 +41,19 @@ public class ClearUIController : MonoBehaviour
         _honryeongTotal     = root.Q<Label>("honryeong-total");
         _currencyNyangValue = root.Q<Label>("currency-nyang-value");
         _currencyHonryeong  = root.Q<Label>("currency-honryeong");
+        
+        // squad 라벨
+        _squadNameMain   = root.Q<Label>("squad-name-main");  // 없으면 name 클래스명 확인
+        _squadLvMain     = root.Q<Label>("squad-lv-main");
+        _squadIconMain   = root.Q<VisualElement>("squad-icon-main");
+
+        _squadName1      = root.Q<Label>("squad-name-1");     // UXML에 따라 조정
+        _squadLv1        = root.Q<Label>("squad-lv-1");
+        _squadIcon1 = uiDocument.rootVisualElement.Q<VisualElement>("squad-icon-1");
+
+        _squadName2      = root.Q<Label>("squad-name-2");
+        _squadLv2        = root.Q<Label>("squad-lv-2");
+        _squadIcon2 = uiDocument.rootVisualElement.Q<VisualElement>("squad-icon-2");
 
         // 버튼 이벤트 연결
         root.Q<Button>("btn-next").clicked  += OnNextStage;
@@ -51,6 +69,10 @@ public class ClearUIController : MonoBehaviour
 #if UNITY_EDITOR
         if (Input.GetKeyDown(KeyCode.F1))
         {
+            SquadLoadoutRuntime.SetMain("hayeol");
+            SquadLoadoutRuntime.SetSupport1("여기에 실제 CharacterId");
+            SquadLoadoutRuntime.SetSupport2("여기에 실제 CharacterId");
+
             ShowClearUI(nyangReward: 1250, honryeongReward: 80, stageName: "경복궁 외곽 폐허");
         }
 #endif
@@ -104,6 +126,7 @@ public class ClearUIController : MonoBehaviour
             1f, 0.4f
         ).SetEase(Ease.OutQuad)
          .OnComplete(() => PlayGradeEffect(grade));
+        ApplySquadToUI();
     }
 
     public void ShowClearUI(int nyangReward, int honryeongReward, string stageName)
@@ -111,6 +134,55 @@ public class ClearUIController : MonoBehaviour
         float clearTime = SessionManager != null ? SessionManager.SessionTime : 0f;
         
         ShowClearUI(clearTime, nyangReward, honryeongReward, stageName);
+    }
+    
+    void ApplySquadToUI()
+    {
+        var loadout = SquadLoadoutRuntime.Current;
+        Debug.Log($"[Squad] mainId={loadout.mainId}, sup1={loadout.support1Id}, sup2={loadout.support2Id}");
+        Debug.Log($"[Squad] LevelData={CharacterLevelData.Instance != null}");
+
+        // ID → DefSO 조회
+        catalog.TryFindById(loadout.mainId,     out var main);
+        catalog.TryFindById(loadout.support1Id, out var sup1);
+        catalog.TryFindById(loadout.support2Id, out var sup2);
+
+        // 레벨 조회
+        int lvMain = CharacterLevelData.Instance != null ? CharacterLevelData.Instance.GetLevel(loadout.mainId)     : 1;
+        int lvSup1 = CharacterLevelData.Instance != null ? CharacterLevelData.Instance.GetLevel(loadout.support1Id) : 1;
+        int lvSup2 = CharacterLevelData.Instance != null ? CharacterLevelData.Instance.GetLevel(loadout.support2Id) : 1;
+
+        // 레벨 내림차순 정렬 (메인 고정, 지원1/2만 정렬)
+        var supports = new (CharacterDefinitionSO def, int lv)[]
+        {
+            (sup1, lvSup1),
+            (sup2, lvSup2),
+        };
+        System.Array.Sort(supports, (a, b) => b.lv.CompareTo(a.lv));
+
+        // 메인 세팅
+        SetSquadSlot(_squadIconMain, _squadNameMain, _squadLvMain, main, lvMain);
+
+        // 지원 세팅 (정렬 후)
+        SetSquadSlot(_squadIcon1, _squadName1, _squadLv1, supports[0].def, supports[0].lv);
+        SetSquadSlot(_squadIcon2, _squadName2, _squadLv2, supports[1].def, supports[1].lv);
+    }
+
+    void SetSquadSlot(VisualElement icon, Label nameLabel, Label lvLabel,
+        CharacterDefinitionSO def, int level)
+    {
+        if (nameLabel != null)
+            nameLabel.text = def != null ? def.DisplayName : "-";
+
+        if (lvLabel != null)
+            lvLabel.text = def != null ? $"Lv.{level}" : "";
+
+        if (icon != null)
+        {
+            var img = def?.Thumbnail != null ? def.Thumbnail : def?.Portrait;
+            if (img != null)
+                icon.style.backgroundImage = new StyleBackground(img);
+        }
     }
 
     // 등급 계산 (기준은 조율 필요)

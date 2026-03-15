@@ -1,5 +1,5 @@
 <UXML xmlns="UnityEngine.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/_Game/UI/ClearUI/ClearUI%201.uss?fileID=7433441132597879392&amp;guid=bcb7e2e4c45464b49b710bcae067cf33&amp;type=3#ClearUI 1"/>
+    <Style src="project://database/Assets/_Game/UI/ClearUI/ClearUI.uss?fileID=7433441132597879392&amp;guid=bcb7e2e4c45464b49b710bcae067cf33&amp;type=3#ClearUI"/>
     <VisualElement name="root" class="root" style="-unity-font-definition: url(&quot;project://database/Assets/ThirdParty/NanumFontSetup_OTF_BARUNGOTHIC/MaruBuri-Bold.otf?fileID=12800000&amp;guid=fb6c55dec66ad7842a8675f9be114037&amp;type=3#MaruBuri-Bold&quot;);">
         <VisualElement name="corner-tl" class="corner corner-tl"/>
         <VisualElement name="corner-tr" class="corner corner-tr"/>
@@ -111,7 +111,7 @@
                     <Label text="스쿼드" class="panel-label" style="height: 38px; font-size: 25px;"/>
                     <VisualElement name="squad-main" class="squad-row squad-row-main" style="height: 100px; bottom: 0;">
                         <VisualElement class="squad-active-bar"/>
-                        <VisualElement name="squad-icon-main" class="squad-icon squad-icon-active" style="width: 80px; height: 80px;"/>
+                        <VisualElement name="squad-icon-main" class="squad-icon squad-icon-active" style="width: 80px; height: 80px; -unity-background-scale-mode: scale-to-fit; background-position-y: center;"/>
                         <VisualElement class="squad-info">
                             <Label text="하율" class="squad-name squad-name-main" style="font-size: 20px;"/>
                             <Label text="메인 · 전기" class="squad-role" style="font-size: 15px;"/>
