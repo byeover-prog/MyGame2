@@ -5,6 +5,7 @@ using DG.Tweening;
 public class ClearUIController : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
+    [SerializeField] private KillCountSource killCountSource;
 
     private VisualElement root;
     private Label gradeValue;
@@ -30,21 +31,40 @@ public class ClearUIController : MonoBehaviour
         // 처음엔 숨김
         root.style.display = DisplayStyle.None;
     }
-
-    // 클리어 UI 표시
-    public void ShowClearUI(int killCount, string grade, float clearTime,
-                            int nyangReward, int honryeongReward)
+    void Update()
     {
+        // F1 누르면 클리어 UI 강제 표시 (테스트용)
+#if UNITY_EDITOR
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            ShowClearUI(clearTime: 1458f, nyangReward: 1250, honryeongReward: 80);
+        }
+#endif
+    }
+
+    // 외부에서 호출
+    // GameManager나 스테이지 클리어 조건에서 이렇게 호출
+    // clearUIController.ShowClearUI(clearTime: 1458f, nyangReward: 1250, honryeongReward: 80);
+    public void ShowClearUI(float clearTime, int nyangReward, int honryeongReward)
+    {
+        // KillCountSource에서 킬 카운트 자동으로 가져오기
+        int killCount = killCountSource != null ? killCountSource.KillCount : 0;
+
+        // 등급 계산 (기준 조율 필요)
+        string grade = CalculateGrade(killCount, clearTime);
+
+        // 데이터 세팅
         killValue.text     = killCount.ToString();
         gradeValue.text    = grade;
         timeValue.text     = FormatTime(clearTime);
         nyangGain.text     = "+" + nyangReward.ToString("N0");
         honryeongGain.text = "+" + honryeongReward.ToString();
 
+        // UI 표시
         root.style.display = DisplayStyle.Flex;
         root.style.opacity = 0f;
 
-        // 전체 페이드인 후 등급 이펙트
+        // 페이드인 후 등급 이펙트
         DOTween.To(
             () => root.style.opacity.value,
             x  => root.style.opacity = x,
@@ -53,24 +73,35 @@ public class ClearUIController : MonoBehaviour
          .OnComplete(() => PlayGradeEffect(grade));
     }
 
-    // 등급 이펙트 (텍스트만)
+    // 등급 계산 (기준은 조율 필요)
+    string CalculateGrade(int killCount, float clearTime)
+    {
+        // 임시 기준 - 나중에 수정
+        if (clearTime <= 600f) return "S";
+        if (clearTime <= 900f) return "A";
+        if (clearTime <= 1200f) return "B";
+        return "C";
+    }
+
+    // 등급 이펙트
     void PlayGradeEffect(string grade)
     {
-        // 등급별 밝은 색상
         Color brightColor = grade switch
         {
-            "S" => new Color(1f,    0.98f, 0.7f),   // 밝은 골드
-            "A" => new Color(0.9f,  0.78f, 0.4f),   // 골드
-            "B" => new Color(0.6f,  0.85f, 1f),     // 블루
-            "C" => new Color(0.75f, 0.75f, 0.75f),  // 그레이
+            "S" => new Color(1f,    0.98f, 0.7f),
+            "A" => new Color(0.9f,  0.78f, 0.4f),
+            "B" => new Color(0.6f,  0.85f, 1f),
+            "C" => new Color(0.75f, 0.75f, 0.75f),
             _   => new Color(1f,    0.98f, 0.7f)
         };
 
-        Color normalColor = new Color(0.88f, 0.82f, 0.63f); // #e8d4a0
+        Color normalColor = new Color(0.88f, 0.82f, 0.63f);
 
-        // 1. 크기 팝업
+        // S등급일 때만 반짝임
+        if (grade != "S") return;
+
+        // 크기 팝업
         gradeValue.style.scale = new Scale(new Vector2(0.3f, 0.3f));
-
         DOTween.To(
             () => gradeValue.style.scale.value.value.x,
             x  => gradeValue.style.scale = new Scale(new Vector2(x, x)),
@@ -78,7 +109,6 @@ public class ClearUIController : MonoBehaviour
         ).SetEase(Ease.OutBack)
          .OnComplete(() =>
          {
-             // 원래 크기로
              DOTween.To(
                  () => gradeValue.style.scale.value.value.x,
                  x  => gradeValue.style.scale = new Scale(new Vector2(x, x)),
@@ -88,12 +118,10 @@ public class ClearUIController : MonoBehaviour
          });
     }
 
-    // 색상 펄스 (크기 팝업 끝난 후 실행)
+    // 색상 펄스
     void PlayColorPulse(Color brightColor, Color normalColor)
     {
         Sequence colorSeq = DOTween.Sequence();
-
-        // 밝게
         colorSeq.Append(
             DOTween.To(
                 () => gradeValue.style.color.value,
@@ -101,7 +129,6 @@ public class ClearUIController : MonoBehaviour
                 brightColor, 0.25f
             ).SetEase(Ease.OutQuad)
         );
-        // 원래 색으로
         colorSeq.Append(
             DOTween.To(
                 () => gradeValue.style.color.value,
@@ -109,8 +136,6 @@ public class ClearUIController : MonoBehaviour
                 normalColor, 0.4f
             ).SetEase(Ease.InQuad)
         );
-
-        // 3회 반복
         colorSeq.SetLoops(3, LoopType.Restart);
     }
 

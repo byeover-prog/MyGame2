@@ -45,6 +45,8 @@ public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
     public bool _IsDead => currentHp <= 0;
 
     private bool _isDead;
+    
+    private KillCountSource _killCountSource;
 
     // 프로토타입 안전장치: "적마다 풀 생성"을 막기 위해 공유 풀 1개만 둔다.
     private static ExpOrbPool s_sharedPool;
@@ -64,6 +66,8 @@ public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
             expOrbPool.Prewarm(expOrbPrefab.gameObject, 64);
             s_prewarmed = true;
         }
+        
+        _killCountSource = FindFirstObjectByType<KillCountSource>();
     }
 
     private void OnEnable()
@@ -125,6 +129,8 @@ public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
     {
         if (_isDead) return;
         _isDead = true;
+
+        if (_killCountSource != null) _killCountSource.AddKill();
 
         if (debugLog)
             Debug.Log("[EnemyHealth2D] 사망", this);
