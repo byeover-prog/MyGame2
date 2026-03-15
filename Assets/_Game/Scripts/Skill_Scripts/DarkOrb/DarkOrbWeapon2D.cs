@@ -1,18 +1,20 @@
-// UTF-8
-// 다크오브 무기: 메인 오브(DarkOrbProjectile2D)만 발사한다.
-// SplitProjectile은 절대 무기가 직접 발사하지 않는다.
-
 using UnityEngine;
 
+/// <summary>
+/// 암흑구 무기 발사기. DarkOrbProjectile2D만 발사한다.
+/// 
+/// [최적화]
+/// - maxActiveOrbs: 동시 활성 DarkOrb 제한 (분열 트리 겹침 방지)
+/// - Physics2D.OverlapCircle + ContactFilter2D (Unity 6, GC 0)
+/// - Prewarm으로 첫 발사 시 Instantiate 0
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
 {
     [Header("투사체(메인 오브) 프리팹")]
-    [Tooltip("여기엔 반드시 DarkOrbProjectile2D 프리팹을 넣어야 합니다. (Split 프리팹 금지)")]
     [SerializeField] private DarkOrbProjectile2D projectilePrefab;
 
     [Header("분열(옵션)")]
-    [Tooltip("분열체를 풀로 찍고 싶을 때만 넣으세요. 없으면 Instantiate 기반으로만 동작합니다.")]
     [SerializeField] private ProjectilePool2D splitPool;
 
     [Header("타겟")]
@@ -25,32 +27,28 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     [SerializeField] private float projectileLifeSeconds = 0.8f;
 
     [Header("폭발")]
-    [Tooltip("폭발 반경")]
     [SerializeField] private float explosionRadius = 1.0f;
 
     [Header("데미지")]
-    [Tooltip("1~4레벨 기본 폭발 데미지")]
     [SerializeField] private int baseExplosionDamage = 12;
-
-    [Tooltip("5레벨부터 레벨당 추가 폭발 데미지 (5~8만 적용)")]
     [SerializeField] private int bonusDamagePerLevelFrom5 = 6;
 
     [Header("분열 규칙")]
-    [Tooltip("레벨에 따른 분열 수(간단 규칙).\nLv1=0, Lv2=2, Lv3=4, Lv4+=8")]
     [SerializeField] private bool useSimpleSplitRule = true;
-
-    [Tooltip("분열체 속도")]
     [SerializeField] private float splitSpeed = 10f;
-
-    [Tooltip("분열체 수명")]
     [SerializeField] private float splitLifeSeconds = 0.6f;
-
-    [Tooltip("분열체 데미지(0이면 메인 데미지와 동일)")]
     [SerializeField] private int splitDamage = 0;
 
     [Header("표현")]
     [Range(0.1f, 1f)]
     [SerializeField] private float orbAlpha = 0.55f;
+
+    [Header("성능 제한")]
+    [Tooltip("동시에 존재할 수 있는 DarkOrb 최대 수 (Root + 자식 포함).\n0이면 제한 없음.")]
+    [SerializeField] private int maxActiveOrbs = 30;
+
+    [Tooltip("게임 시작 시 미리 생성할 투사체 수")]
+    [SerializeField] private int prewarmCount = 16;
 
     [Header("디버그")]
     [SerializeField] private bool log = false;
@@ -60,7 +58,10 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     private int _level;
     private PlayerCombatStats2D _stats;
 
-    // 인터페이스 오타 대응(필수)
+    private readonly Collider2D[] _enemyHits = new Collider2D[64];
+    private ContactFilter2D _enemyFilter;
+    private bool _filterReady;
+
     public void OnAttaced(Transform owner) => OnAttached(owner);
 
     public void OnAttached(Transform owner)
@@ -71,33 +72,54 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
             _stats = _owner.GetComponent<PlayerCombatStats2D>();
             if (_stats == null) _stats = _owner.GetComponentInParent<PlayerCombatStats2D>();
         }
-        if (log) Debug.Log($"[DarkOrbWeapon2D] OnAttached owner={owner?.name}", this);
+
+        if (projectilePrefab != null && prewarmCount > 0)
+            DarkOrbProjectile2D.Prewarm(projectilePrefab, prewarmCount);
+
+#if UNITY_EDITOR
+        if (log) Debug.Log($"[DarkOrbWeapon2D] OnAttached owner={owner?.name}, prewarm={prewarmCount}", this);
+#endif
     }
 
     public void ApplyLevel(int level)
     {
         _level = Mathf.Clamp(level, 1, 8);
+#if UNITY_EDITOR
         if (log) Debug.Log($"[DarkOrbWeapon2D] ApplyLevel => Lv.{_level}", this);
+#endif
+    }
+
+    private void EnsureFilter()
+    {
+        if (_filterReady) return;
+
+        if (enemyMask.value == 0)
+        {
+            int enemyLayer = LayerMask.NameToLayer("Enemy");
+            if (enemyLayer >= 0) enemyMask = LayerMask.GetMask("Enemy");
+        }
+
+        _enemyFilter = new ContactFilter2D();
+        _enemyFilter.SetLayerMask(enemyMask);
+        _enemyFilter.useTriggers = true;
+        _filterReady = true;
     }
 
     private void Update()
     {
-        if (_level <= 0) return;
-        if (_owner == null) return;
+        if (_level <= 0 || _owner == null) return;
         if (Time.time < _nextFireTime) return;
 
         if (projectilePrefab == null)
         {
-            Debug.LogError("[DarkOrbWeapon2D] projectilePrefab이 비었습니다. (메인 오브 프리팹을 넣으세요)", this);
             _nextFireTime = Time.time + 0.5f;
             return;
         }
 
-        // Split 프리팹 금지(정책)
-        if (projectilePrefab.GetComponent<DarkOrbSplitProjectile2D>() != null)
+        // ★ [지시문 §7] 동시 활성 제한
+        if (maxActiveOrbs > 0 && DarkOrbProjectile2D.ActiveCount >= maxActiveOrbs)
         {
-            Debug.LogError("[DarkOrbWeapon2D] projectilePrefab에 DarkOrbSplitProjectile2D가 들어가 있습니다. 메인 오브(DarkOrbProjectile2D)를 넣어야 합니다.", projectilePrefab);
-            enabled = false;
+            _nextFireTime = Time.time + 0.1f;
             return;
         }
 
@@ -110,7 +132,6 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
 
         Fire(t);
 
-        // ★ 캐릭터 + 패시브 쿨다운 배율 반영
         float finalCd = cooldown;
         if (_stats != null)
             finalCd *= Mathf.Max(0.05f, _stats.CooldownMul);
@@ -123,32 +144,20 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
         if (dir.sqrMagnitude < 0.0001f) dir = Vector2.right;
         dir.Normalize();
 
-        // ── 폭발 데미지 규칙 ──
         float dmgF = Mathf.Max(1f, baseExplosionDamage);
         if (_level >= 5)
-        {
-            int bonusLevel = _level - 4; // 5→1, 8→4
-            dmgF += bonusDamagePerLevelFrom5 * bonusLevel;
-        }
+            dmgF += bonusDamagePerLevelFrom5 * (_level - 4);
 
-        // ★ 캐릭터 + 패시브 공격력 배율 반영
         if (_stats != null)
             dmgF *= (_stats.DamageMul * _stats.ElementDamageMul);
 
         int dmg = Mathf.Max(1, Mathf.RoundToInt(dmgF));
 
-        // enemyMask 0이면 Enemy 레이어로 보정
-        if (enemyMask.value == 0)
-        {
-            int enemyLayer = LayerMask.NameToLayer("Enemy");
-            if (enemyLayer >= 0) enemyMask = LayerMask.GetMask("Enemy");
-        }
+        EnsureFilter();
 
-        // 간단 분열 규칙(요청 스펙에 맞춰 여기만 바꾸면 됨)
         int splitCount = 0;
         if (useSimpleSplitRule)
         {
-            // Lv1=0, Lv2=2, Lv3=4, Lv4+=8
             if (_level <= 1) splitCount = 0;
             else if (_level == 2) splitCount = 2;
             else if (_level == 3) splitCount = 4;
@@ -157,49 +166,43 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
 
         int childDmg = (splitDamage > 0) ? splitDamage : dmg;
 
-        var proj = Instantiate(projectilePrefab, _owner.position, Quaternion.identity);
+        var proj = DarkOrbProjectile2D.Spawn(projectilePrefab, _owner.position);
+        if (proj == null) return;
 
-        // Init 기반으로 통일: DarkOrbProjectile2D가 Init을 갖고 있어야 함
         proj.Init(
-            enemyMask,
-            dmg,
-            projectileSpeed,
-            Mathf.Max(0.2f, projectileLifeSeconds),
-            dir,
+            enemyMask, dmg, projectileSpeed,
+            Mathf.Max(0.2f, projectileLifeSeconds), dir,
             Mathf.Max(0.1f, explosionRadius),
             Mathf.Max(0, splitCount),
             Mathf.Max(0.1f, splitSpeed),
             Mathf.Max(0.1f, splitLifeSeconds),
             Mathf.Max(0, childDmg),
-            splitPool,
-            orbAlpha
-        );
+            splitPool, orbAlpha);
 
-        if (log) Debug.Log($"[DarkOrbWeapon2D] Fire => dmg={dmg} splitCount={splitCount}", this);
+#if UNITY_EDITOR
+        if (log) Debug.Log($"[DarkOrbWeapon2D] Fire dmg={dmg} split={splitCount} active={DarkOrbProjectile2D.ActiveCount}", this);
+#endif
     }
 
     private Transform FindNearestEnemy()
     {
-        if (enemyMask.value == 0) return null;
+        EnsureFilter();
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(_owner.position, aimRange, enemyMask);
-        if (hits == null || hits.Length == 0) return null;
+        int count = Physics2D.OverlapCircle(
+            _owner.position, aimRange, _enemyFilter, _enemyHits);
+
+        if (count == 0) return null;
 
         float best = float.PositiveInfinity;
         Transform bestT = null;
-
         Vector2 o = _owner.position;
-        for (int i = 0; i < hits.Length; i++)
-        {
-            var h = hits[i];
-            if (h == null) continue;
 
+        for (int i = 0; i < count; i++)
+        {
+            var h = _enemyHits[i];
+            if (h == null) continue;
             float d = ((Vector2)h.transform.position - o).sqrMagnitude;
-            if (d < best)
-            {
-                best = d;
-                bestT = h.transform;
-            }
+            if (d < best) { best = d; bestT = h.transform; }
         }
 
         return bestT;
