@@ -1,0 +1,151 @@
+[33mcommit fd41729d96ae41e5e17998ffe9362e34d1b3565d[m
+Author: jogyemin <jogyemin5100@gmail.com>
+Date:   Sun Mar 15 04:08:12 2026 +0900
+
+    fix:두억시니 돌진 코드 수정
+    
+    플레이어가 벽쪽에 두억시니에 돌진을 맞을떄 벽을 뚫고 나갔다가 다시 안으로 들어오는 버그 해결
+
+Assets/JGM_Scenes.meta
+Assets/JGM_Scenes/Boss.meta
+Assets/JGM_Scenes/Boss/Boss.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/KumihoBoss_Controller.controller
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/KumihoBoss_Controller.controller.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Prefab.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Prefab/FoxFire.prefab
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Prefab/FoxFire.prefab.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Prefab/KumihoFoxOrb.prefab
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Prefab/KumihoFoxOrb.prefab.meta
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Prefab/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\254.prefab"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Prefab/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\254.prefab.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Prefab/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270Prefab.prefab"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Prefab/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270Prefab.prefab.meta"
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoBossAttack.cs
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoBossAttack.cs.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoBossMovement2D.cs
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoBossMovement2D.cs.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFirePointController.cs
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFirePointController.cs.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFireball.cs
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFireball.cs.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFoxFire.cs
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFoxFire.cs.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFoxFireAttack.cs
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFoxFireAttack.cs.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFoxOrbBuff.cs
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/Scripts/KumihoFoxOrbBuff.cs.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/UntitledArtwork50-Copy-Copy-Copy.png
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/UntitledArtwork50-Copy-Copy-Copy.png.meta
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/UntitledArtwork50-Copy-Copy.png
+Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/UntitledArtwork50-Copy-Copy.png.meta
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\2541.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\2541.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\2542.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\2542.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\2543.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\2543.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack1.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack1.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack2.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack2.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack3.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack3.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack4.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack4.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack5.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack5.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack6.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack6.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack7.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack7.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack8.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack8.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk1.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk1.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk2.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk2.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk3.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk3.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk4.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk4.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk5.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk5.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk6.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk6.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk7.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk7.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk8.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270 1/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk8.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\254_sheet.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\254_sheet.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack_sheet.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Attack_sheet.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk_sheet.png"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\352\265\254\353\257\270\355\230\270/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270_Walk_sheet.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\254.aseprite"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\353\202\240\354\225\204\352\260\200\353\212\224 \355\231\224\354\227\274\352\265\254.aseprite.meta"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270.aseprite"
+"Assets/JGM_Scenes/Boss/Boss/1.Nine-Tailed Fox/\353\263\264\354\212\244_\352\265\254\353\257\270\355\230\270.aseprite.meta"
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin.meta
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/DuryeoksiniBossController.controller
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/DuryeoksiniBossController.controller.meta
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Prefab.meta
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Prefab/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210.prefab"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Prefab/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210.prefab.meta"
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Scripts.meta
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Scripts/DuryeoksiniBasicAttack.cs
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Scripts/DuryeoksiniBasicAttack.cs.meta
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Scripts/DuryeoksiniBossChase2D.cs
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Scripts/DuryeoksiniBossChase2D.cs.meta
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Scripts/DuryeoksiniChargeAttack.cs
+Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/Scripts/DuryeoksiniChargeAttack.cs.meta
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack1.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack1.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack2.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack2.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack3.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack3.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack4.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack4.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack5.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack5.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack6.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack6.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack7.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack7.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack8.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack8.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk1.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk1.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk2.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk2.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk3.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk3.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk4.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk4.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk5.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk5.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk6.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk6.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk7.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk7.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk8.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210 1/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk8.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack_sheet.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Attack_sheet.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk_sheet.png"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\221\220\354\226\265\354\213\234\353\213\210/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210_Walk_sheet.png.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210 - \354\233\220\353\263\270.aseprite"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210 - \354\233\220\353\263\270.aseprite.meta"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210.aseprite"
+"Assets/JGM_Scenes/Boss/Boss/2.MaliciousGoblin/\353\263\264\354\212\244_\353\221\220\354\226\265\354\213\234\353\213\210.aseprite.meta"
+Assets/Scenes/Scene_Game.unity
+Assets/Scenes/Scene_JGM.unity
+Assets/Scenes/Scene_JGM.unity.meta
+MyGame2.slnx
