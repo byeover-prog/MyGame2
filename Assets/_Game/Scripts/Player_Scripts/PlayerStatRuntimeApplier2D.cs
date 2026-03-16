@@ -29,8 +29,10 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
 
     [Header("=== 동작 옵션 ===")]
     [Tooltip("★ false 권장! true면 어떤 패시브를 배워도 풀피 회복되는 버그 발생.\n최대 HP 패시브를 배울 때는 증가분만큼만 회복됩니다.")]
+     #pragma warning disable 0414
     [SerializeField] private bool healToFullWhenMaxHpChanges = false;
-
+     #pragma warning disable 0414
+    
     [Tooltip("적용 로그를 보고 싶을 때만 켜세요")]
     [SerializeField] private bool debugLog = false;
 

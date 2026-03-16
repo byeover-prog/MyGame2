@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8302948109149489263}
   - component: {fileID: 7175219620819757290}
   - component: {fileID: -3088633970849079980}
+  - component: {fileID: -1700744385164331911}
   m_Layer: 15
   m_Name: Shuriken
   m_TagString: Untagged
@@ -180,3 +181,20 @@ MonoBehaviour:
   - UpgradeLevel
   - OnLevelChanged
   log: 1
+--- !u!114 &-1700744385164331911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5000209898010349714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b8bec22950d44e448f899e6a69b1fc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileVFXChild
+  vfxPrefab: {fileID: 2067750624003282856, guid: 86a2e890b9b1e9440a2872b1a3e08463,
+    type: 3}
+  explosionVfxPrefab: {fileID: 0}
+  attachToProjectile: 1
+  vfxLifetime: 3
