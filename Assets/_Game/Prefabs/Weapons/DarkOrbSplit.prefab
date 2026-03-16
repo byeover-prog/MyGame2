@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1289371633153427558}
   - component: {fileID: 609559359909851885}
-  - component: {fileID: -3159772859642482551}
+  - component: {fileID: -8865909177278537417}
   m_Layer: 15
   m_Name: DarkOrbSplit
   m_TagString: Untagged
@@ -92,7 +92,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &-3159772859642482551
+--- !u!114 &-8865909177278537417
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -101,6 +101,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 4174282902008845588}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e230d8d4369d03b439bc2ff8e917e2f7, type: 3}
+  m_Script: {fileID: 11500000, guid: 4b8bec22950d44e448f899e6a69b1fc0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DarkOrbSplitProjectile2D
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileVFXChild
+  vfxPrefab: {fileID: 8191430800645402189, guid: aa3fde93fc4a1bf42a5f3dbd9d9004c7,
+    type: 3}
+  explosionVfxPrefab: {fileID: 8191430800645402189, guid: e71c59fc7bad93047ba42ccac14d565f,
+    type: 3}
+  enableBodyVfx: 1
+  attachToProjectile: 1
+  bodyLifetime: 1
+  enableExplosionVfx: 1
+  suppressExplosionForChildFragment: 0
+  useDarkOrbExplosionBudget: 0
+  explosionLifetime: 1
+  hideSpriteRenderer: 0

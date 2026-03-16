@@ -1,183 +1,130 @@
+// UTF-8
+// [구현 원리 요약]
+// - 구형 ProjectilePool 타입이 남아 있는 파일이 깨지지 않도록 호환 풀을 제공한다.
+// - 프리팹별 큐를 따로 두어 재사용하고, IPoolable/IPooledProjectile2D를 함께 지원한다.
+// - Release 시 이미 비활성인 오브젝트는 무시하여 중복 반납 버그를 방지한다.
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 프리팹별 투사체 오브젝트 풀.
+/// Get으로 꺼내고 Release로 반납한다.
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class ProjectilePool : MonoBehaviour
 {
-    [Header("기본 프리팹(선택)")]
-    [SerializeField] private GameObject defaultPrefab;
-
-    [Header("프리웜(기본 프리팹용)")]
-    [Min(0)]
-    [SerializeField] private int prewarmCount = 32;
-
-    [Tooltip("풀에 반납된 오브젝트를 정리할 부모(비우면 자기 Transform)")]
-    [SerializeField] private Transform poolRoot;
-
-    [Header("프리팹별 최대 보관 개수(0=무제한)")]
-    [Min(0)]
-    [SerializeField] private int maxPerPrefab = 0;
-
+    [System.Serializable]
     private sealed class PoolBucket
     {
-        public readonly Queue<GameObject> queue = new Queue<GameObject>(32);
-        public int totalCreated;
+        public GameObject prefab;
+        public readonly Queue<GameObject> queue = new Queue<GameObject>(64);
     }
 
-    private readonly Dictionary<int, PoolBucket> _buckets = new Dictionary<int, PoolBucket>(32);
+    [Header("디버그")]
+    [Tooltip("풀 동작 로그 출력 여부")]
+    [SerializeField] private bool debugLog = false;
 
-    private void Awake()
-    {
-        if (poolRoot == null) poolRoot = transform;
+    private readonly Dictionary<int, PoolBucket> _buckets = new Dictionary<int, PoolBucket>(16);
 
-        if (defaultPrefab != null && prewarmCount > 0)
-        {
-            Prewarm(defaultPrefab, prewarmCount);
-        }
-    }
-
-    public void Prewarm(int count)
-    {
-        if (defaultPrefab == null) return;
-        Prewarm(defaultPrefab, count);
-    }
-
+    /// <summary>지정한 프리팹을 미리 생성해서 풀에 넣어둔다.</summary>
     public void Prewarm(GameObject prefab, int count)
     {
-        if (prefab == null || count <= 0) return;
+        if (prefab == null) return;
 
-        var bucket = GetOrCreateBucket(prefab);
+        count = Mathf.Clamp(count, 0, 2048);
+        PoolBucket bucket = GetOrCreateBucket(prefab);
+
         for (int i = 0; i < count; i++)
         {
-            var inst = CreateNew(prefab, bucket);
-            ReleaseInternal(prefab, inst);
-        }
-    }
-
-    public GameObject Get()
-    {
-        if (defaultPrefab == null)
-        {
-            Debug.LogError("[ProjectilePool] defaultPrefab이 비어있습니다.", this);
-            return null;
+            GameObject go = CreateNew(prefab, bucket);
+            go.SetActive(false);
+            bucket.queue.Enqueue(go);
         }
 
-        return Get(defaultPrefab, Vector3.zero, Quaternion.identity);
+        if (debugLog)
+            Debug.Log($"[ProjectilePool] Prewarm {prefab.name} x{count}", this);
     }
 
-    public GameObject Get(GameObject prefab, Vector3 position, Quaternion rotation)
+    /// <summary>풀에서 오브젝트를 꺼낸다. 없으면 새로 생성한다.</summary>
+    public GameObject Get(GameObject prefab, Vector3 pos, Quaternion rot)
     {
         if (prefab == null) return null;
 
-        var bucket = GetOrCreateBucket(prefab);
-        GameObject inst = (bucket.queue.Count > 0) ? bucket.queue.Dequeue() : CreateNew(prefab, bucket);
-        if (inst == null) return null;
+        PoolBucket bucket = GetOrCreateBucket(prefab);
+        GameObject go = null;
 
-        var t = inst.transform;
-        t.SetParent(null, false);
-        t.SetPositionAndRotation(position, rotation);
-
-        // 풀 상태 마킹
-        if (inst.TryGetComponent(out PooledObject po))
+        // 큐에서 유효한 오브젝트를 찾을 때까지 꺼낸다
+        while (bucket.queue.Count > 0)
         {
-            po.MarkOutOfPool();
+            var candidate = bucket.queue.Dequeue();
+            if (candidate != null)
+            {
+                go = candidate;
+                break;
+            }
         }
 
-        // 2D 투사체 호환용 바인딩 (활성화 전에 주입)
-        if (inst.TryGetComponent(out IPooledProjectile2D pooled2d))
-        {
-            pooled2d.SetPool(this);
-            pooled2d.SetOriginPrefab(prefab);
-        }
+        if (go == null)
+            go = CreateNew(prefab, bucket);
 
-        // 삭제된 Projectile2D 바인딩 구문 제거됨
+        go.transform.SetPositionAndRotation(pos, rot);
+        go.SetActive(true);
 
-        inst.SetActive(true);
-
-        // 꺼낼 때 콜백
-        if (inst.TryGetComponent(out IPoolable poolable))
-        {
+        if (go.TryGetComponent<IPoolable>(out var poolable))
             poolable.OnPoolGet();
-        }
 
-        return inst;
+        return go;
     }
 
-    // 호환용 공개 API: 기존 투사체 코드(_pool.Release(prefabKey, gameObject))를 살리기 위해 제공
+    /// <summary>
+    /// 오브젝트를 풀에 반납한다.
+    /// 이미 비활성인 오브젝트는 무시하여 중복 반납을 방지한다.
+    /// </summary>
     public void Release(GameObject prefabKey, GameObject instance)
-    {
-        ReleaseInternal(prefabKey, instance);
-    }
-
-    // 외부는 절대 이걸 호출하지 말고, IPoolable.ReleaseToPool()만 사용하도록 설계 (기존 설계 유지)
-    internal void ReleaseInternal(GameObject prefabKey, GameObject instance)
     {
         if (prefabKey == null || instance == null) return;
 
-        var bucket = GetOrCreateBucket(prefabKey);
+        // ── 중복 반납 가드 ──
+        if (!instance.activeSelf) return;
 
-        // 상한이 있고 초과면 파괴(무한 증가 방지)
-        if (maxPerPrefab > 0 && bucket.queue.Count >= maxPerPrefab)
-        {
-            Destroy(instance);
-            return;
-        }
+        PoolBucket bucket = GetOrCreateBucket(prefabKey);
 
-        // 반납 콜백
-        if (instance.TryGetComponent(out IPoolable poolable))
-        {
+        if (instance.TryGetComponent<IPoolable>(out var poolable))
             poolable.OnPoolRelease();
-        }
-
-        // 풀 상태 마킹
-        if (instance.TryGetComponent(out PooledObject po))
-        {
-            po.MarkInPool();
-        }
 
         instance.SetActive(false);
-
-        var t = instance.transform;
-        t.SetParent(poolRoot, false);
-
         bucket.queue.Enqueue(instance);
     }
 
     private PoolBucket GetOrCreateBucket(GameObject prefab)
     {
-        int id = prefab.GetInstanceID();
-        if (!_buckets.TryGetValue(id, out var bucket))
-        {
-            bucket = new PoolBucket();
-            _buckets.Add(id, bucket);
-        }
+        int key = prefab.GetInstanceID();
+
+        if (_buckets.TryGetValue(key, out PoolBucket bucket))
+            return bucket;
+
+        bucket = new PoolBucket { prefab = prefab };
+        _buckets.Add(key, bucket);
         return bucket;
     }
 
     private GameObject CreateNew(GameObject prefab, PoolBucket bucket)
     {
-        // 경고: Weapon_XXX 프리팹을 잘못 넣어서 Weapon_Arrow(Clone) 같은 게 계속 생기는 사고 방지용
-        if (prefab.name.StartsWith("Weapon_"))
-        {
-            Debug.LogWarning($"[ProjectilePool] 투사체 프리팹에 무기 프리팹이 들어간 것 같습니다: {prefab.name}", prefab);
-        }
+        GameObject go = Instantiate(prefab, transform);
+        go.name = prefab.name;
 
-        var inst = Instantiate(prefab, poolRoot);
-        inst.SetActive(false);
-        bucket.totalCreated++;
-
-        // 바인딩(기존 설계 유지): IPoolable 기반이면 생성 시점에 풀/키 주입
-        if (inst.TryGetComponent(out IPoolable poolable))
-        {
+        if (go.TryGetComponent<IPoolable>(out var poolable))
             poolable.BindPool(this, prefab);
-        }
 
-        // PooledObject 기반이면 상태 마킹
-        if (inst.TryGetComponent(out PooledObject po))
+        if (go.TryGetComponent<IPooledProjectile2D>(out var projectile))
         {
-            po.MarkInPool();
+            projectile.SetPool(this);
+            projectile.SetOriginPrefab(prefab);
         }
 
-        return inst;
+        if (debugLog)
+            Debug.Log($"[ProjectilePool] CreateNew {prefab.name}", this);
+
+        return go;
     }
 }

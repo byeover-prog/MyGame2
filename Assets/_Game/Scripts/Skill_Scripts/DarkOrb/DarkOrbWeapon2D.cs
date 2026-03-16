@@ -1,181 +1,130 @@
-// UTF-8
-// Assets/_Game/Scripts/Skill_Scripts/DarkOrb/DarkOrbWeapon2D.cs
-//
-// [변경 요약]
-// 기존: 직접 Instantiate → 이동/충돌/분열/VFX 전부 담당
-// 변경: 발사만 담당 → GameProjectileManager.TrySpawnDarkOrb() 호출
-//       이동/충돌/분열/VFX는 Manager가 처리
-
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
+/// <summary>
+/// 다크오브 무기 스크립트.
+/// CommonSkillManager2D에서 호출되며, DarkOrbManager.SpawnRoot()를 호출하는 것이 유일한 역할.
+/// 자체적으로 투사체를 생성하거나 관리하지 않는다.
+/// </summary>
+public class DarkOrbWeapon2D : MonoBehaviour
 {
-    [Header("타겟")]
-    [SerializeField] private LayerMask enemyMask;
-    [SerializeField] private float aimRange = 25f;
+    // ═══════════════════════════════════════════════════════════════
+    //  Inspector
+    // ═══════════════════════════════════════════════════════════════
 
-    [Header("발사")]
-    [SerializeField] private float cooldown = 1.2f;
-    [SerializeField] private float projectileSpeed = 12f;
-    [SerializeField] private float projectileLifeSeconds = 0.8f;
+    [Header("매니저 참조")]
+    [Tooltip("씬에 배치된 DarkOrbManager")]
+    [SerializeField] private DarkOrbManager _manager;
 
-    [Header("폭발")]
-    [SerializeField] private float explosionRadius = 1.0f;
-    [SerializeField] private float collisionRadius = 0.3f;
+    [Header("루트 투사체 기본값")]
+    [Tooltip("루트 다크오브 이동 속도")]
+    [SerializeField] private float _rootSpeed = 6f;
 
-    [Header("데미지")]
-    [SerializeField] private int baseExplosionDamage = 12;
-    [SerializeField] private int bonusDamagePerLevelFrom5 = 6;
+    [Tooltip("루트 다크오브 수명 (초). 이 시간이 지나면 폭발")]
+    [SerializeField] private float _rootLifetime = 0.8f;
 
-    [Header("분열 규칙")]
-    [SerializeField] private bool useSimpleSplitRule = true;
-    [SerializeField] private float splitAngleDeg = 40f;
-    [SerializeField] private float splitSpeed = 10f;
-    [SerializeField] private float splitLifeSeconds = 0.6f;
-    [SerializeField] private int splitDamage = 0;
+    [Tooltip("1레벨 기준 폭발 데미지")]
+    [SerializeField] private float _baseDamage = 10f;
 
-    [Header("렉 방지")]
-    [SerializeField] private float collisionGracePeriod = 0.05f;
+    [Tooltip("레벨 5~8 폭발 데미지 증가량 (레벨당)")]
+    [SerializeField] private float _damagePerLevelAfter4 = 2.5f;
 
-    [Header("표현")]
-    [Range(0.1f, 1f)]
-    [SerializeField] private float orbAlpha = 0.55f;
+    [Tooltip("폭발 반경")]
+    [SerializeField] private float _explosionRadius = 1.5f;
 
-    private Transform _owner;
-    private float _nextFireTime;
-    private int _level;
-    private PlayerCombatStats2D _stats;
+    // ═══════════════════════════════════════════════════════════════
+    //  런타임 상태
+    // ═══════════════════════════════════════════════════════════════
 
-    // 적 탐색용 버퍼 (GC 0)
-    private readonly Collider2D[] _enemyHits = new Collider2D[64];
-    private ContactFilter2D _enemyFilter;
-    private bool _filterReady;
+    private int _currentLevel = 1;
+    private float _skillAreaMultiplier = 1f;
 
-    public void OnAttaced(Transform owner) => OnAttached(owner);
+    // ═══════════════════════════════════════════════════════════════
+    //  공개 API — CommonSkillManager2D가 호출
+    // ═══════════════════════════════════════════════════════════════
 
-    public void OnAttached(Transform owner)
+    /// <summary>
+    /// 스킬 레벨 설정. 레벨업 시 CommonSkillManager2D에서 호출.
+    /// </summary>
+    public void SetLevel(int level)
     {
-        _owner = owner;
-        if (_owner != null)
-        {
-            _stats = _owner.GetComponent<PlayerCombatStats2D>();
-            if (_stats == null) _stats = _owner.GetComponentInParent<PlayerCombatStats2D>();
-        }
+        _currentLevel = Mathf.Clamp(level, 1, 8);
     }
 
-    public void ApplyLevel(int level)
+    /// <summary>
+    /// 패시브 스킬 범위 배율 설정. PassiveManager2D에서 호출.
+    /// </summary>
+    public void SetSkillAreaMultiplier(float multiplier)
     {
-        _level = Mathf.Clamp(level, 1, 8);
+        _skillAreaMultiplier = multiplier;
     }
 
-    private void EnsureFilter()
+    /// <summary>
+    /// 다크오브 1발을 발사한다.
+    /// CommonSkillManager2D의 발사 로직에서 호출.
+    /// </summary>
+    /// <param name="origin">플레이어 위치</param>
+    /// <param name="targetDirection">가장 가까운 적 방향 (정규화)</param>
+    /// <param name="attackPower">현재 최종 공격력 (패시브/버프 반영 후)</param>
+    public void Fire(Vector2 origin, Vector2 targetDirection, float attackPower)
     {
-        if (_filterReady) return;
-        if (enemyMask.value == 0)
+        if (_manager == null)
         {
-            int layer = LayerMask.NameToLayer("Enemy");
-            if (layer >= 0) enemyMask = LayerMask.GetMask("Enemy");
-        }
-        _enemyFilter = new ContactFilter2D();
-        _enemyFilter.SetLayerMask(enemyMask);
-        _enemyFilter.useTriggers = true;
-        _filterReady = true;
-    }
-
-    private void Update()
-    {
-        if (_level <= 0 || _owner == null) return;
-        if (Time.time < _nextFireTime) return;
-
-        // Manager 존재 체크
-        if (GameProjectileManager.Instance == null) return;
-
-        Transform t = FindNearestEnemy();
-        if (t == null)
-        {
-            _nextFireTime = Time.time + 0.05f;
+            Debug.LogError("[DarkOrbWeapon2D] DarkOrbManager 참조가 없습니다!");
             return;
         }
 
-        Fire(t);
+        float damage = CalculateDamage(attackPower);
+        int splitDepth = CalculateSplitDepth();
 
-        float finalCd = cooldown;
-        if (_stats != null)
-            finalCd *= Mathf.Max(0.05f, _stats.CooldownMul);
-        _nextFireTime = Time.time + Mathf.Max(0.05f, finalCd);
+        _manager.SpawnRoot(
+            origin: origin,
+            direction: targetDirection,
+            speed: _rootSpeed,
+            lifetime: _rootLifetime,
+            damage: damage,
+            radius: _explosionRadius,
+            splitDepth: splitDepth,
+            scaleMultiplier: _skillAreaMultiplier
+        );
     }
 
-    /// <summary>발사만 담당. 이동/충돌/분열은 Manager가 처리.</summary>
-    private void Fire(Transform target)
-    {
-        // 데미지 계산
-        float dmgF = Mathf.Max(1f, baseExplosionDamage);
-        if (_level >= 5)
-            dmgF += bonusDamagePerLevelFrom5 * (_level - 4);
-        if (_stats != null)
-            dmgF *= (_stats.DamageMul * _stats.ElementDamageMul);
-        int dmg = Mathf.Max(1, Mathf.RoundToInt(dmgF));
+    // ═══════════════════════════════════════════════════════════════
+    //  레벨별 계산
+    // ═══════════════════════════════════════════════════════════════
 
-        // 분열 규칙
-        byte maxGen = 0;
-        if (useSimpleSplitRule)
+    /// <summary>
+    /// 레벨별 폭발 데미지 계산.
+    /// Lv1~4: baseDamage (분열 depth만 증가)
+    /// Lv5~8: baseDamage + (level - 4) * damagePerLevelAfter4
+    /// 최종 = 레벨 데미지 × 공격력 배율
+    /// </summary>
+    private float CalculateDamage(float attackPower)
+    {
+        float levelDamage = _baseDamage;
+
+        if (_currentLevel > 4)
         {
-            if (_level <= 1) maxGen = 0;
-            else if (_level == 2) maxGen = 1;
-            else if (_level == 3) maxGen = 2;
-            else maxGen = 2; // 상한 (1→2→4 = 7개)
+            levelDamage += (_currentLevel - 4) * _damagePerLevelAfter4;
         }
 
-        int childDmg = (splitDamage > 0) ? splitDamage : dmg;
-
-        // Spec 작성 (DTO)
-        var spec = new DarkOrbProjectileSpec
-        {
-            EnemyMask = enemyMask,
-            Damage = dmg,
-            Speed = projectileSpeed,
-            Lifetime = Mathf.Max(0.2f, projectileLifeSeconds),
-            ExplosionRadius = Mathf.Max(0.1f, explosionRadius),
-            CollisionRadius = Mathf.Max(0.05f, collisionRadius),
-            CollisionGracePeriod = collisionGracePeriod,
-            MaxGeneration = maxGen,
-            SplitChildrenCount = 2,
-            SplitAngleDeg = splitAngleDeg,
-            SplitSpeed = Mathf.Max(0.1f, splitSpeed),
-            SplitLifetime = Mathf.Max(0.1f, splitLifeSeconds),
-            SplitDamage = childDmg,
-            OrbAlpha = orbAlpha,
-        };
-
-        // Manager에 발사 요청
-        GameProjectileManager.Instance.TrySpawnDarkOrb(
-            in spec,
-            (Vector2)_owner.position,
-            (Vector2)target.position,
-            _owner.GetInstanceID());
+        // 공격력 배율 적용 (설계: 최종 피해량 = 스킬 데미지 × 공격력 보정)
+        // attackPower는 이미 패시브/버프가 반영된 최종 공격력
+        return levelDamage * (attackPower / 20f); // 기본 공격력 20 기준 정규화
     }
 
-    /// <summary>가장 가까운 적 탐색. Physics2D + ContactFilter2D (GC 0).</summary>
-    private Transform FindNearestEnemy()
+    /// <summary>
+    /// 레벨별 분열 깊이(depth) 계산.
+    /// Lv1: depth 1 (루트 1개 폭발, 분열 없음 → SplitDepthRemaining = 0)
+    /// Lv2: depth 2 (루트 → 자식 2개 → SplitDepthRemaining = 1)
+    /// Lv3: depth 3 (루트 → 2 → 4 → SplitDepthRemaining = 2)
+    /// Lv4+: depth 4 (루트 → 2 → 4 → 8 → SplitDepthRemaining = 3)
+    /// </summary>
+    private int CalculateSplitDepth()
     {
-        EnsureFilter();
-
-        int count = Physics2D.OverlapCircle(
-            _owner.position, aimRange, _enemyFilter, _enemyHits);
-        if (count == 0) return null;
-
-        float best = float.PositiveInfinity;
-        Transform bestT = null;
-        Vector2 o = _owner.position;
-
-        for (int i = 0; i < count; i++)
-        {
-            var h = _enemyHits[i];
-            if (h == null) continue;
-            float d = ((Vector2)h.transform.position - o).sqrMagnitude;
-            if (d < best) { best = d; bestT = h.transform; }
-        }
-        return bestT;
+        // Lv1 = depth 0 (폭발만, 분열 없음)
+        // Lv2 = depth 1 (1→2)
+        // Lv3 = depth 2 (1→2→4)
+        // Lv4+ = depth 3 (1→2→4→8)
+        return Mathf.Clamp(_currentLevel - 1, 0, 3);
     }
 }

@@ -1,133 +1,130 @@
+// UTF-8
 using UnityEngine;
 
 /// <summary>
-/// 투사체 프리팹에 직접 부착하는 VFX 컴포넌트.
-/// 
-/// ★ 분열 최적화:
-///   SetVFXEnabled()를 호출하면 OnEnable에서 VFX 생성을 차단할 수 있다.
-///   반드시 SetActive(true) 호출 전에 설정해야 한다.
+/// [구현 원리 요약]
+/// - 투사체 몸통 VFX와 폭발 VFX를 분리한다.
+/// - 현재 성능 병목은 암흑구 몸통/폭발 VFX이므로, 코드에서 선택적으로 차단 가능하게 만든다.
+/// - 분열 자식 구체는 폭발 VFX를 금지해서 1→2→4→8 타이밍의 스파이크를 막는다.
 /// </summary>
-public class ProjectileVFXChild : MonoBehaviour
+[DisallowMultipleComponent]
+public sealed class ProjectileVFXChild : MonoBehaviour
 {
-    [Header("투사체 VFX 설정")]
+    [Header("프리팹")]
     [SerializeField] private GameObject vfxPrefab;
     [SerializeField] private GameObject explosionVfxPrefab;
 
-    [Header("동작 방식")]
+    [Header("바디 VFX")]
+    [Tooltip("투사체가 켜질 때 몸통 VFX를 생성할지 여부")]
+    [SerializeField] private bool enableBodyVfx = true;
+
+    [Tooltip("몸통 VFX를 투사체 자식으로 붙입니다.")]
     [SerializeField] private bool attachToProjectile = true;
-    [SerializeField] private float vfxLifetime = 3f;
 
-    [Header("시각 설정")]
-    [SerializeField] private bool hideSpriteRenderer = true;
+    [Tooltip("몸통 VFX 최대 수명(초)")]
+    [SerializeField] private float bodyLifetime = 1.0f;
 
-    // ── 런타임 제어 (SetActive 전에 설정) ─────────────────
-    private bool _bodyEnabled = true;
-    private bool _explosionEnabled = true;
+    [Header("폭발 VFX")]
+    [Tooltip("폭발 VFX를 허용합니다.")]
+    [SerializeField] private bool enableExplosionVfx = true;
 
-    private GameObject _currentVFX;
-    private bool _hasExploded;
+    [Tooltip("암흑구 분열 자식이면 체크. 자식은 폭발 VFX를 생략합니다.")]
+    [SerializeField] private bool suppressExplosionForChildFragment = false;
+
+    [Tooltip("암흑구 폭발일 때 프레임 예산 제한을 적용합니다.")]
+    [SerializeField] private bool useDarkOrbExplosionBudget = false;
+
+    [Tooltip("폭발 VFX 최대 수명(초)")]
+    [SerializeField] private float explosionLifetime = 1.2f;
+
+    [Header("스프라이트")]
+    [Tooltip("몸통 VFX를 쓰는 동안 원본 스프라이트를 숨깁니다.")]
+    [SerializeField] private bool hideSpriteRenderer = false;
+
+    private GameObject _currentBody;
     private SpriteRenderer[] _sprites;
-    private bool _spritesCached;
-    private static bool _appQuitting;
+    private bool _cached;
 
-    private void Awake() => CacheSprites();
-    private void OnApplicationQuit() => _appQuitting = true;
-
-    // ── 외부 제어 ─────────────────────────────────────────
-
-    /// <summary>
-    /// VFX 허용 여부 설정. 반드시 gameObject.SetActive(true) 전에 호출.
-    /// 비활성 상태에서도 호출 가능.
-    /// </summary>
-    public void SetVFXEnabled(bool body, bool explosion)
+    private void Awake()
     {
-        _bodyEnabled = body;
-        _explosionEnabled = explosion;
+        Cache();
     }
-
-    // ── 라이프사이클 ──────────────────────────────────────
 
     private void OnEnable()
     {
-        _hasExploded = false;
-        if (_appQuitting) return;
+        Cache();
+        RemoveLeftoverChildren();
 
-        ReturnLeftoverVFX();
-
-        if (_bodyEnabled)
+        if (!enableBodyVfx)
         {
-            if (hideSpriteRenderer) SetSpritesVisible(false);
-            SpawnVFX();
+            SetSpritesVisible(true);
+            return;
         }
+
+        if (hideSpriteRenderer)
+            SetSpritesVisible(false);
+        else
+            SetSpritesVisible(true);
+
+        if (vfxPrefab == null) return;
+
+        _currentBody = attachToProjectile
+            ? VFXSpawner.SpawnAsChild(vfxPrefab, transform, bodyLifetime)
+            : VFXSpawner.Spawn(vfxPrefab, transform.position, Quaternion.identity, bodyLifetime);
     }
 
     private void OnDisable()
     {
-        if (_appQuitting) return;
-
-        if (explosionVfxPrefab != null && _explosionEnabled && !_hasExploded)
-        {
-            VFXSpawner.Spawn(explosionVfxPrefab, transform.position,
-                              Quaternion.identity, 2f);
-            _hasExploded = true;
-        }
-
-        _currentVFX = null;
-
-        if (hideSpriteRenderer) SetSpritesVisible(true);
-
-        // 풀 재사용 대비: 기본값 리셋
-        _bodyEnabled = true;
-        _explosionEnabled = true;
+        RemoveLeftoverChildren();
+        SetSpritesVisible(true);
+        _currentBody = null;
     }
 
-    // ── 잔류 VFX 정리 ─────────────────────────────────────
-
-    private void ReturnLeftoverVFX()
+    public void SetVFXEnabled(bool body, bool explosion)
     {
-        for (int i = transform.childCount - 1; i >= 0; i--)
-        {
-            var child = transform.GetChild(i);
-            var ar = child.GetComponent<VFXAutoReturn>();
-            if (ar != null && ar.sourcePrefab != null)
-                VFXPool.Return(ar.sourcePrefab, child.gameObject);
-        }
-    }
-
-    // ── VFX 생성 ──────────────────────────────────────────
-
-    private void SpawnVFX()
-    {
-        if (vfxPrefab == null) return;
-
-        if (attachToProjectile)
-            _currentVFX = VFXSpawner.SpawnAsChild(vfxPrefab, transform, vfxLifetime);
-        else
-            _currentVFX = VFXSpawner.Spawn(vfxPrefab, transform.position,
-                                             Quaternion.identity, vfxLifetime);
-    }
-
-    // ── 스프라이트 ────────────────────────────────────────
-
-    private void CacheSprites()
-    {
-        if (_spritesCached) return;
-        _sprites = GetComponentsInChildren<SpriteRenderer>(true);
-        _spritesCached = true;
-    }
-
-    private void SetSpritesVisible(bool visible)
-    {
-        if (!_spritesCached) CacheSprites();
-        if (_sprites == null) return;
-        for (int i = 0; i < _sprites.Length; i++)
-            if (_sprites[i] != null) _sprites[i].enabled = visible;
+        enableBodyVfx = body;
+        enableExplosionVfx = explosion;
     }
 
     public void TriggerExplosionVFX(Vector3 position)
     {
-        if (explosionVfxPrefab == null || _appQuitting || !_explosionEnabled) return;
-        VFXSpawner.Spawn(explosionVfxPrefab, position, Quaternion.identity, 2f);
-        _hasExploded = true;
+        if (!enableExplosionVfx) return;
+        if (suppressExplosionForChildFragment) return;
+        if (explosionVfxPrefab == null) return;
+
+        if (useDarkOrbExplosionBudget && !SkillVFXBudget2D.TryConsumeDarkOrbExplosion())
+            return;
+
+        VFXSpawner.Spawn(explosionVfxPrefab, position, Quaternion.identity, explosionLifetime);
+    }
+
+    private void Cache()
+    {
+        if (_cached) return;
+        _sprites = GetComponentsInChildren<SpriteRenderer>(true);
+        _cached = true;
+    }
+
+    private void SetSpritesVisible(bool visible)
+    {
+        if (_sprites == null) return;
+
+        for (int i = 0; i < _sprites.Length; i++)
+        {
+            if (_sprites[i] != null)
+                _sprites[i].enabled = visible;
+        }
+    }
+
+    private void RemoveLeftoverChildren()
+    {
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            Transform child = transform.GetChild(i);
+            var autoReturn = child.GetComponent<VFXAutoReturn>();
+            if (autoReturn == null) continue;
+
+            autoReturn.ReturnNow();
+        }
     }
 }

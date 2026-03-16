@@ -1,125 +1,92 @@
-// UTF-8
-// Assets/_Game/Scripts/Combat/Projectiles/GameProjectileManager.cs
 using UnityEngine;
 
 /// <summary>
 /// 공용 투사체 시뮬레이션 매니저.
-/// 
-/// [아키텍처]
-/// - 투사체 하나 = MonoBehaviour 하나 금지
-/// - 모든 투사체 상태를 struct 배열로 관리
-/// - Update 1회에 전체 투사체 일괄 시뮬레이션
-/// - 분열은 즉시 재귀 금지 → SplitRequest 큐 → FlushSplits
-/// - 비주얼은 GameProjectileViewPool이 담당
-/// - Physics2D Collider 없음 → Manager가 직접 충돌 판정
-/// 
-/// [성능 보장]
-/// - Dense array + free list + swap-back remove (O(1) 생성/삭제)
-/// - GC 0B/frame (핫패스에서 new/LINQ/람다/문자열 금지)
-/// - ProfilerMarker로 구간 계측
+///
+/// [v6 설계도 기준]
+/// - 다크오브는 "수명 만료형 폭발 구체". 비행 중 접촉 판정 없음.
+/// - 폭발 시에만 OverlapCircle 1회 → 범위 데미지.
+/// - 분열은 depth 기반 재귀 트리. 부모 1개 폭발 → 자식 2개 (±고정각).
+/// - 1→2→4→8 구조. splitCount가 아닌 maxDepth 개념.
+/// - SplitRequest 큐로 즉시 재귀 방지.
+/// - VFX는 폭발 시점에 명시 호출 (OnDisable 폭발 금지).
+///
+/// [성능]
+/// - 비행 중 OverlapCircle = 0회
+/// - 폭발 시에만 depth당 1회 (Lv4 최대: 루트1+자식2+손자4+증손자8 = 15회, 하지만 프레임 분산)
+/// - Dense array + free list + swap-back (GC 0)
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class GameProjectileManager : MonoBehaviour
 {
-    // ══════════════════════════════════════════════════════
-    // Singleton
-    // ══════════════════════════════════════════════════════
-
     public static GameProjectileManager Instance { get; private set; }
 
-    // ══════════════════════════════════════════════════════
-    // Inspector
-    // ══════════════════════════════════════════════════════
-
     [Header("용량")]
-    [Tooltip("동시 활성 투사체 하드 캡")]
-    [SerializeField] private int maxProjectiles = 256;
+    [SerializeField] private int maxProjectiles = 128;
+    [SerializeField] private int maxDarkOrbs = 60;
 
-    [Header("DarkOrb 설정")]
-    [Tooltip("동시 활성 DarkOrb 하드 캡 (Root + 자식 합산)")]
-    [SerializeField] private int maxDarkOrbs = 40;
-
-    [Header("VFX 예산")]
-    [Tooltip("프레임당 분열 VFX 최대 수")]
-    [SerializeField] private int splitVfxBudgetPerFrame = 4;
-
-    [Header("폭발 VFX")]
-    [Tooltip("DarkOrb 폭발 VFX 프리팹 (기존 eff_weapon_darkorb_explosion)")]
+    [Header("VFX")]
     [SerializeField] private GameObject darkOrbExplosionVfxPrefab;
-
-    [Tooltip("DarkOrb 본체 VFX 프리팹 (기존 eff_weapon_darkorb)")]
     [SerializeField] private GameObject darkOrbBodyVfxPrefab;
 
     [Header("참조")]
     [SerializeField] private GameProjectileViewPool viewPool;
 
-    [Header("충돌 설정")]
-    [SerializeField] private LayerMask defaultEnemyMask;
-
     // ══════════════════════════════════════════════════════
-    // 공통 상태 struct
+    // State
     // ══════════════════════════════════════════════════════
 
     public struct ProjectileState
     {
         public bool Active;
         public GameProjectileKind Kind;
-
         public int DenseIndex;
         public int ViewId;
         public int OwnerInstanceId;
 
+        // 이동
         public Vector2 Position;
-        public Vector2 Direction; // normalized
+        public Vector2 Direction;   // normalized
         public float Speed;
-        public float Lifetime;
-        public float CollisionRadius;
+        public float Lifetime;      // 0 이하 → 폭발
+
+        // 폭발
         public float ExplosionRadius;
-
         public int Damage;
-        public int PierceLeft;
+        public LayerMask EnemyMask;
 
-        public byte Generation;
-        public byte MaxGeneration;
-
-        public int SplitChildrenCount;
+        // 재귀 트리
+        public int Depth;           // 현재 깊이 (루트=1)
+        public int MaxDepth;        // 최대 깊이 (1=분열없음, 4=1→2→4→8)
         public float SplitAngleDeg;
         public float SplitSpeed;
         public float SplitLifetime;
         public int SplitDamage;
 
-        public bool SplitQueued;
         public bool PendingDespawn;
-
-        public float CollisionGraceRemaining;
-
-        public GameProjectileFlags Flags;
-
-        public LayerMask EnemyMask;
     }
 
     private struct SplitRequest
     {
-        public int ParentId;
         public Vector2 Position;
         public Vector2 ParentDirection;
-        public byte NextGeneration;
-        public byte MaxGeneration;
-        public int ChildrenCount;
+        public int NextDepth;
+        public int MaxDepth;
         public float AngleDeg;
         public float Speed;
         public float Lifetime;
         public int Damage;
-        public float CollisionRadius;
         public float ExplosionRadius;
-        public float CollisionGrace;
+        public float SplitAngleDeg;
+        public float SplitSpeed;
+        public float SplitLifetime;
+        public int SplitDamage;
         public LayerMask EnemyMask;
         public int OwnerInstanceId;
-        public GameProjectileFlags Flags;
     }
 
     // ══════════════════════════════════════════════════════
-    // Dense Array + Free List
+    // Arrays
     // ══════════════════════════════════════════════════════
 
     private ProjectileState[] _states;
@@ -128,25 +95,18 @@ public sealed class GameProjectileManager : MonoBehaviour
     private int _activeCount;
     private int _freeTop;
 
-    // 분열 큐
     private SplitRequest[] _splitQueue;
     private int _splitCount;
 
-    // 물리 쿼리 버퍼 (재사용, new 금지)
     private readonly Collider2D[] _overlapHits = new Collider2D[32];
     private ContactFilter2D _enemyFilter;
     private bool _filterReady;
 
-    // DarkOrb 카운트
     private int _darkOrbCount;
 
-    // 분열 방향 캐시 (매 프레임 trig 남발 방지)
     private static readonly float[] _cosCache = new float[360];
     private static readonly float[] _sinCache = new float[360];
     private static bool _trigCacheReady;
-
-    // 프레임별 VFX 카운트
-    private int _splitVfxThisFrame;
 
     // ══════════════════════════════════════════════════════
     // Public API
@@ -155,7 +115,10 @@ public sealed class GameProjectileManager : MonoBehaviour
     public int ActiveProjectileCount => _activeCount;
     public int ActiveDarkOrbCount => _darkOrbCount;
 
-    /// <summary>DarkOrb 발사. 성공 시 true.</summary>
+    /// <summary>
+    /// DarkOrb 루트 1개 발사.
+    /// 이동 → 수명 만료 → 폭발 → 자식 2개 (depth 허용 시).
+    /// </summary>
     public bool TrySpawnDarkOrb(in DarkOrbProjectileSpec spec, Vector2 spawnPos, Vector2 targetPos, int ownerInstanceId)
     {
         if (_darkOrbCount >= maxDarkOrbs) return false;
@@ -175,23 +138,19 @@ public sealed class GameProjectileManager : MonoBehaviour
         s.Direction = dir;
         s.Speed = spec.Speed;
         s.Lifetime = spec.Lifetime;
-        s.CollisionRadius = spec.CollisionRadius;
         s.ExplosionRadius = spec.ExplosionRadius;
         s.Damage = spec.Damage;
-        s.PierceLeft = 0;
-        s.Generation = 0;
-        s.MaxGeneration = spec.MaxGeneration;
-        s.SplitChildrenCount = spec.SplitChildrenCount > 0 ? spec.SplitChildrenCount : 2;
+        s.EnemyMask = spec.EnemyMask;
+
+        // 재귀 트리
+        s.Depth = 1;                // 루트 = 깊이 1
+        s.MaxDepth = spec.MaxDepth;
         s.SplitAngleDeg = spec.SplitAngleDeg;
         s.SplitSpeed = spec.SplitSpeed;
         s.SplitLifetime = spec.SplitLifetime;
         s.SplitDamage = spec.SplitDamage;
-        s.SplitQueued = false;
-        s.PendingDespawn = false;
-        s.CollisionGraceRemaining = spec.CollisionGracePeriod;
-        s.EnemyMask = spec.EnemyMask;
 
-        s.Flags = GameProjectileFlags.CanSplit | GameProjectileFlags.SplitOnContact | GameProjectileFlags.AreaDamage;
+        s.PendingDespawn = false;
 
         // 뷰 연결
         s.ViewId = viewPool != null
@@ -201,19 +160,14 @@ public sealed class GameProjectileManager : MonoBehaviour
         s.DenseIndex = _activeCount;
         _activeIds[_activeCount++] = id;
         _darkOrbCount++;
-
         return true;
     }
 
-    /// <summary>직선형 투사체 발사 (2차 이식용 API 뼈대).</summary>
     public bool TrySpawnLinear(in LinearProjectileSpec spec, Vector2 spawnPos, Vector2 dir, int ownerInstanceId)
     {
-        // 아직 내부 구현 미완성. API 뼈대만 존재.
-        // 2차 이식 시 여기에 구현.
-        return false;
+        return false; // 2차 이식용
     }
 
-    /// <summary>특정 투사체 제거.</summary>
     public void DespawnProjectile(int projectileId)
     {
         if (projectileId < 0 || projectileId >= _states.Length) return;
@@ -221,10 +175,8 @@ public sealed class GameProjectileManager : MonoBehaviour
         DespawnInternal(projectileId);
     }
 
-    /// <summary>전체 투사체 제거.</summary>
     public void ClearAllProjectiles()
     {
-        // 역순으로 제거 (swap-back 안전)
         for (int i = _activeCount - 1; i >= 0; i--)
             DespawnInternal(_activeIds[i]);
     }
@@ -237,9 +189,9 @@ public sealed class GameProjectileManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-
         InitArrays();
         InitTrigCache();
+        Debug.Log($"<color=lime>[GameProjectileManager] ★★★ v6 설계도 기준 ★★★ viewPool={(viewPool != null ? "연결됨" : "NULL!")}</color>", this);
     }
 
     private void OnDestroy()
@@ -249,15 +201,10 @@ public sealed class GameProjectileManager : MonoBehaviour
 
     private void Update()
     {
-        using (GameProjectileProfiler.Update.Auto())
-        {
-            float dt = Time.deltaTime;
-            _splitVfxThisFrame = 0;
-
-            SimulateProjectiles(dt);
-            FlushSplits();
-            SyncViews();
-        }
+        float dt = Time.deltaTime;
+        SimulateProjectiles(dt);
+        FlushSplits();
+        SyncViews();
     }
 
     // ══════════════════════════════════════════════════════
@@ -267,16 +214,13 @@ public sealed class GameProjectileManager : MonoBehaviour
     private void InitArrays()
     {
         int cap = Mathf.Max(32, maxProjectiles);
-
         _states = new ProjectileState[cap];
         _activeIds = new int[cap];
         _freeIds = new int[cap];
         _splitQueue = new SplitRequest[cap];
-
         _freeTop = cap;
         for (int i = 0; i < cap; i++)
             _freeIds[i] = cap - 1 - i;
-
         _activeCount = 0;
         _splitCount = 0;
         _darkOrbCount = 0;
@@ -296,7 +240,6 @@ public sealed class GameProjectileManager : MonoBehaviour
 
     private void EnsureFilter(LayerMask mask)
     {
-        // 간단 캐시: 마스크가 같으면 재사용
         if (_filterReady && _enemyFilter.layerMask == mask) return;
         _enemyFilter = new ContactFilter2D();
         _enemyFilter.SetLayerMask(mask);
@@ -305,36 +248,36 @@ public sealed class GameProjectileManager : MonoBehaviour
     }
 
     // ══════════════════════════════════════════════════════
-    // Simulate
+    // Simulate — 접촉 판정 없음. 수명 만료만 체크.
     // ══════════════════════════════════════════════════════
 
     private void SimulateProjectiles(float dt)
     {
-        using (GameProjectileProfiler.Simulate.Auto())
+        for (int i = _activeCount - 1; i >= 0; i--)
         {
-            // 역순 순회 (swap-back remove 안전)
-            for (int i = _activeCount - 1; i >= 0; i--)
+            int id = _activeIds[i];
+            ref var s = ref _states[id];
+
+            switch (s.Kind)
             {
-                int id = _activeIds[i];
-                ref var s = ref _states[id];
-
-                switch (s.Kind)
-                {
-                    case GameProjectileKind.DarkOrb:
-                        ProcessDarkOrb(id, ref s, dt);
-                        break;
-                    case GameProjectileKind.Linear:
-                        ProcessLinear(id, ref s, dt);
-                        break;
-                }
-
-                // PendingDespawn 처리
-                if (s.PendingDespawn)
-                    DespawnInternal(id);
+                case GameProjectileKind.DarkOrb:
+                    ProcessDarkOrb(id, ref s, dt);
+                    break;
+                case GameProjectileKind.Linear:
+                    ProcessLinear(id, ref s, dt);
+                    break;
             }
+
+            if (s.PendingDespawn)
+                DespawnInternal(id);
         }
     }
 
+    /// <summary>
+    /// 다크오브 프레임 처리.
+    /// 이동 → 수명 감소 → 수명 ≤ 0이면 폭발. 그게 전부.
+    /// 비행 중 접촉 판정 없음.
+    /// </summary>
     private void ProcessDarkOrb(int id, ref ProjectileState s, float dt)
     {
         // 1. 이동
@@ -343,34 +286,13 @@ public sealed class GameProjectileManager : MonoBehaviour
         // 2. 수명 감소
         s.Lifetime -= dt;
 
-        // 3. 충돌 유예 감소
-        if (s.CollisionGraceRemaining > 0f)
-            s.CollisionGraceRemaining -= dt;
-
-        // 4. 수명 만료 → 폭발 분열
+        // 3. 수명 만료 → 폭발
         if (s.Lifetime <= 0f)
-        {
             ExplodeDarkOrb(id, ref s);
-            return;
-        }
-
-        // 5. 적 접촉 판정 (유예 중이면 스킵)
-        if (s.CollisionGraceRemaining <= 0f)
-        {
-            using (GameProjectileProfiler.Collision.Auto())
-            {
-                if (CheckDarkOrbContact(ref s))
-                {
-                    ExplodeDarkOrb(id, ref s);
-                    return;
-                }
-            }
-        }
     }
 
     private void ProcessLinear(int id, ref ProjectileState s, float dt)
     {
-        // 2차 이식용 뼈대
         s.Position += s.Direction * (s.Speed * dt);
         s.Lifetime -= dt;
         if (s.Lifetime <= 0f)
@@ -378,30 +300,21 @@ public sealed class GameProjectileManager : MonoBehaviour
     }
 
     // ══════════════════════════════════════════════════════
-    // DarkOrb 충돌/폭발
+    // 폭발 — 범위 데미지 1회 + 재귀 분열 큐잉
     // ══════════════════════════════════════════════════════
 
-    /// <summary>비행 중 적 접촉 판정. Collider 없이 Manager가 직접 수행.</summary>
-    private bool CheckDarkOrbContact(ref ProjectileState s)
-    {
-        EnsureFilter(s.EnemyMask);
-
-        int count = Physics2D.OverlapCircle(
-            s.Position, s.CollisionRadius, _enemyFilter, _overlapHits);
-
-        return count > 0;
-    }
-
-    /// <summary>폭발: 범위 데미지 + 분열 큐잉 + 본체 제거 예약.</summary>
+    /// <summary>
+    /// 폭발: 범위 데미지 → 자식 2개 큐잉 (depth 허용 시) → VFX → 제거.
+    /// OverlapCircle은 여기서만, 폭발 시 1회만 발생.
+    /// </summary>
     private void ExplodeDarkOrb(int id, ref ProjectileState s)
     {
-        if (s.PendingDespawn || s.SplitQueued) return;
+        if (s.PendingDespawn) return;
 
-        // 1. 범위 데미지 (Physics2D.OverlapCircle)
+        // 1. 범위 데미지 (OverlapCircle 1회)
         if (s.ExplosionRadius > 0.01f)
         {
             EnsureFilter(s.EnemyMask);
-
             int hitCount = Physics2D.OverlapCircle(
                 s.Position, s.ExplosionRadius, _enemyFilter, _overlapHits);
 
@@ -413,14 +326,11 @@ public sealed class GameProjectileManager : MonoBehaviour
             }
         }
 
-        // 2. 분열 큐잉 (즉시 생성 금지)
-        if (s.Generation < s.MaxGeneration &&
-            (s.Flags & GameProjectileFlags.CanSplit) != 0)
-        {
-            QueueSplit(id, ref s);
-        }
+        // 2. 재귀 분열 큐잉 (depth < maxDepth이면 자식 2개)
+        if (s.Depth < s.MaxDepth)
+            QueueSplit(ref s);
 
-        // 3. 폭발 VFX
+        // 3. 폭발 VFX (명시 호출)
         EmitExplosionVfx(s.Position);
 
         // 4. 본체 제거 예약
@@ -428,66 +338,57 @@ public sealed class GameProjectileManager : MonoBehaviour
     }
 
     // ══════════════════════════════════════════════════════
-    // Split Queue
+    // 분열 — depth 기반 재귀 트리. 부모 1개 → 자식 2개.
     // ══════════════════════════════════════════════════════
 
-    private void QueueSplit(int parentId, ref ProjectileState s)
+    private void QueueSplit(ref ProjectileState s)
     {
-        if (s.SplitQueued) return; // 같은 부모 중복 방지
-        if (_splitCount >= _splitQueue.Length) return; // 큐 오버플로 방지
-
-        s.SplitQueued = true;
+        if (_splitCount >= _splitQueue.Length) return;
 
         ref var req = ref _splitQueue[_splitCount++];
-        req.ParentId = parentId;
         req.Position = s.Position;
         req.ParentDirection = s.Direction;
-        req.NextGeneration = (byte)(s.Generation + 1);
-        req.MaxGeneration = s.MaxGeneration;
-        req.ChildrenCount = s.SplitChildrenCount;
+        req.NextDepth = s.Depth + 1;
+        req.MaxDepth = s.MaxDepth;
         req.AngleDeg = s.SplitAngleDeg;
-        req.Speed = s.SplitSpeed;
-        req.Lifetime = s.SplitLifetime;
+        req.Speed = s.SplitSpeed > 0f ? s.SplitSpeed : s.Speed;
+        req.Lifetime = s.SplitLifetime > 0f ? s.SplitLifetime : s.Lifetime;
         req.Damage = s.SplitDamage > 0 ? s.SplitDamage : s.Damage;
-        req.CollisionRadius = s.CollisionRadius;
         req.ExplosionRadius = s.ExplosionRadius;
-        req.CollisionGrace = s.CollisionGraceRemaining > 0 ? s.CollisionGraceRemaining : 0.05f;
+        req.SplitAngleDeg = s.SplitAngleDeg;
+        req.SplitSpeed = s.SplitSpeed;
+        req.SplitLifetime = s.SplitLifetime;
+        req.SplitDamage = s.SplitDamage;
         req.EnemyMask = s.EnemyMask;
         req.OwnerInstanceId = s.OwnerInstanceId;
-        req.Flags = s.Flags;
     }
 
     private void FlushSplits()
     {
-        using (GameProjectileProfiler.FlushSplits.Auto())
+        for (int i = 0; i < _splitCount; i++)
         {
-            for (int i = 0; i < _splitCount; i++)
-            {
-                ref readonly var req = ref _splitQueue[i];
-                SpawnSplitChildren(in req);
-            }
-            _splitCount = 0;
+            ref readonly var req = ref _splitQueue[i];
+            SpawnChildren(in req);
         }
+        _splitCount = 0;
     }
 
-    private void SpawnSplitChildren(in SplitRequest req)
+    /// <summary>
+    /// 부모 1개 폭발 → 자식 2개 생성.
+    /// 방향: 부모 진행방향 기준 +고정각 / -고정각.
+    /// 자식도 동일 규칙으로 수명 만료 → 폭발 → 다시 분열.
+    /// </summary>
+    private void SpawnChildren(in SplitRequest req)
     {
-        int count = Mathf.Max(1, req.ChildrenCount);
-        float halfSpread = req.AngleDeg;
-
-        for (int c = 0; c < count; c++)
+        // 항상 2개 (재귀 트리 규칙)
+        for (int c = 0; c < 2; c++)
         {
-            if (_freeTop <= 0) break; // 하드 캡
+            if (_freeTop <= 0) break;
             if (_darkOrbCount >= maxDarkOrbs) break;
 
-            // 분열 방향 계산
-            float angleDeg;
-            if (count == 2)
-                angleDeg = (c == 0) ? +halfSpread : -halfSpread;
-            else
-                angleDeg = Mathf.Lerp(-halfSpread, +halfSpread, (float)c / Mathf.Max(1, count - 1));
-
-            Vector2 childDir = RotateDir(req.ParentDirection, angleDeg);
+            // 부모 진행방향 기준 +각 / -각
+            float angle = (c == 0) ? +req.AngleDeg : -req.AngleDeg;
+            Vector2 childDir = RotateDir(req.ParentDirection, angle);
 
             int id = AllocSlot();
             ref var s = ref _states[id];
@@ -495,26 +396,23 @@ public sealed class GameProjectileManager : MonoBehaviour
             s.Active = true;
             s.Kind = GameProjectileKind.DarkOrb;
             s.OwnerInstanceId = req.OwnerInstanceId;
-            s.Position = req.Position + childDir * 0.4f; // spawnEps
+            s.Position = req.Position + childDir * 0.4f; // 약간 밀어서 겹침 방지
             s.Direction = childDir;
             s.Speed = req.Speed;
             s.Lifetime = req.Lifetime;
-            s.CollisionRadius = req.CollisionRadius;
             s.ExplosionRadius = req.ExplosionRadius;
             s.Damage = req.Damage;
-            s.PierceLeft = 0;
-            s.Generation = req.NextGeneration;
-            s.MaxGeneration = req.MaxGeneration;
-            s.SplitChildrenCount = req.ChildrenCount;
-            s.SplitAngleDeg = req.AngleDeg;
-            s.SplitSpeed = req.Speed;
-            s.SplitLifetime = req.Lifetime;
-            s.SplitDamage = req.Damage;
-            s.SplitQueued = false;
-            s.PendingDespawn = false;
-            s.CollisionGraceRemaining = req.CollisionGrace;
             s.EnemyMask = req.EnemyMask;
-            s.Flags = req.Flags;
+
+            // 재귀 트리 정보 전달
+            s.Depth = req.NextDepth;
+            s.MaxDepth = req.MaxDepth;
+            s.SplitAngleDeg = req.SplitAngleDeg;
+            s.SplitSpeed = req.SplitSpeed;
+            s.SplitLifetime = req.SplitLifetime;
+            s.SplitDamage = req.SplitDamage;
+
+            s.PendingDespawn = false;
 
             // 뷰 연결
             s.ViewId = viewPool != null
@@ -525,8 +423,8 @@ public sealed class GameProjectileManager : MonoBehaviour
             _activeIds[_activeCount++] = id;
             _darkOrbCount++;
 
-            // 분열 VFX (예산 제한)
-            EmitSplitVfx(s.Position);
+            // 자식 바디 VFX (선택)
+            EmitBodyVfx(s.Position);
         }
     }
 
@@ -540,17 +438,17 @@ public sealed class GameProjectileManager : MonoBehaviour
         if (!s.Active) return;
 
         // 뷰 반환
-        if (viewPool != null && s.ViewId != GameProjectileViewPool.InvalidId)
-            viewPool.Release(s.ViewId);
+        int vid = s.ViewId;
+        s.ViewId = GameProjectileViewPool.InvalidId;
+        if (viewPool != null && vid != GameProjectileViewPool.InvalidId)
+            viewPool.Release(vid);
 
-        // DarkOrb 카운트 감소
         if (s.Kind == GameProjectileKind.DarkOrb)
             _darkOrbCount--;
 
-        // swap-back remove
+        // swap-back
         int removeIndex = s.DenseIndex;
         int lastIndex = _activeCount - 1;
-
         if (removeIndex != lastIndex)
         {
             int lastId = _activeIds[lastIndex];
@@ -559,7 +457,6 @@ public sealed class GameProjectileManager : MonoBehaviour
         }
         _activeCount--;
 
-        // 슬롯 초기화 + free list 반환
         s = default;
         _freeIds[_freeTop++] = id;
     }
@@ -576,41 +473,29 @@ public sealed class GameProjectileManager : MonoBehaviour
     private void SyncViews()
     {
         if (viewPool == null) return;
-
-        using (GameProjectileProfiler.SyncViews.Auto())
+        for (int i = 0; i < _activeCount; i++)
         {
-            for (int i = 0; i < _activeCount; i++)
-            {
-                int id = _activeIds[i];
-                ref var s = ref _states[id];
-
-                if (s.ViewId != GameProjectileViewPool.InvalidId)
-                    viewPool.SetPosition(s.ViewId, s.Position);
-            }
+            int id = _activeIds[i];
+            ref var s = ref _states[id];
+            if (s.ViewId != GameProjectileViewPool.InvalidId)
+                viewPool.SetPosition(s.ViewId, s.Position);
         }
     }
 
     // ══════════════════════════════════════════════════════
-    // VFX
+    // VFX — 폭발 시점 명시 호출만. OnDisable 폭발 금지.
     // ══════════════════════════════════════════════════════
 
     private void EmitExplosionVfx(Vector2 pos)
     {
-        using (GameProjectileProfiler.EmitVfx.Auto())
-        {
-            if (darkOrbExplosionVfxPrefab != null)
-                VFXSpawner.Spawn(darkOrbExplosionVfxPrefab, pos, Quaternion.identity, 2f);
-        }
+        if (darkOrbExplosionVfxPrefab != null)
+            VFXSpawner.Spawn(darkOrbExplosionVfxPrefab, pos, Quaternion.identity, 2f);
     }
 
-    private void EmitSplitVfx(Vector2 pos)
+    private void EmitBodyVfx(Vector2 pos)
     {
-        // 프레임당 예산 제한
-        if (_splitVfxThisFrame >= splitVfxBudgetPerFrame) return;
-        _splitVfxThisFrame++;
-
         if (darkOrbBodyVfxPrefab != null)
-            VFXSpawner.Spawn(darkOrbBodyVfxPrefab, pos, Quaternion.identity, 1f);
+            VFXSpawner.Spawn(darkOrbBodyVfxPrefab, pos, Quaternion.identity, 0.8f);
     }
 
     // ══════════════════════════════════════════════════════
@@ -619,7 +504,6 @@ public sealed class GameProjectileManager : MonoBehaviour
 
     private static Vector2 RotateDir(Vector2 dir, float angleDeg)
     {
-        // 정수 각도면 캐시 사용, 아니면 직접 계산
         int intAngle = Mathf.RoundToInt(angleDeg) % 360;
         if (intAngle < 0) intAngle += 360;
 

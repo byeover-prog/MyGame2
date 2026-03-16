@@ -1,13 +1,13 @@
+// UTF-8
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 회전검 무기 (CommonSkillWeapon2D 기반)
-/// 
-/// 레벨업 처리 방식:
-/// - 레벨업해도 현재 돌고 있는 사이클에는 아무 변화 없음
-/// - 현재 사이클이 끝나고(OFF) → 다음 사이클이 시작될 때(ON) 새 개수 적용
-/// - 보간/재배치 로직 불필요 → 깔끔하고 버벅거림 없음
+/// 회전검 무기.
+/// [구현 원리 요약]
+/// - 현재 보이지 않는 진짜 블레이드가 돌고, 루트의 정적인 외주 이펙트만 가운데 남아 있어 안 도는 것처럼 보였다.
+/// - 그래서 루트 시각 요소는 끄고, 실제 회전하는 블레이드 클론의 SpriteRenderer를 강제로 켠다.
+/// - 블레이드 위치/회전/타격은 이 스크립트 한 곳에서만 관리한다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
@@ -54,20 +54,18 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
     private readonly Collider2D[] hitResults = new Collider2D[10];
 
     private float baseAngle;
-
-    // ON/OFF 사이클
     private bool _isActive = true;
     private float _stateTimer;
-
-    // 현재 사이클에서 실제로 사용 중인 블레이드 수
     private int _currentCycleCount;
+    private bool _rootVisualPrepared;
 
     public override void Initialize(CommonSkillConfigSO cfg, Transform ownerTr, int startLevel)
     {
         base.Initialize(cfg, ownerTr, startLevel);
+
+        PrepareRootVisual();
         EnsureBladeInstances();
 
-        // 최초 획득 시에는 즉시 적용
         _currentCycleCount = Mathf.Max(1, P.projectileCount);
         PositionAndActivateBlades(_currentCycleCount);
 
@@ -83,10 +81,9 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
 
     protected override void OnLevelChanged()
     {
+        PrepareRootVisual();
         EnsureBladeInstances();
 
-        // 현재 사이클에는 아무것도 건드리지 않음
-        // 쿨다운 사이클 미사용 시에는 즉시 적용
         if (!useCooldownCycle)
         {
             _currentCycleCount = Mathf.Max(1, P.projectileCount);
@@ -100,7 +97,6 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
     {
         if (owner == null || config == null) return;
 
-        // ON/OFF 사이클
         if (useCooldownCycle)
         {
             _stateTimer += Time.deltaTime;
@@ -122,8 +118,6 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
                 {
                     _isActive = true;
                     _stateTimer = 0f;
-
-                    // ★ 다음 사이클 시작: 여기서 새 블레이드 수 적용
                     _currentCycleCount = Mathf.Max(1, P.projectileCount);
                     PositionAndActivateBlades(_currentCycleCount);
                 }
@@ -134,27 +128,61 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
             }
         }
 
-        // 회전/타격
         float radius = Mathf.Max(minOrbitRadius, P.orbitRadius);
         float angSpeed = Mathf.Max(minOrbitAngularSpeed, P.orbitAngularSpeed);
 
         baseAngle = (baseAngle + angSpeed * Time.deltaTime) % 360f;
-        float step = 360f / _currentCycleCount;
+        float step = 360f / Mathf.Max(1, _currentCycleCount);
 
         for (int i = 0; i < _currentCycleCount && i < blades.Count; i++)
         {
-            if (!blades[i].activeSelf) continue;
+            GameObject blade = blades[i];
+            if (blade == null || !blade.activeSelf) continue;
 
             float angleDeg = baseAngle + step * i;
-            float a = angleDeg * Mathf.Deg2Rad;
+            float rad = angleDeg * Mathf.Deg2Rad;
 
-            blades[i].transform.localPosition = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * radius;
+            blade.transform.localPosition = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f) * radius;
 
             if (rotateBladeToFaceOutward)
-                blades[i].transform.localRotation = Quaternion.Euler(0f, 0f, angleDeg + bladeVisualRotationOffsetDeg);
+                blade.transform.localRotation = Quaternion.Euler(0f, 0f, angleDeg + bladeVisualRotationOffsetDeg);
 
-            CheckHitForBlade(blades[i].transform.position);
+            CheckHitForBlade(blade.transform.position);
         }
+    }
+
+    private void PrepareRootVisual()
+    {
+        if (_rootVisualPrepared) return;
+
+        var rootVfx = GetComponent<ProjectileVFXChild>();
+        if (rootVfx != null)
+        {
+            rootVfx.SetVFXEnabled(false, false);
+            rootVfx.enabled = false;
+        }
+
+        var rootRenderers = GetComponents<SpriteRenderer>();
+        for (int i = 0; i < rootRenderers.Length; i++)
+        {
+            if (rootRenderers[i] != null)
+                rootRenderers[i].enabled = false;
+        }
+
+        if (bladeTemplate != null)
+        {
+            for (int i = bladeTemplate.transform.parent.childCount - 1; i >= 0; i--)
+            {
+                Transform child = bladeTemplate.transform.parent.GetChild(i);
+                if (child == bladeTemplate.transform) continue;
+
+                // 초기 생성 시 루트 VFX가 자식으로 붙어 있었다면 여기서 정리된다.
+                if (child.GetComponentInChildren<OrbitingBladeHitbox2D>(true) == null)
+                    Destroy(child.gameObject);
+            }
+        }
+
+        _rootVisualPrepared = true;
     }
 
     private void CheckHitForBlade(Vector3 bladePosition)
@@ -170,10 +198,8 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
             float now = Time.time;
             float interval = Mathf.Max(minHitInterval, P.hitInterval);
 
-            if (lastHitTime.TryGetValue(id, out float t))
-            {
-                if (now - t < interval) continue;
-            }
+            if (lastHitTime.TryGetValue(id, out float t) && now - t < interval)
+                continue;
 
             lastHitTime[id] = now;
 
@@ -189,18 +215,35 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
         int want = Mathf.Max(1, config != null ? config.maxLevel : 1);
         while (blades.Count < want)
         {
-            GameObject b = Instantiate(bladeTemplate, bladeTemplate.transform.parent);
-            b.SetActive(false);
-            blades.Add(b);
+            GameObject blade = Instantiate(bladeTemplate, bladeTemplate.transform.parent);
+            PrepareBladeVisual(blade);
+            blade.SetActive(false);
+            blades.Add(blade);
         }
 
         if (bladeTemplate.activeSelf)
             bladeTemplate.SetActive(false);
     }
 
-    /// <summary>
-    /// 위치 먼저 계산 후 활성화 (1프레임 점프 방지)
-    /// </summary>
+    private void PrepareBladeVisual(GameObject blade)
+    {
+        if (blade == null) return;
+
+        var bladeVfx = blade.GetComponent<ProjectileVFXChild>();
+        if (bladeVfx != null)
+        {
+            bladeVfx.SetVFXEnabled(false, false);
+            bladeVfx.enabled = false;
+        }
+
+        var srs = blade.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < srs.Length; i++)
+        {
+            if (srs[i] != null)
+                srs[i].enabled = true;
+        }
+    }
+
     private void PositionAndActivateBlades(int activeCount)
     {
         float radius = Mathf.Max(minOrbitRadius, P.orbitRadius);
@@ -208,25 +251,27 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
 
         for (int i = 0; i < blades.Count; i++)
         {
-            var blade = blades[i];
+            GameObject blade = blades[i];
+            if (blade == null) continue;
 
             if (i < activeCount)
             {
                 float angleDeg = baseAngle + step * i;
-                float a = angleDeg * Mathf.Deg2Rad;
+                float rad = angleDeg * Mathf.Deg2Rad;
 
-                blade.transform.localPosition = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * radius;
+                blade.transform.localPosition = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f) * radius;
 
                 if (rotateBladeToFaceOutward)
                     blade.transform.localRotation = Quaternion.Euler(0f, 0f, angleDeg + bladeVisualRotationOffsetDeg);
 
+                PrepareBladeVisual(blade);
+
                 if (!blade.activeSelf)
                     blade.SetActive(true);
             }
-            else
+            else if (blade.activeSelf)
             {
-                if (blade.activeSelf)
-                    blade.SetActive(false);
+                blade.SetActive(false);
             }
         }
     }
@@ -234,9 +279,15 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
     private void SetBladesVisible(bool visible)
     {
         if (visible)
+        {
             PositionAndActivateBlades(_currentCycleCount);
-        else
-            for (int i = 0; i < blades.Count; i++)
+            return;
+        }
+
+        for (int i = 0; i < blades.Count; i++)
+        {
+            if (blades[i] != null)
                 blades[i].SetActive(false);
+        }
     }
 }

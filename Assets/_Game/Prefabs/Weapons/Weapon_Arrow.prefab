@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8400228047598028552}
   - component: {fileID: 7247902729331679633}
-  - component: {fileID: 8379743531263422238}
+  - component: {fileID: 3886865403574869801}
   m_Layer: 0
   m_Name: Weapon_Arrow
   m_TagString: Untagged
@@ -61,9 +61,9 @@ MonoBehaviour:
   fallbackDamage: 10
   fallbackProjectileSpeed: 12
   fallbackProjectileLife: 2
-  pool: {fileID: 8379743531263422238}
+  pool: {fileID: 3886865403574869801}
   spawnPoint: {fileID: 5714409839044760080}
---- !u!114 &8379743531263422238
+--- !u!114 &3886865403574869801
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -72,14 +72,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1300380564900177709}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e9332755d83020b4f949b987fa5bbcfb, type: 3}
+  m_Script: {fileID: 11500000, guid: 2200e00335b82b0499dfc91bbf39f4b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectilePool2D
-  prefab: {fileID: 3809372804871011955, guid: c59f2bc8b62758e459bdbc51d56ffeb5, type: 3}
-  prewarmCount: 20
-  prewarmPerFrame: 3
-  prewarmOnStart: 1
-  maxCount: 200
+  projectilePrefab: {fileID: 7796759533629522074, guid: c59f2bc8b62758e459bdbc51d56ffeb5,
+    type: 3}
+  prewarmCount: 10
+  debugLog: 0
 --- !u!1 &4665874027049863316
 GameObject:
   m_ObjectHideFlags: 0

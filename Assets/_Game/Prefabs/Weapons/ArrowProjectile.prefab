@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 4058634118947462141}
   - component: {fileID: 3674168569020914249}
   - component: {fileID: 1281644234998683652}
+  - component: {fileID: 5861768765781088283}
   - component: {fileID: 1534040017305913308}
   - component: {fileID: 3809372804871011955}
-  - component: {fileID: 5861768765781088283}
+  - component: {fileID: -5334713050446068955}
   m_Layer: 15
   m_Name: ArrowProjectile
   m_TagString: Untagged
@@ -122,42 +123,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &1534040017305913308
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7796759533629522074}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
-  debugSkillId: Weapon_Arrow
-  maxLevel: 8
-  level: 0
-  forwardLevelToChildren: 1
-  forwardMethodNames:
-  - ApplyLevel
-  - SetLevel
-  - SetSkillLevel
-  - UpgradeLevel
-  - OnLevelChanged
-  log: 1
---- !u!114 &3809372804871011955
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7796759533629522074}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a51a6241cd886a48b37ee0e9fcd24b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArrowProjectile2D
-  selfCollider: {fileID: 0}
 --- !u!61 &5861768765781088283
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -204,3 +169,62 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.65817416, y: 0.40158355}
   m_EdgeRadius: 0
+--- !u!114 &1534040017305913308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796759533629522074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
+  debugSkillId: Weapon_Arrow
+  maxLevel: 8
+  level: 0
+  forwardLevelToChildren: 1
+  forwardMethodNames:
+  - ApplyLevel
+  - SetLevel
+  - SetSkillLevel
+  - UpgradeLevel
+  - OnLevelChanged
+  log: 1
+--- !u!114 &3809372804871011955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796759533629522074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a51a6241cd886a48b37ee0e9fcd24b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArrowProjectile2D
+  selfCollider: {fileID: 0}
+--- !u!114 &-5334713050446068955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796759533629522074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b8bec22950d44e448f899e6a69b1fc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileVFXChild
+  vfxPrefab: {fileID: 2542593784275163994, guid: 9c2364ece69b78347a6f3c8dd7003d36,
+    type: 3}
+  explosionVfxPrefab: {fileID: 0}
+  enableBodyVfx: 1
+  attachToProjectile: 1
+  bodyLifetime: 1
+  enableExplosionVfx: 1
+  suppressExplosionForChildFragment: 0
+  useDarkOrbExplosionBudget: 0
+  explosionLifetime: 1.2
+  hideSpriteRenderer: 1

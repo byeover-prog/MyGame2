@@ -1,29 +1,34 @@
+// UTF-8
+// [구현 원리 요약]
+// - 비행 중 재탐색도 EnemyRegistry2D를 우선 사용해서 물리 탐색 비용을 줄인다.
+// - 목표가 끊기면 가장 가까운 적 기준으로 다시 잡아 추적을 유지한다.
+// - rb.linearVelocity는 Unity 6 API이다. Unity 2022 이하에서는 rb.velocity로 변경할 것.
 using UnityEngine;
 
-// [구현 원리 요약]
-// - 붙어서 때리기(락온): 락온 대상만 타격한다.
-// - 수명은 사실상 무한처럼 써도 되지만, 안전장치로 "타겟을 못 찾는 시간"이 길면 자동 종료한다.
-// - 속도/턴스피드를 올리면 붙는 체감이 확 좋아진다.
-
+/// <summary>
+/// 호밍 미사일 투사체.
+/// 타겟을 추적하며 수명 타격 횟수만큼 피해를 주고 소멸한다.
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class HomingMissileProjectile2D : PooledObject2D
 {
-    [Header("필수")]
-    [Tooltip("투사체 Rigidbody2D(없으면 Transform 이동)")]
+    [Header("필수 컴포넌트")]
+    [Tooltip("Rigidbody2D (자동 탐색)")]
     [SerializeField] private Rigidbody2D rb;
 
-    [Tooltip("투사체 Collider2D(Trigger 권장)")]
+    [Tooltip("Collider2D (자동 탐색)")]
     [SerializeField] private Collider2D col;
 
     [Header("붙어서 때리기")]
-    [Tooltip("같은 적을 다시 때리는 간격(초)")]
+    [Tooltip("동일 대상 재타격 간격 (초)")]
     [SerializeField, Min(0.05f)] private float rehitIntervalSeconds = 0.20f;
 
-    [Header("수명 대체 안전장치")]
-    [Tooltip("타겟을 못 찾는 상태가 이 시간(초) 이상 지속되면 자동 종료(풀 반납)\n수명을 없애는 대신 이걸로 안전하게 끝낸다.")]
+    [Header("수명 안전장치")]
+    [Tooltip("타겟 없이 이 시간이 지나면 자동 소멸 (초)")]
     [SerializeField, Min(0.2f)] private float noTargetKillSeconds = 1.5f;
 
-    [Header("디버그(권장 OFF)")]
+    [Header("디버그")]
+    [Tooltip("타격 로그 출력")]
     [SerializeField] private bool debugLog = false;
 
     private LayerMask _enemyMask;
@@ -32,17 +37,11 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
     private float _speed;
     private float _turnSpeedDeg;
     private int _remainingHits;
-
     private Vector2 _dir;
-
     private Transform _target;
     private int _lockedRootId;
-
     private float _nextHitTime;
-
     private float _noTargetTimer;
-
-    private readonly Collider2D[] _acquireHits = new Collider2D[48];
 
     private void Awake()
     {
@@ -50,33 +49,20 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
         if (col == null) col = GetComponent<Collider2D>();
     }
 
-    public void Init(
-        LayerMask enemyMask,
-        float seekRadius,
-        int damage,
-        float speed,
-        float turnSpeedDeg,
-        int chainCount,
-        float lifeSeconds,     // 호출부 호환용(실제론 거의 무시)
-        Vector2 startDir,
-        Transform startTarget
-    )
+    /// <summary>미사일 초기화 (발사 시 Weapon에서 호출)</summary>
+    public void Init(LayerMask enemyMask, float seekRadius, int damage, float speed,
+        float turnSpeedDeg, int chainCount, float lifeSeconds, Vector2 startDir, Transform startTarget)
     {
         _enemyMask = enemyMask;
         _seekRadius = Mathf.Max(0.1f, seekRadius);
         _damage = Mathf.Max(1, damage);
         _speed = Mathf.Max(0.1f, speed);
         _turnSpeedDeg = Mathf.Max(0f, turnSpeedDeg);
-
-        // 총 타격 수 = 1 + 추가타격
         _remainingHits = Mathf.Max(1, 1 + Mathf.Max(0, chainCount));
-
         _dir = startDir.sqrMagnitude > 0.0001f ? startDir.normalized : Vector2.right;
-
         _target = startTarget;
         _lockedRootId = 0;
         _nextHitTime = 0f;
-
         _noTargetTimer = 0f;
 
         if (col != null) col.enabled = true;
@@ -91,9 +77,7 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
         {
             _lockedRootId = GetRootIdFromTransform(_target);
             if (_lockedRootId == 0)
-            {
                 _target = null;
-            }
         }
 
         if (_target == null)
@@ -108,7 +92,6 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
             return;
         }
 
-        // 타겟이 없으면 시간 누적 -> 일정 시간 지나면 종료(수명 대체)
         if (IsTargetInvalid(_target))
         {
             _noTargetTimer += Time.fixedDeltaTime;
@@ -119,17 +102,15 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
                 return;
             }
 
-            // 타겟을 계속 찾아본다
             AcquireAndLockNewTarget();
             if (_target == null)
-                return; // 다음 프레임에 또 찾기
+                return;
         }
         else
         {
             _noTargetTimer = 0f;
         }
 
-        // 추적
         Vector2 desired = (Vector2)_target.position - (Vector2)transform.position;
         if (desired.sqrMagnitude > 0.0001f)
         {
@@ -157,14 +138,12 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
         int otherRootId = GetRootIdFromCollider(other);
         if (otherRootId == 0) return;
 
-        // 락온 미설정이면 첫 충돌 대상으로 락온
         if (_lockedRootId == 0)
         {
             _lockedRootId = otherRootId;
             _target = GetTransformFromCollider(other);
         }
 
-        // 락온 대상이 아니면 무시
         if (otherRootId != _lockedRootId)
             return;
 
@@ -178,7 +157,7 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
         _remainingHits--;
 
         if (debugLog)
-            Debug.Log($"[HomingMissileProjectile2D] HIT root={_lockedRootId} remain={_remainingHits}");
+            Debug.Log($"[HomingMissileProjectile2D] 적중 root={_lockedRootId} 남은횟수={_remainingHits}");
 
         if (_remainingHits <= 0)
             ReturnToPool();
@@ -186,7 +165,7 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
 
     private void AcquireAndLockNewTarget()
     {
-        Transform t = AcquireNextTargetByPhysics();
+        Transform t = AcquireNextTargetByRegistry();
         _target = t;
         _lockedRootId = 0;
         _nextHitTime = 0f;
@@ -195,38 +174,16 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
         {
             _lockedRootId = GetRootIdFromTransform(_target);
             if (_lockedRootId == 0)
-                _target = null; // 충돌로 락온 유도
+                _target = null;
         }
     }
 
-    private Transform AcquireNextTargetByPhysics()
+    private Transform AcquireNextTargetByRegistry()
     {
-        // 여기서는 단순/확실하게 Physics로만 잡는다.
-        // (Registry 쪽 시그니처 차이/누락으로 인한 불확실성 제거)
-        Vector2 from = transform.position;
+        if (EnemyRegistry2D.TryGetNearest(transform.position, _seekRadius, out var member) && member != null)
+            return member.Transform;
 
-        int count = Physics2DCompat.OverlapCircleNonAlloc(from, _seekRadius, _acquireHits, _enemyMask);
-        for (int i = count; i < _acquireHits.Length; i++) _acquireHits[i] = null;
-        if (count <= 0) return null;
-
-        float best = float.PositiveInfinity;
-        Transform bestT = null;
-
-        for (int i = 0; i < count; i++)
-        {
-            var c = _acquireHits[i];
-            if (c == null) continue;
-
-            Transform tt = (c.attachedRigidbody != null) ? c.attachedRigidbody.transform : c.transform;
-            float d = ((Vector2)tt.position - from).sqrMagnitude;
-            if (d < best)
-            {
-                best = d;
-                bestT = tt;
-            }
-        }
-
-        return bestT;
+        return null;
     }
 
     private static Transform GetTransformFromCollider(Collider2D col)
@@ -258,13 +215,16 @@ public sealed class HomingMissileProjectile2D : PooledObject2D
     {
         if (t == null) return true;
         if (!t.gameObject.activeInHierarchy) return true;
-        return false;
+
+        var mem = t.GetComponentInParent<EnemyRegistryMember2D>();
+        if (mem == null) return false;
+        return !mem.IsValidTarget;
     }
 
     private void SetRotationFromDirection(Vector2 dir)
     {
         if (dir.sqrMagnitude <= 0.0001f) return;
-        float ang = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0f, 0f, ang);
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 }

@@ -44,7 +44,7 @@ public static class CommonSkillWeaponPrefabBuilder
         new WeaponBuildSpec(
             prefabName: "Weapon_DarkOrb",
             weaponType: typeof(DarkOrbWeapon2D),
-            projectileType: typeof(DarkOrbProjectile2D),
+            projectileType: null,
             extraSetup: null
         ),
         new WeaponBuildSpec(

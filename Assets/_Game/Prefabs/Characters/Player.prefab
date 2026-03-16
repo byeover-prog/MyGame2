@@ -93,11 +93,9 @@ GameObject:
   - component: {fileID: 2491341694663641043}
   - component: {fileID: 2567311258014471434}
   - component: {fileID: 1425800173421239617}
-  - component: {fileID: 4444325608737869858}
   - component: {fileID: 5675278374674867088}
   - component: {fileID: 3845208612909974869}
   - component: {fileID: 594495983397756745}
-  - component: {fileID: 2646400532535124396}
   - component: {fileID: 6050163584835897625}
   - component: {fileID: 4633536343807085861}
   - component: {fileID: 3643547768900288814}
@@ -387,26 +385,9 @@ MonoBehaviour:
   combatStats: {fileID: 3643547768900288814}
   walkOnSpeed: 0.05
   walkOffSpeed: 0.02
---- !u!114 &4444325608737869858
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2448833564552998235}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e6df149c9c50e845a3ed700266c03be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WeaponShooterSystem2D
-  firePoint: {fileID: 4443526053670800817}
-  projectilePool: {fileID: 0}
-  defaultStartWeapons:
-  - {fileID: 0}
-  slots: []
-  overlapBufferSize: 64
-  bossTag: Boss
-  stats: {fileID: 0}
+  lockMoveDuringAction: 1
+  exitFadeDuration: 0.25
+  debugLog: 0
 --- !u!114 &5675278374674867088
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -457,19 +438,6 @@ MonoBehaviour:
   baseDashCooldown: 3
   windDashCooldownReductionRate: 0.2
   dashChargeUI: {fileID: 0}
---- !u!114 &2646400532535124396
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2448833564552998235}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc37798b482a23746a0e62a7c96c4bbc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_Game.Player.PlayerSkillLoadout
-  balanceTable: {fileID: 11400000, guid: 45af5610723c56b4a8e9f914972a1a66, type: 2}
 --- !u!114 &6050163584835897625
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -595,4 +563,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: dc37c8bf22f65f64ebe0a1e1ecc24c0f, type: 2}
   applyOnStart: 1
   warnWhenEmpty: 1
+  autoCreateManagerIfMissing: 0
   logOnStart: 1
