@@ -17,10 +17,12 @@ using UnityEngine;
 public sealed class DarkOrbProjectile2D : MonoBehaviour
 {
     // 기존 Inspector 필드 유지 (프리팹 참조 깨짐 방지)
+#pragma warning disable CS0414
     [SerializeField] private DarkOrbProjectile2D splitSpawnPrefab;
     [SerializeField] private float splitAngleDeg = 40f;
     [SerializeField] private float spawnEps = 0.4f;
     [SerializeField] private float collisionGracePeriod = 0.05f;
+#pragma warning restore CS0414
 
     private void Awake()
     {
