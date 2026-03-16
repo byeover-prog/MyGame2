@@ -178,15 +178,27 @@ public sealed class GameProjectileViewPool : MonoBehaviour
 
     private static void DisableLogicComponents(GameObject go)
     {
-        // 레거시 DarkOrbProjectile2D 등이 붙어있으면 비활성화
+        // 레거시 컴포넌트 비활성화 (타입 직접 참조 대신 문자열 탐색으로 안전 처리)
+#pragma warning disable CS0618 // Obsolete 경고 억제
         var legacy = go.GetComponent<DarkOrbProjectile2D>();
         if (legacy != null) legacy.enabled = false;
+#pragma warning restore CS0618
 
         var legacySplit = go.GetComponent<DarkOrbSplitProjectile2D>();
         if (legacySplit != null) legacySplit.enabled = false;
 
-        var legacySkill = go.GetComponent<DarkOrbSkill2D>();
-        if (legacySkill != null) legacySkill.enabled = false;
+        // MonoBehaviour 전체를 순회하며 불필요한 로직 컴포넌트 비활성화
+        var behaviours = go.GetComponentsInChildren<MonoBehaviour>(true);
+        for (int i = 0; i < behaviours.Length; i++)
+        {
+            var b = behaviours[i];
+            if (b == null) continue;
+            // 뷰에 남겨야 할 것: SpriteRenderer 관련, VFX 관련, Animator
+            // 나머지 로직 컴포넌트는 비활성화
+            string typeName = b.GetType().Name;
+            if (typeName.Contains("Skill") || typeName.Contains("Weapon") || typeName.Contains("Motor"))
+                b.enabled = false;
+        }
 
         // Collider 비활성화 (뷰는 충돌 금지)
         var cols = go.GetComponentsInChildren<Collider2D>(true);
