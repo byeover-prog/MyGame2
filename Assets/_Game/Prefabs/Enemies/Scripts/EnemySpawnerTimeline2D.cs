@@ -24,7 +24,9 @@ public sealed class EnemySpawnerTimeline2D : MonoBehaviour
     [SerializeField] private Transform player;
 
     [Header("디버그")]
+#pragma warning disable CS0414
     [SerializeField] private bool debugLog = false;
+#pragma warning restore CS0414
 
     private readonly Dictionary<string, EnemyRootSO.EnemyEntry> _byId
         = new Dictionary<string, EnemyRootSO.EnemyEntry>(64);
