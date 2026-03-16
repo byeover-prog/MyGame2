@@ -1,223 +1,204 @@
-// UTF-8
-// Assets/_Game/Scripts/Combat/Projectiles/GameProjectileViewPool.cs
+// ============================================================================
+// GameProjectileViewPool.cs
+// 경로: Assets/_Game/Scripts/Combat/Projectiles/GameProjectileViewPool.cs
+// 용도: 다크오브 비주얼(SpriteRenderer) 전용 오브젝트 풀
+//
+// [설계도 기준 - 리팩토링 핵심]
+// - 경량 뷰 프리팹(SpriteRenderer만)을 풀링
+// - NukeAllLogicComponents, DestroyImmediate 같은 해킹 코드 완전 제거
+// - 레거시 DarkOrb 프리팹을 복제하지 않음 → Missing Script 0
+//
+// [Inspector 설정]
+// 오브젝트: [GameProjectileManager]
+// 컴포넌트: GameProjectileViewPool
+//   - Dark Orb View Prefab → DarkOrbView (신규 경량 프리팹, SpriteRenderer만)
+//   - Dark Orb Prewarm Count → 20
+// ============================================================================
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 투사체 비주얼 전용 오브젝트 풀.
-/// SpriteRenderer/VFX 표시만 담당. 이동/충돌/분열 로직 금지.
-/// 
-/// GameProjectileManager가 SyncViews()에서 위치를 동기화한다.
-/// </summary>
 public sealed class GameProjectileViewPool : MonoBehaviour
 {
-    [Header("뷰 프리팹")]
-    [Tooltip("DarkOrb 비주얼 프리팹.\nSpriteRenderer + ProjectileVFXChild만 있으면 됨.\n기존 DarkOrb 프리팹 그대로 사용 가능.")]
+    // ── Inspector ──
+    [Header("경량 뷰 프리팹 (SpriteRenderer만 있어야 함)")]
+    [Tooltip("DarkOrbView 프리팹을 드래그하세요.\nSpriteRenderer 외 다른 컴포넌트가 없어야 합니다.")]
     [SerializeField] private GameObject darkOrbViewPrefab;
 
     [Header("풀 설정")]
+    [Tooltip("게임 시작 시 미리 생성할 뷰 개수")]
     [SerializeField] private int darkOrbPrewarmCount = 20;
 
-    // ── 내부 풀 ───────────────────────────────────────────
-
-    private struct ViewEntry
+    // ── 내부 풀 ──
+    private struct ViewSlot
     {
         public GameObject Go;
-        public Transform Tr;
+        public Transform  Tr;
         public SpriteRenderer Sr;
         public bool InUse;
     }
 
-    // ViewId = 배열 인덱스
-    private ViewEntry[] _views;
-    private readonly Stack<int> _free = new Stack<int>(64);
-    private int _capacity;
-    private Transform _poolRoot;
+    private ViewSlot[]       _slots;
+    private readonly Stack<int> _freeStack = new Stack<int>(64);
+    private int              _capacity;
+    private Transform        _poolRoot;
 
     /// <summary>유효하지 않은 ViewId</summary>
     public const int InvalidId = -1;
 
+    // ══════════════════════════════════════════════════════════════
+    // 초기화
+    // ══════════════════════════════════════════════════════════════
+
     private void Awake()
     {
-        var rootGo = new GameObject("[ProjectileViewPool]");
+        // 풀 루트 오브젝트 생성 (정리용)
+        var rootGo = new GameObject("[DarkOrbViewPool]");
+        rootGo.transform.SetParent(transform);
         _poolRoot = rootGo.transform;
 
+        // 배열 초기화
         _capacity = Mathf.Max(32, darkOrbPrewarmCount * 2);
-        _views = new ViewEntry[_capacity];
+        _slots = new ViewSlot[_capacity];
 
-        PrewarmDarkOrb();
+        // Prewarm
+        Prewarm();
+
+        Debug.Log($"<color=green>[ViewPool] Prewarm 완료. count={darkOrbPrewarmCount}, capacity={_capacity}</color>");
     }
 
-    private void PrewarmDarkOrb()
+    private void Prewarm()
     {
-        if (darkOrbViewPrefab == null) return;
+        if (darkOrbViewPrefab == null)
+        {
+            Debug.LogError("[ViewPool] darkOrbViewPrefab이 비어있습니다! Inspector에서 DarkOrbView 프리팹을 연결하세요.");
+            return;
+        }
 
         for (int i = 0; i < darkOrbPrewarmCount; i++)
         {
-            int id = CreateViewSlot(darkOrbViewPrefab);
-            Release(id);
+            int id = CreateSlot();
+            // 비활성 + free 스택에 직접 등록
+            _slots[id].Go.SetActive(false);
+            _slots[id].InUse = false;
+            _freeStack.Push(id);
         }
     }
 
-    // ── Public API ────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════
+    // Public API
+    // ══════════════════════════════════════════════════════════════
 
-    /// <summary>뷰 오브젝트를 풀에서 꺼내 활성화. 반환값은 ViewId.</summary>
-    public int Acquire(GameProjectileKind kind, Vector2 pos, float alpha)
+    /// <summary>
+    /// 풀에서 뷰를 꺼내 활성화하고, 지정 위치에 배치.
+    /// 반환값: ViewId (나중에 Release/SetPosition에 사용)
+    /// </summary>
+    public int Acquire(Vector2 position, float alpha = 1f)
     {
-        // 풀에 여유가 있으면 꺼냄
-        int id = InvalidId;
+        int id;
 
-        if (_free.Count > 0)
+        if (_freeStack.Count > 0)
         {
-            id = _free.Pop();
+            id = _freeStack.Pop();
         }
         else
         {
-            // 풀 고갈 → 새로 생성
-            GameObject prefab = GetPrefab(kind);
-            if (prefab == null) return InvalidId;
-            id = CreateViewSlot(prefab);
+            // 풀 부족 → 동적 확장
+            id = CreateSlot();
         }
 
-        ref var v = ref _views[id];
-        v.InUse = true;
-        v.Tr.position = (Vector3)pos;
-        v.Go.SetActive(true);
+        ref var slot = ref _slots[id];
+        slot.InUse = true;
+        slot.Tr.position = new Vector3(position.x, position.y, 0f);
 
         // 알파 적용
-        if (v.Sr != null)
+        if (slot.Sr != null)
         {
-            var c = v.Sr.color;
+            var c = slot.Sr.color;
             c.a = alpha;
-            v.Sr.color = c;
+            slot.Sr.color = c;
         }
+
+        slot.Go.SetActive(true);
+        return id;
+    }
+
+    /// <summary>
+    /// 뷰를 비활성화하고 풀에 반환.
+    /// </summary>
+    public void Release(int viewId)
+    {
+        if (viewId < 0 || viewId >= _slots.Length) return;
+
+        ref var slot = ref _slots[viewId];
+        if (!slot.InUse) return; // 이미 반환됨
+
+        slot.InUse = false;
+        slot.Go.SetActive(false);
+        _freeStack.Push(viewId);
+    }
+
+    /// <summary>
+    /// 뷰 위치를 갱신 (매 프레임 Manager가 호출).
+    /// </summary>
+    public void SetPosition(int viewId, Vector2 position)
+    {
+        if (viewId < 0 || viewId >= _slots.Length) return;
+        ref var slot = ref _slots[viewId];
+        if (!slot.InUse) return;
+
+        slot.Tr.position = new Vector3(position.x, position.y, 0f);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 내부 메서드
+    // ══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// 새 뷰 슬롯을 생성. 배열이 꽉 차면 자동 확장.
+    /// </summary>
+    private int CreateSlot()
+    {
+        // 배열 확장 필요 여부 확인
+        int id = FindEmptySlotIndex();
+        if (id < 0)
+        {
+            ExpandArray();
+            id = FindEmptySlotIndex();
+        }
+
+        var go = Instantiate(darkOrbViewPrefab, _poolRoot);
+        go.name = $"DarkOrbView_{id}";
+        go.SetActive(false);
+
+        _slots[id] = new ViewSlot
+        {
+            Go = go,
+            Tr = go.transform,
+            Sr = go.GetComponent<SpriteRenderer>(),
+            InUse = false
+        };
 
         return id;
     }
 
-    /// <summary>뷰 오브젝트를 비활성화하고 풀로 반환.</summary>
-    public void Release(int viewId)
-    {
-        if (viewId < 0 || viewId >= _capacity) return;
-        ref var v = ref _views[viewId];
-        if (!v.InUse && v.Go != null && !v.Go.activeSelf)
-        {
-            // 이미 반환됨
-            return;
-        }
-        v.InUse = false;
-        if (v.Go != null)
-        {
-            v.Go.SetActive(false);
-            v.Tr.SetParent(_poolRoot, false);
-        }
-        _free.Push(viewId);
-    }
-
-    /// <summary>뷰 위치 동기화. Manager의 SyncViews에서 호출.</summary>
-    public void SetPosition(int viewId, Vector2 pos)
-    {
-        if (viewId < 0 || viewId >= _capacity) return;
-        ref var v = ref _views[viewId];
-        if (v.Tr != null) v.Tr.position = (Vector3)pos;
-    }
-
-    /// <summary>전체 반환.</summary>
-    public void ReleaseAll()
+    private int FindEmptySlotIndex()
     {
         for (int i = 0; i < _capacity; i++)
         {
-            if (_views[i].InUse)
-                Release(i);
-        }
-    }
-
-    // ── 내부 ──────────────────────────────────────────────
-
-    private int CreateViewSlot(GameObject prefab)
-    {
-        // 용량 초과 시 확장
-        if (_free.Count == 0 && FindEmptySlot() < 0)
-            GrowCapacity();
-
-        int slot = FindEmptySlot();
-        if (slot < 0) slot = _capacity - 1; // 안전장치
-
-        var go = Instantiate(prefab, _poolRoot);
-        go.name = prefab.name;
-        go.SetActive(false);
-
-        // 레거시 투사체 로직 비활성화 (뷰에는 로직 금지)
-        DisableLogicComponents(go);
-
-        ref var v = ref _views[slot];
-        v.Go = go;
-        v.Tr = go.transform;
-        v.Sr = go.GetComponentInChildren<SpriteRenderer>(true);
-        v.InUse = false;
-
-        return slot;
-    }
-
-    private int FindEmptySlot()
-    {
-        for (int i = 0; i < _capacity; i++)
-            if (_views[i].Go == null && !_views[i].InUse)
+            if (_slots[i].Go == null)
                 return i;
+        }
         return -1;
     }
 
-    private void GrowCapacity()
+    private void ExpandArray()
     {
-        int newCap = _capacity * 2;
-        var newArr = new ViewEntry[newCap];
-        System.Array.Copy(_views, newArr, _capacity);
-        _views = newArr;
-        _capacity = newCap;
-    }
+        int newCapacity = _capacity * 2;
+        var newSlots = new ViewSlot[newCapacity];
+        System.Array.Copy(_slots, newSlots, _capacity);
+        _slots = newSlots;
+        _capacity = newCapacity;
 
-    private static void DisableLogicComponents(GameObject go)
-    {
-        // 레거시 컴포넌트 비활성화 (타입 직접 참조 대신 문자열 탐색으로 안전 처리)
-#pragma warning disable CS0618 // Obsolete 경고 억제
-        var legacy = go.GetComponent<DarkOrbProjectile2D>();
-        if (legacy != null) legacy.enabled = false;
-#pragma warning restore CS0618
-
-        var legacySplit = go.GetComponent<DarkOrbSplitProjectile2D>();
-        if (legacySplit != null) legacySplit.enabled = false;
-
-        // MonoBehaviour 전체를 순회하며 불필요한 로직 컴포넌트 비활성화
-        var behaviours = go.GetComponentsInChildren<MonoBehaviour>(true);
-        for (int i = 0; i < behaviours.Length; i++)
-        {
-            var b = behaviours[i];
-            if (b == null) continue;
-            // 뷰에 남겨야 할 것: SpriteRenderer 관련, VFX 관련, Animator
-            // 나머지 로직 컴포넌트는 비활성화
-            string typeName = b.GetType().Name;
-            if (typeName.Contains("Skill") || typeName.Contains("Weapon") || typeName.Contains("Motor"))
-                b.enabled = false;
-        }
-
-        // Collider 비활성화 (뷰는 충돌 금지)
-        var cols = go.GetComponentsInChildren<Collider2D>(true);
-        for (int i = 0; i < cols.Length; i++)
-            if (cols[i] != null) cols[i].enabled = false;
-
-        // Rigidbody 비활성화
-        var rbs = go.GetComponentsInChildren<Rigidbody2D>(true);
-        for (int i = 0; i < rbs.Length; i++)
-            if (rbs[i] != null) rbs[i].simulated = false;
-    }
-
-    private GameObject GetPrefab(GameProjectileKind kind)
-    {
-        switch (kind)
-        {
-            case GameProjectileKind.DarkOrb: return darkOrbViewPrefab;
-            // 향후 확장
-            default: return null;
-        }
+        Debug.LogWarning($"[ViewPool] 풀 확장: {_capacity / 2} → {_capacity}. 너무 자주 발생하면 PrewarmCount를 늘리세요.");
     }
 }
