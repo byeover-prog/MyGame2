@@ -1,0 +1,31 @@
+/* =====================================================
+   LevelUpUI.uss — 조선 다크 아포칼립스 레벨업 UI
+   ===================================================== */
+
+/* 모든 버튼 기본 */
+Button {
+    background-color: rgba(6, 8, 20, 0.9);
+    border-width: 1px;
+    border-color: rgba(200, 160, 80, 0.3);
+    color: rgb(106, 90, 64);
+    transition-duration: 0.12s;
+}
+
+/* 호버 */
+Button:hover {
+    border-color: rgb(200, 160, 80);
+    background-color: rgba(200, 160, 80, 0.12);
+    color: rgb(232, 200, 120);
+}
+
+/* 클릭 */
+Button:active {
+    background-color: rgba(200, 160, 80, 0.22);
+    border-color: rgb(232, 200, 120);
+    transition-duration: 0.05s;
+}
+
+/* 비활성화 */
+Button:disabled {
+    opacity: 0.4;
+}

@@ -34,6 +34,8 @@ public sealed class GameManager2D : MonoBehaviour
 
     [Header("디버그")]
     [SerializeField] private bool log = true;
+    
+    [Header("")]
 
     // ───────── 런타임 상태 ─────────
     private bool _gameStarted;
@@ -81,6 +83,11 @@ public sealed class GameManager2D : MonoBehaviour
     private void OnDisable()
     {
         RunSignals.PlayerDead -= OnPlayerDead;
+    }
+    
+    private void OnClickRetry()
+    {
+        GameManager2D.Instance.RestartGame();
     }
 
     // ───────── 공개 API ─────────
