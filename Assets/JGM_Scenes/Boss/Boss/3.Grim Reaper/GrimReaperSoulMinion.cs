@@ -9,6 +9,7 @@ using UnityEngine;
 /// - 플레이어 추적
 /// - 근접 거리에서 반복 공격
 /// - 일정 시간 후 자동 소멸
+/// - 소환한 저승사자가 죽거나 비활성화되면 즉시 소멸
 /// </summary>
 [DisallowMultipleComponent]
 public class GrimReaperSoulMinion : MonoBehaviour
@@ -52,9 +53,13 @@ public class GrimReaperSoulMinion : MonoBehaviour
     [Tooltip("현재 공격 중인지 표시합니다.")]
     [SerializeField] private bool isAttacking;
 
-    private Transform owner;
+    [Tooltip("소환한 저승사자입니다.")]
+    [SerializeField] private Transform owner;
+
     private float attackTimer;
     private Vector3 spawnBasePosition;
+    private Coroutine attackCoroutine;
+    private bool isDestroying;
 
     public void Setup(
         Transform owner,
@@ -94,6 +99,13 @@ public class GrimReaperSoulMinion : MonoBehaviour
 
     private void Update()
     {
+        // 한글 주석: 소환한 저승사자가 죽었거나 꺼졌으면 망령도 즉시 제거
+        if (IsOwnerGone())
+        {
+            DestroySelf();
+            return;
+        }
+
         if (!isActive)
             return;
 
@@ -110,7 +122,7 @@ public class GrimReaperSoulMinion : MonoBehaviour
         {
             if (attackTimer >= attackInterval)
             {
-                StartCoroutine(CoAttack());
+                attackCoroutine = StartCoroutine(CoAttack());
             }
 
             return;
@@ -132,6 +144,13 @@ public class GrimReaperSoulMinion : MonoBehaviour
 
         while (t < riseTime)
         {
+            // 한글 주석: 등장 연출 중에도 보스가 죽었는지 계속 확인
+            if (IsOwnerGone())
+            {
+                DestroySelf();
+                yield break;
+            }
+
             t += Time.deltaTime;
             float lerp = t / riseTime;
             transform.position = Vector3.Lerp(startPosition, endPosition, lerp);
@@ -141,9 +160,21 @@ public class GrimReaperSoulMinion : MonoBehaviour
         transform.position = endPosition;
         isActive = true;
 
-        yield return new WaitForSeconds(lifeTime);
+        float lifeTimer = 0f;
+        while (lifeTimer < lifeTime)
+        {
+            // 한글 주석: 수명 대기 중에도 보스가 죽었으면 즉시 제거
+            if (IsOwnerGone())
+            {
+                DestroySelf();
+                yield break;
+            }
 
-        Destroy(gameObject);
+            lifeTimer += Time.deltaTime;
+            yield return null;
+        }
+
+        DestroySelf();
     }
 
     private void MoveToPlayer()
@@ -172,8 +203,14 @@ public class GrimReaperSoulMinion : MonoBehaviour
             animator.SetBool("IsMove", false);
         }
 
-        // 애니메이션이 없으므로 간단한 타격 타이밍만 둡니다.
         yield return new WaitForSeconds(0.2f);
+
+        // 한글 주석: 공격 직전 보스가 죽었으면 공격하지 않고 제거
+        if (IsOwnerGone())
+        {
+            DestroySelf();
+            yield break;
+        }
 
         if (playerTarget != null)
         {
@@ -191,6 +228,7 @@ public class GrimReaperSoulMinion : MonoBehaviour
         yield return new WaitForSeconds(0.25f);
 
         isAttacking = false;
+        attackCoroutine = null;
     }
 
     private void FacePlayer()
@@ -202,5 +240,35 @@ public class GrimReaperSoulMinion : MonoBehaviour
             spriteRenderer.flipX = true;
         else
             spriteRenderer.flipX = false;
+    }
+
+    private bool IsOwnerGone()
+    {
+        // 한글 주석: owner가 파괴되었거나 비활성화되었으면 true
+        if (owner == null)
+            return true;
+
+        if (!owner.gameObject.activeInHierarchy)
+            return true;
+
+        return false;
+    }
+
+    private void DestroySelf()
+    {
+        if (isDestroying)
+            return;
+
+        isDestroying = true;
+        isActive = false;
+        isAttacking = false;
+
+        if (attackCoroutine != null)
+        {
+            StopCoroutine(attackCoroutine);
+            attackCoroutine = null;
+        }
+
+        Destroy(gameObject);
     }
 }
