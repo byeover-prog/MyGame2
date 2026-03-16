@@ -38,6 +38,7 @@ public sealed class HUDController : MonoBehaviour
     private int   _prevDashMax = -1;
     private int _prevHp  = -1;
     private int _prevMaxHp = -1;
+    private int _prevXP = -1;
 
     // ─────────────────────────────────────────────
     void OnEnable()
@@ -73,6 +74,7 @@ public sealed class HUDController : MonoBehaviour
 
         // 대쉬는 이벤트 없으므로 폴링 (변화 없으면 DOM 갱신 스킵)
         PollDash();
+        PollXP();
     }
 
     // ── 캐시 ─────────────────────────────────────
@@ -209,6 +211,20 @@ public sealed class HUDController : MonoBehaviour
 
         float pct = playerExp.RequiredExp > 0
             ? (float)playerExp.CurrentExp / playerExp.RequiredExp
+            : 0f;
+
+        xpFill.style.width = Length.Percent(pct * 100f);
+    }
+    private void PollXP()
+    {
+        if (playerExp == null || xpFill == null) return;
+
+        int cur = playerExp.CurrentExp;
+        if (cur == _prevXP) return;
+        _prevXP = cur;
+
+        float pct = playerExp.RequiredExp > 0
+            ? (float)cur / playerExp.RequiredExp
             : 0f;
 
         xpFill.style.width = Length.Percent(pct * 100f);
