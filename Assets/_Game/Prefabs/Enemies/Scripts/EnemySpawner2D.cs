@@ -36,7 +36,9 @@ public sealed class EnemySpawner2D : MonoBehaviour
 #pragma warning restore CS0414
 
     [Header("디버그")]
+#pragma warning disable CS0414
     [SerializeField] private bool verboseLog = false;
+#pragma warning restore CS0414
 
     [Header("타임라인 모드(추천)")]
     [SerializeField] private EnemyRootSO enemyRoot;
