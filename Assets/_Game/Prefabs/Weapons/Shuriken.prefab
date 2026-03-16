@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8302948109149489263}
   - component: {fileID: 7175219620819757290}
   - component: {fileID: -3088633970849079980}
+  - component: {fileID: -1700744385164331911}
   m_Layer: 15
   m_Name: Shuriken
   m_TagString: Untagged
@@ -30,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -128,7 +129,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.06631768, y: 0.036173582}
+  m_Offset: {x: -0.055437207, y: 0.055811226}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -138,7 +139,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 4.714507, y: 4.739117}
+  m_Size: {x: 2.177294, y: 2.3275867}
   m_EdgeRadius: 0
 --- !u!114 &7175219620819757290
 MonoBehaviour:
@@ -180,3 +181,20 @@ MonoBehaviour:
   - UpgradeLevel
   - OnLevelChanged
   log: 1
+--- !u!114 &-1700744385164331911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5000209898010349714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b8bec22950d44e448f899e6a69b1fc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileVFXChild
+  vfxPrefab: {fileID: 2067750624003282856, guid: 86a2e890b9b1e9440a2872b1a3e08463,
+    type: 3}
+  explosionVfxPrefab: {fileID: 0}
+  attachToProjectile: 1
+  vfxLifetime: 3

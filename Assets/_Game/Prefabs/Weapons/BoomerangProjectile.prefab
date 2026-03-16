@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1121678731948288416}
   - component: {fileID: -2779735152273170524}
   - component: {fileID: -8673239630998233534}
+  - component: {fileID: 1946049315299256879}
   m_Layer: 15
   m_Name: BoomerangProjectile
   m_TagString: Untagged
@@ -32,7 +33,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -130,8 +131,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.017254628, y: 0.79659915}
-  m_Radius: 1.7085196
+  m_Offset: {x: -0.017254591, y: 0.016296148}
+  m_Radius: 0.6691437
 --- !u!50 &735654324422084155
 Rigidbody2D:
   serializedVersion: 5
@@ -207,3 +208,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoomerangSpin2D
   degreesPerSecond: 720
+--- !u!114 &1946049315299256879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6195577076014076753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b8bec22950d44e448f899e6a69b1fc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileVFXChild
+  vfxPrefab: {fileID: 1300897186957970515, guid: 06771b9b2e5af9c47a8716e83b9cd6ff,
+    type: 3}
+  explosionVfxPrefab: {fileID: 0}
+  attachToProjectile: 1
+  vfxLifetime: 5

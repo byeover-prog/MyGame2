@@ -59,16 +59,21 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
     private CommonSkillLevelParams _runtimeP;
     private SkillBalanceDB2D.SkillRow2D _lastBalanceRow;
 
-    // ★ 패시브/기본 능력치 배율 적용을 위한 캐시
+    // ★ 패시브 배율 적용을 위한 캐시
     private PlayerCombatStats2D _ownerStats;
 
     public CommonSkillKind Kind => config != null ? config.kind : 0;
     public int Level => level;
 
-    // ★ 변경: P가 이제 DamageMul/CooldownMul/AreaMul을 실시간 반영
+    // ★ P가 이제 DamageMul/CooldownMul/AreaMul을 실시간 반영
     protected CommonSkillLevelParams P => BuildFinalParams();
 
+    // --------------------------------------------------------------------
+    // [핵심] 무기들이 앞으로 공통으로 쓰는 “스탯 Getter(폴백 포함)”
+    // - 주의: 폴백은 config/JSON 둘 다 못 구했을 때만 쓴다.
+    // --------------------------------------------------------------------
     private bool HasAnySourceStats => config != null || _lastBalanceRow != null;
+
     protected int StatLevel => Mathf.Max(1, level);
 
     protected float StatCooldownSeconds
@@ -161,7 +166,7 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
         }
     }
 
-    // ★ 추가: 런타임 파라미터에 플레이어 배율을 적용한 최종 값 반환
+    // ★ 런타임 파라미터에 플레이어 패시브 배율을 적용한 최종 값 반환
     private CommonSkillLevelParams BuildFinalParams()
     {
         CommonSkillLevelParams finalParams = _runtimeP;
@@ -178,13 +183,13 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
 
         // 범위 배율 적용
         finalParams.explosionRadius = ScalePositive(finalParams.explosionRadius, _ownerStats.AreaMul, 0.01f);
-        finalParams.orbitRadius = Mathf.Max(0f, finalParams.orbitRadius * _ownerStats.AreaMul);
-        finalParams.maxDistance = Mathf.Max(0f, finalParams.maxDistance * _ownerStats.AreaMul);
+        finalParams.orbitRadius = ScalePositive(finalParams.orbitRadius, _ownerStats.AreaMul, 0f);
+        finalParams.maxDistance = ScalePositive(finalParams.maxDistance, _ownerStats.AreaMul, 0f);
 
         return finalParams;
     }
 
-    // ★ 추가: owner의 PlayerCombatStats2D 캐시
+    // ★ owner의 PlayerCombatStats2D 캐시
     private void CacheOwnerStats()
     {
         if (owner == null)
@@ -203,9 +208,7 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
 
     private static float ScalePositive(float value, float multiplier, float minimum)
     {
-        if (value <= 0f)
-            return 0f;
-
+        if (value <= 0f) return 0f;
         return Mathf.Max(minimum, value * Mathf.Max(0.01f, multiplier));
     }
 
@@ -360,9 +363,11 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
 
     private void ConsumeCooldown()
     {
+        // P.cooldown이 0이거나 config가 비어도, 폴백으로 안전하게 쿨다운이 돈다.
         cooldownTimer = StatCooldownSeconds;
     }
 
+    // ILevelableSkill이 요구하는 오타 메서드 호환용(인터페이스가 OnAttaced를 요구하면 이걸로 통과)
     public void OnAttaced(Transform newOwner) => OnAttached(newOwner);
 
     public void OnAttached(Transform newOwner)
