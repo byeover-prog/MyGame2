@@ -39,7 +39,11 @@ public sealed class PlayerDashController : MonoBehaviour
     /// 실제 적용 쿨타임
     /// </summary>
     public float Dash_Cooldown => dashCooldown;
-
+    private void Awake()
+    {
+        // Initialize가 외부에서 안 불릴 경우 기본값으로 초기화
+        Initialize(false);
+    }
     private void Update()
     {
         RechargeDash();
