@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -641310885405526830}
   - component: {fileID: 352200905192923142}
   - component: {fileID: -6726285706623136437}
+  - component: {fileID: 6105931534457952948}
   m_Layer: 15
   m_Name: HomingOrb
   m_TagString: Untagged
@@ -198,3 +199,20 @@ MonoBehaviour:
   - UpgradeLevel
   - OnLevelChanged
   log: 1
+--- !u!114 &6105931534457952948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8561632100752635023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b8bec22950d44e448f899e6a69b1fc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileVFXChild
+  vfxPrefab: {fileID: 2405880121242604530, guid: da892620055a54c4089f2b973f986d36,
+    type: 3}
+  explosionVfxPrefab: {fileID: 0}
+  attachToProjectile: 1
+  vfxLifetime: 3
