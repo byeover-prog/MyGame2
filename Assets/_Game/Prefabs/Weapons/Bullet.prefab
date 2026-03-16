@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4210520205365246454}
   - component: {fileID: 7607180598719141599}
   - component: {fileID: 5075641016109977471}
+  - component: {fileID: 3154551597044550430}
   m_Layer: 15
   m_Name: Bullet
   m_TagString: Untagged
@@ -90,7 +91,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 7.43, y: 10.24}
+  m_Size: {x: 2.56, y: 2.56}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -193,3 +194,20 @@ MonoBehaviour:
   - UpgradeLevel
   - OnLevelChanged
   log: 1
+--- !u!114 &3154551597044550430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5761721769350010560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b8bec22950d44e448f899e6a69b1fc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileVFXChild
+  vfxPrefab: {fileID: 8737393470502718526, guid: 87e536da4c4e2634bae9c75d5bf44418,
+    type: 3}
+  explosionVfxPrefab: {fileID: 0}
+  attachToProjectile: 1
+  vfxLifetime: 3

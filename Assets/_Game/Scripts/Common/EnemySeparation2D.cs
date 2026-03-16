@@ -1,32 +1,60 @@
+// UTF-8
 using UnityEngine;
 
-// [구현 원리 요약]
-// - "적끼리 물리 충돌" 대신, 겹치는 만큼만 살짝 밀어내서 한 점 뭉침을 완화한다.
-// - 동적 Rigidbody 난리/지터 없이도 시각적으로 분산이 된다.
-// - 적 이동 스크립트를 바꾸기 싫을 때 LateUpdate에서 보정하는 방식.
+/// <summary>
+/// 적끼리 겹침 방지(밀어내기).
+/// [최적화] 매 프레임 전체가 아니라 K프레임에 1번만 업데이트.
+///   40마리 × 매 프레임 OverlapCircle = 2000회/초
+///   → 5프레임에 1번 = 400회/초 (80% 감소)
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class EnemySeparation2D : MonoBehaviour
 {
     [Header("Separation")]
-    [Tooltip("겹침 판정 반경(적 콜라이더 반경과 비슷하게)")]
     [SerializeField] private float separationRadius = 0.35f;
-
-    [Tooltip("밀어내는 힘(너무 크면 떨림)")]
     [SerializeField] private float pushStrength = 1.8f;
-
-    [Tooltip("초당 최대 보정 이동량(난리 방지용 상한)")]
     [SerializeField] private float maxPushPerSecond = 2.5f;
-
-    [Tooltip("적 레이어 마스크(Enemy 레이어를 넣어주세요)")]
     [SerializeField] private LayerMask enemyMask;
+
+    [Header("성능")]
+    [Tooltip("이 값 프레임에 1번만 물리 탐색.\n5면 5프레임에 1번 업데이트.")]
+    [Min(1)]
+    [SerializeField] private int updateInterval = 3;
 
     private static readonly Collider2D[] _buffer = new Collider2D[64];
 
+    // ★ 인스턴스마다 다른 오프셋으로 분산
+    private int _frameOffset;
+    private static int _globalCounter;
+
+    private ContactFilter2D _filter;
+    private bool _filterReady;
+
+    private void OnEnable()
+    {
+        // 각 적이 서로 다른 프레임에 업데이트되도록 오프셋 분산
+        _frameOffset = _globalCounter++;
+    }
+
+    private void EnsureFilter()
+    {
+        if (_filterReady) return;
+        _filter = new ContactFilter2D();
+        _filter.SetLayerMask(enemyMask);
+        _filter.useTriggers = true;
+        _filterReady = true;
+    }
+
     private void LateUpdate()
     {
+        // ★ K프레임에 1번만 실행
+        if ((Time.frameCount + _frameOffset) % updateInterval != 0) return;
+
+        EnsureFilter();
+
         Vector2 pos = transform.position;
 
-        int count = Physics2DCompat.OverlapCircleNonAlloc(pos, separationRadius, _buffer, enemyMask);
+        int count = Physics2D.OverlapCircle(pos, separationRadius, _filter, _buffer);
         if (count <= 1) return;
 
         Vector2 sum = Vector2.zero;
@@ -35,18 +63,13 @@ public sealed class EnemySeparation2D : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             var col = _buffer[i];
-            if (col == null) continue;
+            if (col == null || col.transform == transform) continue;
 
-            // 자기 자신 제외
-            if (col.transform == transform) continue;
-
-            // 중심점 기준으로 밀어내기(간단/안정)
             Vector2 other = col.bounds.center;
             Vector2 diff = pos - other;
             float dist = diff.magnitude;
 
-            if (dist < 0.0001f)
-                continue;
+            if (dist < 0.0001f) continue;
 
             float t = 1f - Mathf.Clamp01(dist / separationRadius);
             if (t <= 0f) continue;
@@ -58,8 +81,9 @@ public sealed class EnemySeparation2D : MonoBehaviour
         if (contributors <= 0) return;
 
         Vector2 dir = (sum / contributors).normalized;
-        float step = Mathf.Min(maxPushPerSecond * Time.deltaTime, maxPushPerSecond);
 
+        // ★ updateInterval 보정: 실행 빈도가 낮으니 그만큼 더 밀어줌
+        float step = Mathf.Min(maxPushPerSecond * Time.deltaTime * updateInterval, maxPushPerSecond);
         transform.position += (Vector3)(dir * pushStrength * step);
     }
 
