@@ -10,6 +10,7 @@ using UnityEngine;
 /// - 저승사자 앞쪽에서 망령들을 소환합니다.
 /// - 소환된 망령은 잠깐 등장 연출 후 플레이어를 추적하고 공격합니다.
 /// - 일정 시간이 지나면 자동으로 사라집니다.
+/// - 보스가 죽거나 비활성화되면 소환된 망령도 함께 제거합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public class GrimReaperSoulSummon : MonoBehaviour
@@ -83,6 +84,7 @@ public class GrimReaperSoulSummon : MonoBehaviour
     [SerializeField] private List<GrimReaperSoulMinion> activeMinions = new List<GrimReaperSoulMinion>();
 
     private float cooldownTimer;
+    private Coroutine castCoroutine;
 
     private void Start()
     {
@@ -92,6 +94,7 @@ public class GrimReaperSoulSummon : MonoBehaviour
     private void Update()
     {
         FindPlayerIfNeeded();
+        CleanupMinionList();
 
         if (playerTarget == null)
             return;
@@ -110,7 +113,7 @@ public class GrimReaperSoulSummon : MonoBehaviour
         if (cooldownTimer < skillCooldown)
             return;
 
-        StartCoroutine(CoCastSoulSummon());
+        castCoroutine = StartCoroutine(CoCastSoulSummon());
     }
 
     private void FindPlayerIfNeeded()
@@ -139,7 +142,6 @@ public class GrimReaperSoulSummon : MonoBehaviour
         isCasting = true;
         cooldownTimer = 0f;
 
-        // 애니메이션 파라미터는 추후 연결용
         if (animator != null)
         {
             animator.SetTrigger("SoulSummon");
@@ -155,6 +157,7 @@ public class GrimReaperSoulSummon : MonoBehaviour
         SummonSouls();
 
         isCasting = false;
+        castCoroutine = null;
     }
 
     private void SummonSouls()
@@ -241,8 +244,40 @@ public class GrimReaperSoulSummon : MonoBehaviour
         }
     }
 
+    private void DestroyAllMinions()
+    {
+        CleanupMinionList();
+
+        for (int i = activeMinions.Count - 1; i >= 0; i--)
+        {
+            if (activeMinions[i] != null)
+            {
+                Destroy(activeMinions[i].gameObject);
+            }
+        }
+
+        activeMinions.Clear();
+    }
+
     public bool IsCasting()
     {
         return isCasting;
+    }
+
+    private void OnDisable()
+    {
+        if (castCoroutine != null)
+        {
+            StopCoroutine(castCoroutine);
+            castCoroutine = null;
+        }
+
+        isCasting = false;
+        DestroyAllMinions();
+    }
+
+    private void OnDestroy()
+    {
+        DestroyAllMinions();
     }
 }
