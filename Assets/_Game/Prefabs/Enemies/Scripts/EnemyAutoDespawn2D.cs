@@ -1,12 +1,10 @@
-﻿// ============================================================
-// 파일: Assets/Scripts/Enemy_Scripts/EnemyAutoDespawn2D.cs
-// 역할: 적 자동 정리(폭주 방지 안전장치)
-// - 플레이어에서 일정 거리 이상 멀어지면 제거
-// - 스폰 폭주/길막/추적 실패로 쌓이는 경우를 강제로 정리
-// ============================================================
-
+﻿// UTF-8
 using UnityEngine;
 
+/// <summary>
+/// 플레이어에서 일정 거리 이상 멀어진 적을 자동 정리.
+/// [최적화] Destroy → EnemyPoolTag.ReturnToPool
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class EnemyAutoDespawn2D : MonoBehaviour
 {
@@ -14,7 +12,6 @@ public sealed class EnemyAutoDespawn2D : MonoBehaviour
     [SerializeField] private Transform player;
 
     [Header("정리 거리")]
-    [Tooltip("플레이어에서 이 거리 이상 멀어지면 적 제거")]
     [SerializeField] private float despawn_distance = 25f;
 
     private float despawn_distance_sqr;
@@ -30,6 +27,16 @@ public sealed class EnemyAutoDespawn2D : MonoBehaviour
         }
     }
 
+    // ★ OnEnable에서 플레이어 재탐색 (풀에서 재활성화될 때 대비)
+    private void OnEnable()
+    {
+        if (player == null)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) player = p.transform;
+        }
+    }
+
     private void Update()
     {
         if (player == null) return;
@@ -37,7 +44,8 @@ public sealed class EnemyAutoDespawn2D : MonoBehaviour
         float d = (player.position - transform.position).sqrMagnitude;
         if (d >= despawn_distance_sqr)
         {
-            Destroy(gameObject);
+            // ★ Destroy → 풀 반환
+            EnemyPoolTag.ReturnToPool(gameObject);
         }
     }
 }
