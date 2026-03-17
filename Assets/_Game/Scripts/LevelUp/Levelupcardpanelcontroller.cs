@@ -2,13 +2,9 @@
 // LevelUpCardPanelController.cs
 // 새 4장용 레벨업 패널 컨트롤러
 //
-// 시간 정지/복구는 이 클래스가 하지 않는다.
-// LevelUpFlowCoordinator가 큐 단위로 관리한다.
-// 보상 적용이 실패하면 패널을 닫지 않고 다시 선택 가능 상태로 되돌린다.
-//
-// ★ 리롤: 패널이 열린 상태에서 카드를 재생성한다.
-//   - cardGenerator + loadout 참조 필요
-//   - 리롤 횟수는 패널이 열릴 때마다 초기화
+// ★ 수정: HandleCardSelected에서 보상 적용 실패 시
+//   자동으로 카드를 재생성(재뽑기)하여 유저가 막히지 않도록 방어.
+//   (타이밍 문제: 카드 생성 시점에는 후보였으나, 선택 시점에 이미 최대레벨)
 // ──────────────────────────────────────────────
 
 using System.Collections.Generic;
@@ -138,14 +134,27 @@ namespace _Game.LevelUp.UI
 
             rerollsLeft--;
 
-            // 카드 재생성
+            RegenerateCards();
+
+            Debug.Log($"[CardPanel] 리롤 완료 | 카드 {currentCards.Count}장 | 남은 리롤 {rerollsLeft}", this);
+        }
+
+        /// <summary>
+        /// 카드를 새로 뽑아서 패널에 바인딩한다.
+        /// 리롤 및 보상 실패 시 카드 재생성에 공통으로 사용.
+        /// </summary>
+        private bool RegenerateCards()
+        {
+            if (cardGenerator == null || loadout == null)
+                return false;
+
             List<LevelUpCardData> newCards = cardGenerator.Generate(loadout);
 
             if (newCards == null || newCards.Count == 0)
             {
-                Debug.LogWarning("[CardPanel] 리롤 실패 — 생성된 카드 없음.", this);
+                Debug.LogWarning("[CardPanel] 카드 재생성 실패 — 생성된 카드 없음.", this);
                 UpdateRerollUI();
-                return;
+                return false;
             }
 
             currentCards.Clear();
@@ -154,8 +163,7 @@ namespace _Game.LevelUp.UI
             BindCards();
             SetCardInteractable(true);
             UpdateRerollUI();
-
-            Debug.Log($"[CardPanel] 리롤 완료 | 카드 {newCards.Count}장 | 남은 리롤 {rerollsLeft}", this);
+            return true;
         }
 
         private void UpdateRerollUI()
@@ -215,8 +223,16 @@ namespace _Game.LevelUp.UI
 
             if (!applied)
             {
-                Debug.LogWarning($"[CardPanel] 보상 적용 실패 → 패널 유지: {selectedCard.Title}", this);
-                SetCardInteractable(true);
+                // ★ 수정: 보상 적용 실패 시 카드를 새로 뽑아서 패널 갱신
+                // (타이밍 문제: 카드 생성 시점에는 후보였으나, 선택 시점에 이미 최대레벨)
+                Debug.LogWarning($"[CardPanel] 보상 적용 실패 → 카드 재생성: {selectedCard.Title}", this);
+
+                if (!RegenerateCards())
+                {
+                    // 카드 재생성도 실패하면 (모든 스킬 만렙 등) 패널 닫기
+                    Debug.Log("[CardPanel] 카드 재생성 실패 → 패널 닫기", this);
+                    Close();
+                }
                 return;
             }
 

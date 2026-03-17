@@ -1,28 +1,11 @@
-// UTF-8
 // ============================================================================
 // RicochetShurikenWeapon2D.cs
 //
-// [수정 사항]
-// 1. _runtimeLevel이 갱신 안 되는 버그 수정
-//    → explicit interface ApplyLevel은 리플렉션에서 안 잡힘
-//    → OnLevelChanged()에서 base.level과 동기화
-// 2. 순차 발사 0.2초 간격 (기획서: 겐지처럼 직선으로 슈슈슉, 부채꼴X)
-// 3. JSON burstInterval 필드 지원
-//
-// [기획서 규칙]
-// Lv1: 투사체 1, 튕김 2, 데미지 15, 쿨다운 2초
-// Lv2: 투사체 2, 튕김 2, 발사간격 0.2초
-// Lv3: 투사체 3, 튕김 2, 발사간격 0.2초
-// Lv4~8: 투사체 3, 튕김 = Lv3 이후 레벨당 +1, 데미지 +2/레벨
-//
-// [Inspector 설정 — Weapon_Shuriken]
-// config              → CS_Shuriken
-// Enemy Mask          → Enemy
-// Shuriken Projectile Prefab → Shuriken 프리팹
-// Detect Range        → 10
-// Fire Pivot          → SpawnPoint (자식)
-// Fan Angle Deg       → 0 (부채꼴X, 직선 발사)
-// Spawn Separation    → 0 (같은 위치에서 발사)
+// [수정 v3]
+// 1. _burstFiring 잠김 방지: OnDisable에서 강제 리셋 + 안전 타임아웃
+// 2. 순차 발사 중 타겟 사망 → 매 발사마다 타겟 재탐색
+// 3. _runtimeLevel 동기화 (OnLevelChanged)
+// 4. JSON burstInterval 지원
 // ============================================================================
 using System.Collections;
 using UnityEngine;
@@ -31,7 +14,6 @@ using UnityEngine;
 public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
 {
     [Header("프리팹")]
-    [Tooltip("수리검 투사체 프리팹 (RicochetShurikenProjectile2D 필요)")]
     [SerializeField] private GameObject shurikenProjectilePrefab;
 
     [Header("탐지")]
@@ -42,7 +24,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
     [SerializeField] private Transform firePivot;
 
     [Header("순차 발사")]
-    [Tooltip("투사체 간 발사 간격(초). JSON burstInterval이 있으면 그걸 우선 사용.")]
+    [Tooltip("투사체 간 발사 간격(초). JSON burstInterval 우선.")]
     [Min(0.01f)]
     [SerializeField] private float fireInterval = 0.2f;
 
@@ -64,6 +46,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
     private float _timer;
     private int _runtimeLevel = 1;
     private bool _burstFiring;
+    private float _burstSafetyTimer; // 안전 타임아웃
     private float _burstInterval = 0.2f;
 
     private void Awake()
@@ -76,43 +59,37 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
         _pool = GetComponent<ProjectilePool2D>();
     }
 
+    // 핵심 수정 1: OnDisable에서 _burstFiring 강제 리셋
+    // 레벨업 시간정지 → 코루틴 중단 → _burstFiring=true 영구 잠김 방지
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        _burstFiring = false;
+    }
+
     public override void Initialize(CommonSkillConfigSO cfg, Transform ownerTr, int startLevel)
     {
         base.Initialize(cfg, ownerTr, startLevel);
         _timer = 0f;
+        _burstFiring = false;
         _runtimeLevel = Mathf.Clamp(startLevel, 1, 8);
         if (_pool == null) _pool = GetComponent<ProjectilePool2D>();
         CacheBurstInterval();
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // ★ 핵심 수정: OnLevelChanged에서 _runtimeLevel 동기화
-    //
-    // [왜 이게 필요한가]
-    // LevelableSkillMarker2D가 리플렉션으로 ApplyLevel(int) 호출
-    //   → base.ApplyLevel → SetLevel → level 갱신 → OnLevelChanged
-    // 이전: explicit interface의 ApplyLevel에서만 _runtimeLevel 갱신
-    //   → 리플렉션이 explicit method를 못 찾아서 영원히 호출 안 됨
-    //   → _runtimeLevel=1 고정 → 투사체 항상 1개 → 순차 발사 불가
-    // ══════════════════════════════════════════════════════════════
-
     protected override void OnLevelChanged()
     {
         _runtimeLevel = Mathf.Clamp(level, 1, 8);
         CacheBurstInterval();
-
-        Debug.Log($"[Shuriken] Lv{_runtimeLevel} proj={GetProjectileCount()} ric={GetRicochetCount()} burst={_burstInterval:F2}s", this);
     }
 
     private void CacheBurstInterval()
     {
         _burstInterval = fireInterval;
-
         if (TryGetBalanceRow(out var row))
         {
             float bi = GetBurstIntervalFromRow(row);
-            if (bi > 0.01f)
-                _burstInterval = bi;
+            if (bi > 0.01f) _burstInterval = bi;
         }
     }
 
@@ -134,65 +111,71 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
         if (owner == null || config == null) return;
         transform.position = owner.position;
 
+        // 안전 타임아웃: _burstFiring이 2초 이상 풀리지 않으면 강제 리셋
+        if (_burstFiring)
+        {
+            _burstSafetyTimer += Time.deltaTime;
+            if (_burstSafetyTimer > 2f)
+            {
+                _burstFiring = false;
+                _burstSafetyTimer = 0f;
+            }
+            return;
+        }
+
         _timer += Time.deltaTime;
         float cd = Mathf.Max(0.05f, P.cooldown);
         if (_timer < cd) return;
-        if (_burstFiring) return;
 
         _timer = 0f;
+        _burstSafetyTimer = 0f;
         StartCoroutine(FireBurst());
     }
 
     // ══════════════════════════════════════════════════════════════
-    // 순차 발사 코루틴 (겐지처럼 슈슈슉)
+    // 순차 발사 코루틴
     // ══════════════════════════════════════════════════════════════
 
     private IEnumerator FireBurst()
     {
         _burstFiring = true;
 
-        Vector2 origin = GetSpawnOrigin(firePivot);
-
-        int hitCount = Physics2DCompat.OverlapCircleNonAlloc(origin, detectRange, _hits, enemyMask);
-        int candidateCount = BuildCandidates(origin, hitCount);
-
-        if (requireTargetToFire && candidateCount <= 0)
-        {
-            _burstFiring = false;
-            yield break;
-        }
-
         int projCount = GetProjectileCount();
         int ricochetCount = GetRicochetCount();
 
-        Vector2 baseDir = Vector2.right;
-        if (candidateCount > 0)
-        {
-            baseDir = (_candidates[0].Position - origin).normalized;
-            if (baseDir.sqrMagnitude < 0.0001f) baseDir = Vector2.right;
-        }
-
-        Vector2 perp = new Vector2(-baseDir.y, baseDir.x);
-        float mid = (projCount - 1) * 0.5f;
-
         for (int i = 0; i < projCount; i++)
         {
-            if (owner != null)
-                origin = firePivot != null ? (Vector2)firePivot.position : (Vector2)owner.position;
+            // 핵심 수정 2: 매 발사마다 타겟 재탐색
+            // 첫 수리검이 적을 죽이면, 다음 수리검은 새로운 가장 가까운 적을 찾음
+            Vector2 origin = (owner != null)
+                ? (firePivot != null ? (Vector2)firePivot.position : (Vector2)owner.position)
+                : (Vector2)transform.position;
 
-            // ★ 겐지처럼: 전부 같은 적을 노림 (직선)
-            EnemyRegistryMember2D target = null;
-            if (candidateCount > 0)
-                target = _candidates[0];
+            int hitCount = Physics2DCompat.OverlapCircleNonAlloc(origin, detectRange, _hits, enemyMask);
+            int candidateCount = BuildCandidates(origin, hitCount);
 
-            if (requireTargetToFire && target == null) continue;
+            if (requireTargetToFire && candidateCount <= 0)
+            {
+                // 적이 없으면 이 발은 건너뜀 (다음 발에서 다시 탐색)
+                if (i < projCount - 1)
+                    yield return new WaitForSeconds(_burstInterval);
+                continue;
+            }
 
+            // 가장 가까운 적 (직선 발사)
+            EnemyRegistryMember2D target = _candidates[0];
+            Vector2 baseDir = (target.Position - origin).normalized;
+            if (baseDir.sqrMagnitude < 0.0001f) baseDir = Vector2.right;
+
+            Vector2 perp = new Vector2(-baseDir.y, baseDir.x);
+            float mid = (projCount - 1) * 0.5f;
             float side = (i - mid) * spawnSeparation;
             Vector2 spawnPos = origin + perp * side;
             float ang = projCount > 1 ? (i - mid) * fanAngleDeg : 0f;
 
             FireOneShuriken(spawnPos, baseDir, ang, ricochetCount, target);
 
+            // 다음 발까지 대기 (마지막 발은 대기 안 함)
             if (i < projCount - 1)
                 yield return new WaitForSeconds(_burstInterval);
         }
@@ -256,10 +239,6 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
         }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // 레벨 규칙 (기획서 하드코딩)
-    // ══════════════════════════════════════════════════════════════
-
     private int GetProjectileCount()
     {
         int lv = _runtimeLevel;
@@ -274,10 +253,6 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
         if (lv <= 3) return 2;
         return Mathf.Min(6, 2 + (lv - 3));
     }
-
-    // ══════════════════════════════════════════════════════════════
-    // 타겟 수집
-    // ══════════════════════════════════════════════════════════════
 
     private int BuildCandidates(Vector2 origin, int hitCount)
     {
