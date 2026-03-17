@@ -192,10 +192,10 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &3367269763867002257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -210,8 +210,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth2D
   maxHp: 30
   currentHp: 30
-  destroyOnDeath: 1
-  destroyDelay: 0
   expOrbPool: {fileID: 0}
   expOrbPrefab: {fileID: 8136490244520117647, guid: 1862153c6c96eae40be029799fe818ef,
     type: 3}

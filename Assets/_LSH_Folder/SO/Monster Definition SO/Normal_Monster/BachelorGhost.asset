@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a89256b767c32048b29c88f24f0084e, type: 3}
+  m_Name: BachelorGhost
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterDefinitionSO
+  monsterId: normal_bachelorghost
+  displayName: "\uCD1D\uAC01\uADC0\uC2E0[\uC77C\uBC18]"
+  monsterType: 0
+  monsterPrefab: {fileID: 3554867551860134087, guid: 09c460d7e9e657548852ca28a4c835ab,
+    type: 3}
+  portrait: {fileID: 0}
+  maxHp: 1000
+  moveSpeed: 2
+  attackDamage: 10
+  detectRange: 5
+  attackRange: 1.5
+  attackCooldown: 1.5
+  goldReward: 5
