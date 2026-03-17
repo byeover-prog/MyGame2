@@ -1,4 +1,3 @@
-// UTF-8
 using System.Collections.Generic;
 using UnityEngine;
 

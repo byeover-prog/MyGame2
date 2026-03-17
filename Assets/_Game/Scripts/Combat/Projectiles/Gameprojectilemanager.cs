@@ -67,6 +67,10 @@ public sealed class GameProjectileManager : MonoBehaviour
     // OverlapCircle 결과 버퍼 (GC 0)
     private readonly Collider2D[] _hitBuffer = new Collider2D[32];
 
+    // 본체 VFX 동시 활성 상한 (렉 방지)
+    private const int MaxActiveBodyVfx = 8;
+    private int _activeBodyVfxCount;
+
     // ══════════════════════════════════════════════════════════════
     // 생명주기
     // ══════════════════════════════════════════════════════════════
@@ -142,6 +146,9 @@ public sealed class GameProjectileManager : MonoBehaviour
         if (viewPool != null)
             viewId = viewPool.Acquire(spec.SpawnPosition, spec.OrbAlpha);
 
+        // 본체 VFX 생성
+        GameObject bodyVfx = SpawnBodyVfx(spec.SpawnPosition);
+
         // 상태 초기화
         _darkOrbs[slot] = new DarkOrbState
         {
@@ -158,6 +165,7 @@ public sealed class GameProjectileManager : MonoBehaviour
             SplitSpeed      = spec.SplitSpeed,
             SplitLifetime   = spec.SplitLifetime,
             ViewId          = viewId,
+            BodyVfxGo       = bodyVfx,
             Active          = true
         };
 
@@ -203,28 +211,44 @@ public sealed class GameProjectileManager : MonoBehaviour
     private void ExplodeDarkOrb(ref DarkOrbState s, int slotIndex)
     {
         // ── 1. 범위 데미지 ──
-        // Unity 2023+ 에서 NonAlloc이 deprecated → OverlapCircle(버퍼 오버로드) 사용
+        // EnemyMask가 0이면 자동 보정
+        LayerMask mask = s.EnemyMask;
+        if (mask.value == 0)
+        {
+            int layer = LayerMask.NameToLayer("Enemy");
+            if (layer >= 0) mask = LayerMask.GetMask("Enemy");
+        }
+
+        var filter = new ContactFilter2D();
+        filter.SetLayerMask(mask);
+        filter.useTriggers = true;
+
         int hitCount = Physics2D.OverlapCircle(
-            s.Position, s.ExplosionRadius, new ContactFilter2D
-            {
-                useLayerMask = true,
-                layerMask    = s.EnemyMask,
-                useTriggers  = true
-            }, _hitBuffer);
+            s.Position, s.ExplosionRadius, filter, _hitBuffer);
+
+        int damaged = 0;
+        int dmg = Mathf.Max(1, Mathf.RoundToInt(s.ExplosionDamage));
 
         for (int i = 0; i < hitCount; i++)
         {
             var col = _hitBuffer[i];
             if (col == null) continue;
 
-            // IDamageable 인터페이스 또는 Health 컴포넌트로 데미지 적용
-            // ★ 프로젝트의 데미지 시스템에 맞춰 수정 필요 ★
-            var health = col.GetComponent<IHealth>();
-            if (health != null)
+            var health = col.GetComponentInParent<EnemyHealth2D>();
+            if (health != null && !health.IsDead)
             {
-                health.TakeDamage(s.ExplosionDamage);
+                health.TakeDamage(dmg);
+                damaged++;
+
+                // ★ 데미지 팝업
+                DamageEvents2D.RaiseDamagePopup(col.transform.position, dmg, DamageElement2D.Dark);
             }
         }
+
+        #if UNITY_EDITOR
+        if (hitCount > 0 || damaged > 0)
+            Debug.Log($"[DarkOrb] 폭발 pos={s.Position:F1} radius={s.ExplosionRadius} hits={hitCount} damaged={damaged} dmg={dmg} mask={mask.value}");
+        #endif
 
         // ── 2. 분열 (자식 2개 큐잉) ──
         if (s.Generation < s.MaxGeneration)
@@ -250,7 +274,10 @@ public sealed class GameProjectileManager : MonoBehaviour
         // ── 3. 폭발 VFX (직접 호출) ──
         SpawnExplosionVfx(s.Position);
 
-        // ── 4. 뷰 반환 + 슬롯 비활성화 ──
+        // ── 4. 본체 VFX 반환 ──
+        ReturnBodyVfx(ref s);
+
+        // ── 5. 뷰 반환 + 슬롯 비활성화 ──
         if (viewPool != null && s.ViewId != GameProjectileViewPool.InvalidId)
         {
             viewPool.Release(s.ViewId);
@@ -258,6 +285,7 @@ public sealed class GameProjectileManager : MonoBehaviour
 
         s.Active = false;
         s.ViewId = GameProjectileViewPool.InvalidId;
+        s.BodyVfxGo = null;
         _activeCount = Mathf.Max(0, _activeCount - 1);
     }
 
@@ -300,6 +328,9 @@ public sealed class GameProjectileManager : MonoBehaviour
         if (viewPool != null)
             viewId = viewPool.Acquire(spawnPos, 0.55f);
 
+        // 분열체에도 본체 VFX 적용 (상한 이내에서)
+        GameObject bodyVfx = SpawnBodyVfx(spawnPos);
+
         _darkOrbs[slot] = new DarkOrbState
         {
             Position        = spawnPos,
@@ -315,6 +346,7 @@ public sealed class GameProjectileManager : MonoBehaviour
             SplitSpeed      = req.ChildSplitSpeed,
             SplitLifetime   = req.ChildSplitLifetime,
             ViewId          = viewId,
+            BodyVfxGo       = bodyVfx,
             Active          = true
         };
 
@@ -333,9 +365,16 @@ public sealed class GameProjectileManager : MonoBehaviour
         {
             ref var s = ref _darkOrbs[i];
             if (!s.Active) continue;
-            if (s.ViewId == GameProjectileViewPool.InvalidId) continue;
 
-            viewPool.SetPosition(s.ViewId, s.Position);
+            Vector3 pos3 = new Vector3(s.Position.x, s.Position.y, 0f);
+
+            // 스프라이트 뷰 동기화
+            if (s.ViewId != GameProjectileViewPool.InvalidId)
+                viewPool.SetPosition(s.ViewId, s.Position);
+
+            // 본체 VFX 위치 동기화
+            if (s.BodyVfxGo != null)
+                s.BodyVfxGo.transform.position = pos3;
         }
     }
 
@@ -345,33 +384,96 @@ public sealed class GameProjectileManager : MonoBehaviour
 
     /// <summary>
     /// 폭발 VFX를 생성합니다.
-    /// VFXSpawner가 있으면 풀링 사용, 없으면 직접 Instantiate (폴백).
-    /// ★ 프로젝트에 VFXSpawner/VFXPool이 있으면 이 메서드만 수정하세요. ★
+    /// VFXPool → 실패 시 Instantiate 폴백.
     /// </summary>
     private void SpawnExplosionVfx(Vector2 position)
     {
         if (darkOrbExplosionVfxPrefab == null) return;
 
-        // ── VFXSpawner 사용 (프로젝트에 존재하면) ──
-        // VFXSpawner.Spawn()이 정적 메서드나 싱글톤이라면 이렇게 호출:
-        // VFXSpawner.Spawn(darkOrbExplosionVfxPrefab, position);
-        
-        // ── VFXPool 사용 (이미 적용된 시스템) ──
         Vector3 pos3 = new Vector3(position.x, position.y, 0f);
-        var vfxGo = VFXPool.Get(darkOrbExplosionVfxPrefab, pos3, Quaternion.identity, null);
-        if (vfxGo != null)
-        {
-            vfxGo.SetActive(true);
 
-            // VFXAutoReturn이 있으면 자동 반환됨
-            // 없으면 수동으로 ParticleSystem 재생
-            var ps = vfxGo.GetComponent<ParticleSystem>();
-            if (ps != null)
+        try
+        {
+            // VFXPool 사용 시도
+            var vfxGo = VFXPool.Get(darkOrbExplosionVfxPrefab, pos3, Quaternion.identity, null);
+            if (vfxGo != null)
             {
-                ps.Clear();
-                ps.Play();
+                vfxGo.SetActive(true);
+                var ps = vfxGo.GetComponent<ParticleSystem>();
+                if (ps != null)
+                {
+                    ps.Clear();
+                    ps.Play();
+                }
+                return;
             }
         }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[DarkOrb] VFXPool.Get 실패: {e.Message}. Instantiate 폴백 사용.");
+        }
+
+        // 폴백: 직접 Instantiate (풀링은 안 되지만 VFX는 보임)
+        var fallback = Instantiate(darkOrbExplosionVfxPrefab, pos3, Quaternion.identity);
+        Destroy(fallback, 2f);
+    }
+
+    /// <summary>
+    /// 본체 VFX를 생성합니다. 동시 활성 상한(8개) 초과 시 생성 안 함.
+    /// </summary>
+    private GameObject SpawnBodyVfx(Vector2 position)
+    {
+        if (darkOrbBodyVfxPrefab == null) return null;
+
+        // 동시 활성 상한 체크 (렉 방지)
+        if (_activeBodyVfxCount >= MaxActiveBodyVfx) return null;
+
+        Vector3 pos3 = new Vector3(position.x, position.y, 0f);
+
+        try
+        {
+            var vfxGo = VFXPool.Get(darkOrbBodyVfxPrefab, pos3, Quaternion.identity, null);
+            if (vfxGo != null)
+            {
+                vfxGo.SetActive(true);
+                var ps = vfxGo.GetComponent<ParticleSystem>();
+                if (ps != null)
+                {
+                    ps.Clear();
+                    ps.Play();
+                }
+                _activeBodyVfxCount++;
+                return vfxGo;
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[DarkOrb] Body VFXPool.Get 실패: {e.Message}. Instantiate 폴백.");
+        }
+
+        // 폴백
+        var fallback = Instantiate(darkOrbBodyVfxPrefab, pos3, Quaternion.identity);
+        _activeBodyVfxCount++;
+        return fallback;
+    }
+
+    /// <summary>
+    /// 본체 VFX를 반환/제거합니다.
+    /// </summary>
+    private void ReturnBodyVfx(ref DarkOrbState s)
+    {
+        if (s.BodyVfxGo == null) return;
+
+        // 파티클 정지
+        var ps = s.BodyVfxGo.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+
+        s.BodyVfxGo.SetActive(false);
+        s.BodyVfxGo = null;
+        _activeBodyVfxCount = Mathf.Max(0, _activeBodyVfxCount - 1);
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -401,13 +503,4 @@ public sealed class GameProjectileManager : MonoBehaviour
             v.x * sin + v.y * cos
         );
     }
-}
-
-// ============================================================================
-// IHealth 인터페이스 (프로젝트에 이미 있으면 이 부분 삭제)
-// 프로젝트의 데미지 시스템에 맞게 교체하세요.
-// ============================================================================
-public interface IHealth
-{
-    void TakeDamage(float damage);
 }

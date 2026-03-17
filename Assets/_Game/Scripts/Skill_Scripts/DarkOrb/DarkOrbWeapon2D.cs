@@ -111,6 +111,9 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
 
     private void Fire(Transform target)
     {
+        // ★ enemyMask가 비어있으면 자동 보정 (EnsureFilter에서 설정됨)
+        EnsureFilter();
+
         // 데미지
         float dmgF = Mathf.Max(1f, baseExplosionDamage);
         if (_level >= 5)

@@ -38,6 +38,7 @@ public struct DarkOrbState
 
     // ── 뷰/VFX 참조 ──
     public int     ViewId;         // ViewPool 슬롯 ID. -1이면 뷰 없음.
+    public GameObject BodyVfxGo;   // 본체 VFX 오브젝트. null이면 없음.
 
     // ── 상태 ──
     public bool    Active;         // true = 비행 중, false = 슬롯 비어있음
