@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 5832619134942962}
   - component: {fileID: 2471570580305918279}
   - component: {fileID: 7948325634464794318}
+  - component: {fileID: 6035573837722283116}
   m_Layer: 16
   m_Name: Normal_Snake
   m_TagString: Enemy
@@ -183,7 +184,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -295,3 +296,20 @@ MonoBehaviour:
   defaultFacingDirection: 0
   flipThreshold: 0.05
   logInvalidTagWarning: 1
+--- !u!114 &6035573837722283116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4422943285573934189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 232410eab8fc3bd43a485d33912c4459, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHitFlash2D
+  health: {fileID: 7895759921971874860}
+  spriteRenderer: {fileID: 8082421977743104939}
+  flashColor: {r: 1, g: 0.6, b: 0.6, a: 1}
+  flashDuration: 0.08
+  debugLog: 0

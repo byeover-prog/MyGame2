@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 1930627660680768787}
   - component: {fileID: 7280727961302527277}
   - component: {fileID: 1307509701105812955}
+  - component: {fileID: 725485650736237613}
   m_Layer: 16
   m_Name: Normal_Fox
   m_TagString: Enemy
@@ -183,7 +184,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -295,3 +296,20 @@ MonoBehaviour:
   defaultFacingDirection: 0
   flipThreshold: 0.05
   logInvalidTagWarning: 1
+--- !u!114 &725485650736237613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3641684245650433354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 232410eab8fc3bd43a485d33912c4459, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHitFlash2D
+  health: {fileID: 7235971464514667435}
+  spriteRenderer: {fileID: 1837703773609719959}
+  flashColor: {r: 1, g: 0.6, b: 0.6, a: 1}
+  flashDuration: 0.08
+  debugLog: 0

@@ -18,7 +18,7 @@ MonoBehaviour:
   monsterPrefab: {fileID: 4422943285573934189, guid: 8a394a158a3ca1242883cada50ffa9b0,
     type: 3}
   portrait: {fileID: 0}
-  maxHp: 1000
+  maxHp: 100
   moveSpeed: 2
   attackDamage: 10
   detectRange: 5
