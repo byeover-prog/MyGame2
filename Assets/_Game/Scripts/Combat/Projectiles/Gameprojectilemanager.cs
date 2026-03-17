@@ -68,7 +68,7 @@ public sealed class GameProjectileManager : MonoBehaviour
     private readonly Collider2D[] _hitBuffer = new Collider2D[32];
 
     // 본체 VFX 동시 활성 상한 (렉 방지)
-    private const int MaxActiveBodyVfx = 8;
+    private const int MaxActiveBodyVfx = 15;
     private int _activeBodyVfxCount;
 
     // ══════════════════════════════════════════════════════════════
