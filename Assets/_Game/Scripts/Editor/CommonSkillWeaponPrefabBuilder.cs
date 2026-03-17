@@ -209,7 +209,9 @@ public static class CommonSkillWeaponPrefabBuilder
 
     private static void SetupOrbitingBladeTemplate(GameObject root)
     {
-        // OrbitingBladeWeapon2D는 bladeTemplate(OrbitingBladeHitbox2D) 자식 템플릿이 필요
+        // OrbitingBladeWeapon2D의 bladeTemplate은 GameObject 참조.
+        // 타격 판정은 무기 스크립트가 Physics2D.OverlapCircle로 직접 처리하므로
+        // 템플릿에는 비주얼(SpriteRenderer)만 있으면 됨.
         var weapon = root.GetComponent<OrbitingBladeWeapon2D>();
         if (weapon == null) return;
 
@@ -217,17 +219,13 @@ public static class CommonSkillWeaponPrefabBuilder
         templateGo.transform.SetParent(root.transform, false);
         templateGo.transform.localPosition = Vector3.right * 1.0f;
 
-        templateGo.AddComponent<OrbitingBladeHitbox2D>();
+        // 비주얼용 SpriteRenderer (스프라이트는 Inspector에서 직접 할당)
+        templateGo.AddComponent<SpriteRenderer>();
 
-        // 히트박스 트리거 콜라이더(반경은 임시값, 나중에 스프라이트 크기에 맞춰 조절)
-        var col = templateGo.AddComponent<CircleCollider2D>();
-        col.isTrigger = true;
-        col.radius = 0.25f;
+        // bladeTemplate <- GameObject 직접 연결
+        AssignSerializedFieldIfExists(weapon, "bladeTemplate", templateGo);
 
-        // bladeTemplate <- 템플릿 연결
-        AssignSerializedFieldIfExists(weapon, "bladeTemplate", templateGo.GetComponent<OrbitingBladeHitbox2D>());
-
-        // 템플릿은 원본이 활성 상태면 중복 타격 가능성 있어서 비활성 권장
+        // 템플릿 원본은 비활성 (런타임에 복제본만 활성화됨)
         templateGo.SetActive(false);
     }
 
