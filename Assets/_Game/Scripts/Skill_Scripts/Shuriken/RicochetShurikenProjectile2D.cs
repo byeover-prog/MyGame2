@@ -29,6 +29,11 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
     [Tooltip("날아가는 동안 회전 속도(도/초). 0이면 회전 안 함.")]
     [SerializeField] private float rotateDegPerSec = 1080f;
 
+    [Header("튕김 탐색")]
+    [Tooltip("튕길 때 다음 적을 찾는 최대 반경. 이 범위 밖이면 튕기지 않고 소멸.")]
+    [Min(0.5f)]
+    [SerializeField] private float bounceSearchRadius = 10f;
+
     [Header("박힘 방지")]
     [Tooltip("적을 맞춘 직후, 잠깐 강제 전진해서 콜라이더 밖으로 빠져나오는 시간(초)")]
     [SerializeField] private float exitKickSeconds = 0.08f;
@@ -170,14 +175,23 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             return;
         }
 
-        // 2) 타겟 유효성
+        // 2) 타겟 유효성 — ★ 타겟이 죽었으면 새 타겟 탐색
         if (target != null && !target.IsValidTarget)
             target = null;
 
         if (target == null)
         {
-            ScheduleDespawn(_lastDir);
-            return;
+            // 순차 발사(2~3번째 수리검)가 도착하기 전에 적이 죽는 경우 대비
+            // → 남은 튕김이 있든 없든 일단 새 타겟을 찾아서 날아감
+            if (TryFindBounceTarget(out var next))
+            {
+                target = next;
+            }
+            else
+            {
+                ScheduleDespawn(_lastDir);
+                return;
+            }
         }
 
         // 3) 타겟으로 이동
@@ -235,7 +249,7 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         {
             remainingBounces--;
 
-            if (EnemyRegistry2D.TryGetNearestExcluding(transform.position, hitSet, out var next) && next != null)
+            if (TryFindBounceTarget(out var next))
             {
                 _pendingTarget = next;
                 _exitKickLeft = Mathf.Max(0.01f, exitKickSeconds);
@@ -258,7 +272,7 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         {
             remainingBounces--;
 
-            if (EnemyRegistry2D.TryGetNearestExcluding(transform.position, hitSet, out var next) && next != null)
+            if (TryFindBounceTarget(out var next))
             {
                 _pendingTarget = next;
                 _exitKickLeft = Mathf.Max(0.01f, exitKickSeconds);
@@ -298,5 +312,24 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             if (gameObject != null)
                 Destroy(gameObject);
         }
+    }
+
+    /// <summary>
+    /// hitSet에 없는 가장 가까운 적을 찾되, bounceSearchRadius 안에 있어야 함.
+    /// 범위 밖이면 false 반환 → 튕기지 않고 소멸.
+    /// </summary>
+    private bool TryFindBounceTarget(out EnemyRegistryMember2D result)
+    {
+        result = null;
+
+        if (!EnemyRegistry2D.TryGetNearestExcluding(transform.position, hitSet, out var next) || next == null)
+            return false;
+
+        float dist = Vector2.Distance(transform.position, next.Position);
+        if (dist > bounceSearchRadius)
+            return false;
+
+        result = next;
+        return true;
     }
 }
