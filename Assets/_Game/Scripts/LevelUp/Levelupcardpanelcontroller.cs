@@ -9,9 +9,9 @@
 // ──────────────────────────────────────────────
 
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
+using _Game.LevelUp;
 using _Game.Player;
 
 namespace _Game.LevelUp.UI
@@ -83,12 +83,30 @@ namespace _Game.LevelUp.UI
         /// <summary>패널 열림 여부</summary>
         public bool IsOpen => isOpen;
 
-        private void Awake()
-        {
-            if (rerollButton != null)
-                rerollButton.onClick.AddListener(OnRerollClicked);
+            // 버튼 호버
+            foreach (var btn in new[] { btnMinimize, btnReroll })
+            {
+                if (btn == null) continue;
+                btn.RegisterCallback<MouseEnterEvent>(_ =>
+                {
+                    btn.style.borderTopColor    = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 1f));
+                    btn.style.borderBottomColor = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 1f));
+                    btn.style.borderLeftColor   = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 1f));
+                    btn.style.borderRightColor  = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 1f));
+                    btn.style.color = new StyleColor(new Color(0.91f, 0.78f, 0.47f));
+                });
+                btn.RegisterCallback<MouseLeaveEvent>(_ =>
+                {
+                    btn.style.borderTopColor    = StyleKeyword.Null;
+                    btn.style.borderBottomColor = StyleKeyword.Null;
+                    btn.style.borderLeftColor   = StyleKeyword.Null;
+                    btn.style.borderRightColor  = StyleKeyword.Null;
+                    btn.style.color = StyleKeyword.Null;
+                });
+            }
 
-            UpdateRerollUI();
+            // 시작 시 숨김
+            SetVisible(false);
         }
 
         /// <summary>
@@ -99,13 +117,12 @@ namespace _Game.LevelUp.UI
         {
             if (cards == null || cards.Count == 0)
             {
-                Debug.LogWarning("[CardPanel] 표시할 카드가 없습니다.", this);
+                Debug.LogWarning("[CardPanel] 표시할 카드가 없습니다.");
                 return;
             }
-
             if (isOpen)
             {
-                Debug.LogWarning("[CardPanel] 이미 열려있습니다.", this);
+                Debug.LogWarning("[CardPanel] 이미 열려있습니다.");
                 return;
             }
 
@@ -124,12 +141,10 @@ namespace _Game.LevelUp.UI
             currentCards.AddRange(cards);
 
             rerollsLeft = rerollMaxCount;
-
-            BindCards();
-            SetPanelVisible(true);
-            SetCardInteractable(true);
-
             isOpen = true;
+            BindCards();
+            SetCardInteractable(true);
+            SetVisible(true);
             UpdateRerollUI();
 
             Debug.Log(
@@ -142,11 +157,11 @@ namespace _Game.LevelUp.UI
         /// </summary>
         public void Close()
         {
-            if (!isOpen)
-                return;
+            if (!isOpen) return;
+            SetVisible(false);
 
             currentCards.Clear();
-            SetPanelVisible(false);
+            SetVisible(false);
             isOpen = false;
 
             UpdateRerollUI();
@@ -163,8 +178,7 @@ namespace _Game.LevelUp.UI
         /// </summary>
         private void OnRerollClicked()
         {
-            if (!isOpen || rerollsLeft <= 0)
-                return;
+            if (!isOpen) return;
 
             if (cardGenerator == null)
             {
@@ -183,7 +197,9 @@ namespace _Game.LevelUp.UI
                 return;
             }
 
-            rerollsLeft--;
+            _isMinimized = true;
+            if (btnMinimize != null) btnMinimize.text = "▲ 스킬 선택";
+        }
 
             Debug.Log(
                 $"[CardPanel] 리롤 시작 | loadoutInstanceId={currentLoadout.GetInstanceID()} | loadoutName={currentLoadout.name} | 남은 리롤(차감 후)={rerollsLeft}",
@@ -191,22 +207,22 @@ namespace _Game.LevelUp.UI
 
             List<LevelUpCardData> newCards = cardGenerator.Generate(currentLoadout);
 
-            if (newCards == null || newCards.Count == 0)
-            {
-                Debug.LogWarning("[CardPanel] 리롤 실패 — 생성된 카드 없음.", this);
-                UpdateRerollUI();
-                return;
-            }
-
-            currentCards.Clear();
-            currentCards.AddRange(newCards);
-
-            BindCards();
-            SetCardInteractable(true);
-            UpdateRerollUI();
-
-            Debug.Log($"[CardPanel] 리롤 완료 | 카드 {newCards.Count}장 | 남은 리롤 {rerollsLeft}", this);
+            _isMinimized = false;
+            if (btnMinimize != null) btnMinimize.text = "최소화";
         }
+        // ── 카드 바인딩 ──────────────────────────
+        private void BindCards()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (cardEls[i] == null) continue;
+
+                bool hasCard = i < currentCards.Count;
+                cardEls[i].style.display = hasCard
+                    ? DisplayStyle.Flex
+                    : DisplayStyle.None;
+
+                if (!hasCard) continue;
 
         /// <summary>
         /// 리롤 UI를 갱신한다.
@@ -215,12 +231,11 @@ namespace _Game.LevelUp.UI
         {
             bool canReroll = isOpen && rerollsLeft > 0;
 
-            if (rerollButton != null)
-                rerollButton.interactable = canReroll;
+                if (cardNames[i] != null)
+                    cardNames[i].text = data.Title ?? "";
 
-            if (rerollCountText != null)
-                rerollCountText.text = rerollsLeft.ToString();
-        }
+                if (cardDescs[i] != null)
+                    cardDescs[i].text = data.Description ?? "";
 
         /// <summary>
         /// 현재 카드 목록을 카드 뷰에 바인딩한다.
@@ -238,42 +253,19 @@ namespace _Game.LevelUp.UI
         /// </summary>
         private void BindCard(LevelUpNewCardView view, int index)
         {
-            if (view == null)
-                return;
-
-            if (index < 0 || index >= currentCards.Count)
-            {
-                view.gameObject.SetActive(false);
-                return;
-            }
-
-            view.gameObject.SetActive(true);
-            view.Bind(currentCards[index], index, HandleCardSelected);
-        }
-
-        /// <summary>
-        /// 카드 선택 처리.
-        /// </summary>
-        private void HandleCardSelected(int index)
-        {
-            if (!isOpen)
-                return;
-
-            if (index < 0 || index >= currentCards.Count)
-                return;
+            if (!isOpen) return;
+            if (index < 0 || index >= currentCards.Count) return;
 
             SetCardInteractable(false);
 
-            LevelUpCardData selectedCard = currentCards[index];
-            bool applied = rewardApplier != null && rewardApplier.Apply(selectedCard);
+            var data    = currentCards[index];
+            bool applied = rewardApplier != null && rewardApplier.Apply(data);
 
-            Debug.Log(
-                $"[CardPanel] 카드 선택 | index={index} | type={selectedCard.RewardType} | title={selectedCard.Title} | applied={applied}",
-                this);
+            Debug.Log($"[CardPanel] 선택 | {data.Title} | applied={applied}");
 
             if (!applied)
             {
-                Debug.LogWarning($"[CardPanel] 보상 적용 실패 → 패널 유지: {selectedCard.Title}", this);
+                Debug.LogWarning($"[CardPanel] 보상 적용 실패 → 패널 유지: {data.Title}");
                 SetCardInteractable(true);
                 return;
             }
@@ -282,14 +274,54 @@ namespace _Game.LevelUp.UI
         }
 
         /// <summary>
+        /// 카드 선택 처리.
+        /// </summary>
+        private void HandleCardSelected(int index)
+        {
+            if (!isOpen || rerollsLeft <= 0) return;
+            if (cardGenerator == null || loadout == null)
+            {
+                Debug.LogWarning("[CardPanel] 리롤 불가 — 참조 누락");
+                return;
+            }
+
+            rerollsLeft--;
+
+            var newCards = cardGenerator.Generate(loadout);
+            if (newCards == null || newCards.Count == 0)
+            {
+                Debug.LogWarning("[CardPanel] 리롤 실패 — 카드 없음");
+                UpdateRerollUI();
+                return;
+            }
+
+            currentCards.Clear();
+            currentCards.AddRange(newCards);
+            BindCards();
+            SetCardInteractable(true);
+            UpdateRerollUI();
+
+            Debug.Log($"[CardPanel] 리롤 완료 | {newCards.Count}장 | 남은 {rerollsLeft}");
+        }
+
+        private void UpdateRerollUI()
+        {
+            if (btnReroll == null) return;
+            bool canReroll = isOpen && rerollsLeft > 0;
+            btnReroll.SetEnabled(canReroll);
+            btnReroll.text = $"새로고침 ({rerollsLeft})";
+            
+        }
+
+        /// <summary>
         /// 패널 표시 상태를 설정한다.
         /// </summary>
         private void SetPanelVisible(bool visible)
         {
-            if (panelRoot != null)
-                panelRoot.SetActive(visible);
-            else
-                gameObject.SetActive(visible);
+            if (levelUpRoot == null) return;
+            levelUpRoot.style.display = visible
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
         }
 
         /// <summary>
@@ -297,10 +329,11 @@ namespace _Game.LevelUp.UI
         /// </summary>
         private void SetCardInteractable(bool interactable)
         {
-            if (cardView1 != null) cardView1.SetInteractable(interactable);
-            if (cardView2 != null) cardView2.SetInteractable(interactable);
-            if (cardView3 != null) cardView3.SetInteractable(interactable);
-            if (cardView4 != null) cardView4.SetInteractable(interactable);
+            for (int i = 0; i < 4; i++)
+            {
+                if (cardEls[i] == null) continue;
+                cardEls[i].SetEnabled(interactable);
+            }
         }
     }
 }
