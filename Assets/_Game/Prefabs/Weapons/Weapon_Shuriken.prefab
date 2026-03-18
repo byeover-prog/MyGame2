@@ -95,7 +95,7 @@ MonoBehaviour:
     type: 3}
   detectRange: 5
   firePivot: {fileID: 244080834077732029}
-  fireInterval: 0.1
+  fireInterval: 0.15
   spawnSeparation: 0
   fanAngleDeg: 0
   maxTargetCandidates: 12

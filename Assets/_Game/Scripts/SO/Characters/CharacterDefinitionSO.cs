@@ -14,6 +14,9 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Header("아이콘")]
     [Tooltip("기본 스킬 아이콘(상단 슬롯 왼쪽)")]
     [SerializeField] private Sprite basicSkillIcon;
+    [Tooltip("ClearUI 스쿼드 패널용 상체 썸네일")]
+    [SerializeField] private Sprite thumbnail;
+    public Sprite Thumbnail => thumbnail;
 
     [Tooltip("궁극기 아이콘(상단 슬롯 오른쪽)")]
     [SerializeField] private Sprite ultimateSkillIcon;

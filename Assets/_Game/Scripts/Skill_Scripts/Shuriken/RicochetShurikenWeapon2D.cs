@@ -1,3 +1,4 @@
+// UTF-8
 // ============================================================================
 // RicochetShurikenWeapon2D.cs
 //
@@ -46,7 +47,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
     private float _timer;
     private int _runtimeLevel = 1;
     private bool _burstFiring;
-    private float _burstSafetyTimer; // 안전 타임아웃
+    private float _burstSafetyTimer; // ★ 안전 타임아웃
     private float _burstInterval = 0.2f;
 
     private void Awake()
@@ -59,7 +60,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
         _pool = GetComponent<ProjectilePool2D>();
     }
 
-    // 핵심 수정 1: OnDisable에서 _burstFiring 강제 리셋
+    // ★ 핵심 수정 1: OnDisable에서 _burstFiring 강제 리셋
     // 레벨업 시간정지 → 코루틴 중단 → _burstFiring=true 영구 잠김 방지
     private void OnDisable()
     {
@@ -111,7 +112,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
         if (owner == null || config == null) return;
         transform.position = owner.position;
 
-        // 안전 타임아웃: _burstFiring이 2초 이상 풀리지 않으면 강제 리셋
+        // ★ 안전 타임아웃: _burstFiring이 2초 이상 풀리지 않으면 강제 리셋
         if (_burstFiring)
         {
             _burstSafetyTimer += Time.deltaTime;
@@ -145,7 +146,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
 
         for (int i = 0; i < projCount; i++)
         {
-            // 핵심 수정 2: 매 발사마다 타겟 재탐색
+            // ★ 핵심 수정 2: 매 발사마다 타겟 재탐색
             // 첫 수리검이 적을 죽이면, 다음 수리검은 새로운 가장 가까운 적을 찾음
             Vector2 origin = (owner != null)
                 ? (firePivot != null ? (Vector2)firePivot.position : (Vector2)owner.position)
@@ -251,7 +252,7 @@ public sealed class RicochetShurikenWeapon2D : CommonSkillWeapon2D
     {
         int lv = _runtimeLevel;
         if (lv <= 3) return 2;
-        return Mathf.Min(6, 2 + (lv - 3));
+        return 2 + (lv - 3); // Lv4=3, Lv5=4, Lv6=5, Lv7=6, Lv8=7
     }
 
     private int BuildCandidates(Vector2 origin, int hitCount)

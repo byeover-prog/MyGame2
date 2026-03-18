@@ -16,5 +16,6 @@ MonoBehaviour:
   displayName: "\uD558\uC728"
   portrait: {fileID: 21300000, guid: 7b4e91e36fbfa76438bf7bbba363bd10, type: 3}
   basicSkillIcon: {fileID: 21300000, guid: 5c5b97ecbd09aa9498e31fa51f4f49cb, type: 3}
+  thumbnail: {fileID: -1311039528, guid: 4791dda5a92d5f8498d6ec8cc39491ba, type: 3}
   ultimateSkillIcon: {fileID: 0}
   attribute: 3
