@@ -29,6 +29,11 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
     [Tooltip("날아가는 동안 회전 속도(도/초). 0이면 회전 안 함.")]
     [SerializeField] private float rotateDegPerSec = 1080f;
 
+    [Header("튕김 탐색")]
+    [Tooltip("튕길 때 다음 적을 찾는 최대 반경. 이 범위 밖이면 튕기지 않고 소멸.")]
+    [Min(0.5f)]
+    [SerializeField] private float bounceSearchRadius = 8f;
+
     [Header("박힘 방지")]
     [Tooltip("적을 맞춘 직후, 잠깐 강제 전진해서 콜라이더 밖으로 빠져나오는 시간(초)")]
     [SerializeField] private float exitKickSeconds = 0.08f;
@@ -147,10 +152,28 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             transform.Rotate(0f, 0f, rotateDegPerSec * dt);
 
         age += dt;
-        if (age >= life)
+
+        // ★ 수명 만료 판단: 튕김이 남아있으면 수명 무시
+        // JSON life(Lv8=2.5초)가 튕김 9회를 소화하기엔 부족하므로
+        // 튕김이 남아있는 동안은 절대 수명으로 죽지 않게 함.
+        // 무한 방지: 10초 하드 타임아웃.
+        if (remainingBounces > 0)
         {
-            SafeReturn();
-            return;
+            // 튕김 남아있음 → 수명 만료 무시, 10초 안전장치만 적용
+            if (age >= 10f)
+            {
+                SafeReturn();
+                return;
+            }
+        }
+        else
+        {
+            // 튕김 다 소모 → 원래 수명 적용
+            if (age >= life)
+            {
+                SafeReturn();
+                return;
+            }
         }
 
         if (_hitImmunityLeft > 0f)
@@ -170,14 +193,24 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             return;
         }
 
-        // 2) 타겟 유효성
+        // 2) 타겟 유효성 — ★ 타겟이 죽었으면 새 타겟 탐색
         if (target != null && !target.IsValidTarget)
             target = null;
 
         if (target == null)
         {
-            ScheduleDespawn(_lastDir);
-            return;
+            // 순차 발사(2~3번째 수리검)가 도착하기 전에 적이 죽는 경우 대비
+            // → 남은 튕김이 있든 없든 일단 새 타겟을 찾아서 날아감
+            if (TryFindBounceTarget(out var next))
+            {
+                target = next;
+                age = 0f; // ★ 새 타겟 찾으면 수명 리셋
+            }
+            else
+            {
+                ScheduleDespawn(_lastDir);
+                return;
+            }
         }
 
         // 3) 타겟으로 이동
@@ -235,11 +268,12 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
         {
             remainingBounces--;
 
-            if (EnemyRegistry2D.TryGetNearestExcluding(transform.position, hitSet, out var next) && next != null)
+            if (TryFindBounceTarget(out var next))
             {
                 _pendingTarget = next;
                 _exitKickLeft = Mathf.Max(0.01f, exitKickSeconds);
                 _hitImmunityLeft = Mathf.Max(exitKickSeconds, hitImmunitySeconds);
+                age = 0f; // ★ 튕길 때마다 수명 리셋
                 return;
             }
         }
@@ -250,24 +284,20 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
 
     private void HandleAlreadyHitContact()
     {
-        // 이미 맞춘 적에 다시 닿은 상황.
-        // - 남은 튕김이 있으면: 다음 타겟을 다시 찾아서 탈출
-        // - 남은 튕김이 없으면: 즉시 소멸 예약(박힘 방지)
-
         if (remainingBounces > 0)
         {
             remainingBounces--;
 
-            if (EnemyRegistry2D.TryGetNearestExcluding(transform.position, hitSet, out var next) && next != null)
+            if (TryFindBounceTarget(out var next))
             {
                 _pendingTarget = next;
                 _exitKickLeft = Mathf.Max(0.01f, exitKickSeconds);
                 _hitImmunityLeft = Mathf.Max(exitKickSeconds, hitImmunitySeconds);
+                age = 0f; // ★ 튕길 때마다 수명 리셋
                 return;
             }
         }
 
-        // 더 이상 갈 곳이 없으면 "박히지 말고" 빠져나오며 소멸
         ScheduleDespawn(-_lastDir);
     }
 
@@ -298,5 +328,24 @@ public sealed class RicochetShurikenProjectile2D : PooledObject2D
             if (gameObject != null)
                 Destroy(gameObject);
         }
+    }
+
+    /// <summary>
+    /// hitSet에 없는 가장 가까운 적을 찾되, bounceSearchRadius 안에 있어야 함.
+    /// 범위 밖이면 false 반환 → 튕기지 않고 소멸.
+    /// </summary>
+    private bool TryFindBounceTarget(out EnemyRegistryMember2D result)
+    {
+        result = null;
+
+        if (!EnemyRegistry2D.TryGetNearestExcluding(transform.position, hitSet, out var next) || next == null)
+            return false;
+
+        float dist = Vector2.Distance(transform.position, next.Position);
+        if (dist > bounceSearchRadius)
+            return false;
+
+        result = next;
+        return true;
     }
 }
