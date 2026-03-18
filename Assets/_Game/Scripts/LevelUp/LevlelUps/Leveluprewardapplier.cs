@@ -2,10 +2,10 @@
 // LevelUpRewardApplier.cs
 // 레벨업 카드 선택 결과를 실제 게임 데이터에 반영
 //
-// 구현 범위:
-//   - 액티브 카드: PlayerSkillLoadout + CommonSkillManager2D 동시 반영
-//   - 패시브 카드: PlayerSkillLoadout + PlayerStatRuntimeApplier2D 즉시 재계산
-//   - 대체 카드: Heal / Gold / Invincible / BonusExp 실제 적용
+// 구현 원리 요약:
+// 보상 적용은 "현재 레벨업 세션에서 전달받은 loadout"을 우선 사용한다.
+// 인스펙터에 연결된 loadout이 있더라도, 패널에서 SetRuntimeLoadout()으로 넘긴 값을 최우선으로 본다.
+// 이렇게 해서 생성 / 리롤 / 적용이 모두 같은 PlayerSkillLoadout 인스턴스를 사용하게 만든다.
 // ──────────────────────────────────────────────
 
 using UnityEngine;
@@ -14,32 +14,39 @@ using _Game.Skills;
 
 namespace _Game.LevelUp
 {
+    /// <summary>
+    /// 레벨업 카드 선택 결과를 실제 런타임에 반영한다.
+    /// </summary>
     public sealed class LevelUpRewardApplier : MonoBehaviour
     {
         [Header("=== 플레이어 참조 ===")]
-
-        [SerializeField, Tooltip("플레이어 스킬 로드아웃")]
+        [SerializeField, Tooltip("기본 플레이어 스킬 로드아웃입니다. 실제 동작은 세션에서 전달된 loadout이 우선됩니다.")]
         private PlayerSkillLoadout loadout;
 
-        [SerializeField, Tooltip("패시브 적용 후 실제 스탯을 다시 계산할 컴포넌트")]
+        [SerializeField, Tooltip("패시브 적용 후 실제 스탯을 다시 계산할 컴포넌트입니다.")]
         private PlayerStatRuntimeApplier2D statRuntimeApplier;
 
-        [SerializeField, Tooltip("체력 회복/무적 적용 대상")]
+        [SerializeField, Tooltip("체력 회복/무적 적용 대상입니다.")]
         private PlayerHealth playerHealth;
 
-        [SerializeField, Tooltip("즉시 경험치 적용 대상")]
+        [SerializeField, Tooltip("즉시 경험치 적용 대상입니다.")]
         private PlayerExp playerExp;
 
-        [SerializeField, Tooltip("재화 적용 대상")]
+        [SerializeField, Tooltip("재화 적용 대상입니다.")]
         private PlayerCurrency2D playerCurrency;
 
         [Header("=== 액티브 스킬 런타임 연결 ===")]
-
-        [SerializeField, Tooltip("실제 무기 프리팹을 스폰/업그레이드할 공통 스킬 매니저")]
+        [SerializeField, Tooltip("실제 무기 프리팹을 스폰/업그레이드할 공통 스킬 매니저입니다.")]
         private CommonSkillManager2D commonSkillManager;
 
-        [SerializeField, Tooltip("SkillDefinitionSO를 CommonSkillConfigSO로 변환할 카탈로그")]
+        [SerializeField, Tooltip("SkillDefinitionSO를 CommonSkillConfigSO로 변환할 카탈로그입니다.")]
         private CommonSkillCatalogSO commonSkillCatalog;
+
+        /// <summary>
+        /// 현재 레벨업 세션에서 강제로 사용할 loadout.
+        /// 패널이 열릴 때 주입된다.
+        /// </summary>
+        private PlayerSkillLoadout runtimeLoadout;
 
         private void Awake()
         {
@@ -53,6 +60,24 @@ namespace _Game.LevelUp
                 commonSkillCatalog = commonSkillManager.Catalog;
         }
 
+        /// <summary>
+        /// 현재 레벨업 세션에서 사용할 loadout을 주입한다.
+        /// </summary>
+        public void SetRuntimeLoadout(PlayerSkillLoadout value)
+        {
+            runtimeLoadout = value;
+
+            if (runtimeLoadout != null)
+            {
+                Debug.Log(
+                    $"[RewardApplier] runtimeLoadout 설정 | instanceId={runtimeLoadout.GetInstanceID()} | name={runtimeLoadout.name}",
+                    runtimeLoadout);
+            }
+        }
+
+        /// <summary>
+        /// 카드 보상을 적용한다.
+        /// </summary>
         public bool Apply(LevelUpCardData cardData)
         {
             if (cardData == null) return false;
@@ -92,9 +117,14 @@ namespace _Game.LevelUp
             }
         }
 
+        /// <summary>
+        /// 스킬 카드 보상을 적용한다.
+        /// </summary>
         private bool ApplySkillCard(LevelUpCardData cardData)
         {
-            if (loadout == null || cardData.SkillDefinition == null)
+            PlayerSkillLoadout targetLoadout = runtimeLoadout != null ? runtimeLoadout : loadout;
+
+            if (targetLoadout == null || cardData.SkillDefinition == null)
             {
                 Debug.LogWarning("[RewardApplier] loadout 또는 SkillDefinition 누락", this);
                 return false;
@@ -103,7 +133,6 @@ namespace _Game.LevelUp
             SkillDefinitionSO definition = cardData.SkillDefinition;
             string skillId = definition.SkillId;
 
-            // ★ 액티브: 런타임 매핑 확인 먼저
             CommonSkillConfigSO runtimeSkillConfig = null;
 
             if (definition.SkillType == SkillType.Active)
@@ -129,13 +158,16 @@ namespace _Game.LevelUp
                 }
             }
 
-            // 로드아웃 반영
-            bool alreadyOwned = loadout.HasSkill(skillId);
+            bool alreadyOwned = targetLoadout.HasSkill(skillId);
             bool changed;
+
+            Debug.Log(
+                $"[RewardApplier] 적용 시작 | title={cardData.Title} | skillId={skillId} | alreadyOwned={alreadyOwned} | loadoutInstanceId={targetLoadout.GetInstanceID()}",
+                targetLoadout);
 
             if (alreadyOwned)
             {
-                changed = loadout.TryUpgradeSkill(skillId);
+                changed = targetLoadout.TryUpgradeSkill(skillId);
                 if (!changed)
                 {
                     Debug.Log($"[RewardApplier] 강화 실패(최대레벨): {cardData.Title}", this);
@@ -144,7 +176,7 @@ namespace _Game.LevelUp
             }
             else
             {
-                changed = loadout.TryAddSkill(definition);
+                changed = targetLoadout.TryAddSkill(definition);
                 if (!changed)
                 {
                     Debug.Log($"[RewardApplier] 획득 실패(슬롯 가득): {cardData.Title}", this);
@@ -152,7 +184,6 @@ namespace _Game.LevelUp
                 }
             }
 
-            // ★ 실제 런타임 반영
             if (definition.SkillType == SkillType.Active)
             {
                 commonSkillManager.Upgrade(runtimeSkillConfig);
@@ -167,6 +198,9 @@ namespace _Game.LevelUp
             return true;
         }
 
+        /// <summary>
+        /// 액티브 스킬 정의를 실제 런타임 CommonSkillConfigSO로 변환한다.
+        /// </summary>
         private bool TryResolveCommonSkill(SkillDefinitionSO definition, out CommonSkillConfigSO config)
         {
             config = null;

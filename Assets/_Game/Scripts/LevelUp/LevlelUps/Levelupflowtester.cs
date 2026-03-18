@@ -84,7 +84,7 @@ namespace _Game.LevelUp
             }
 
             // 패널 열기
-            panelController.Open(cards);
+            panelController.Open(cards, loadout);
         }
     }
 }
