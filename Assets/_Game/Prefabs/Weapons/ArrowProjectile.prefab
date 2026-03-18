@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1534040017305913308}
   - component: {fileID: 3809372804871011955}
   - component: {fileID: 5861768765781088283}
+  - component: {fileID: 6476182715955838917}
   m_Layer: 15
   m_Name: ArrowProjectile
   m_TagString: Untagged
@@ -85,7 +86,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 68e1f20514059064880a904f4cfb141e, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -93,7 +94,7 @@ SpriteRenderer:
   m_Size: {x: 6.17, y: 1.24}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!50 &1281644234998683652
 Rigidbody2D:
@@ -204,3 +205,21 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.65817416, y: 0.40158355}
   m_EdgeRadius: 0
+--- !u!114 &6476182715955838917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796759533629522074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b8bec22950d44e448f899e6a69b1fc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileVFXChild
+  vfxPrefab: {fileID: 2542593784275163994, guid: 9c2364ece69b78347a6f3c8dd7003d36,
+    type: 3}
+  explosionVfxPrefab: {fileID: 0}
+  attachToProjectile: 1
+  vfxLifetime: 3
+  hideSpriteRenderer: 1
