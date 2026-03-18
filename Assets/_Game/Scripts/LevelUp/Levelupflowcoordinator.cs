@@ -107,7 +107,7 @@ namespace _Game.LevelUp
                     continue;
                 }
 
-                panelController.Open(cards, loadout);
+                panelController.Open(cards);
 
                 Debug.Log(
                     $"[FlowCoordinator] 패널 열림 | 카드 {cards.Count}장 | 남은 큐 {pendingLevelUps} | loadoutInstanceId={loadout.GetInstanceID()}",
