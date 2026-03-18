@@ -30,6 +30,8 @@ public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
     public bool _IsDead => currentHp <= 0;
 
     private bool _isDead;
+    
+    private KillCountSource _killCountSource;
 
     private static ExpOrbPool s_sharedPool;
     private static bool s_prewarmed;
@@ -47,6 +49,8 @@ public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
             expOrbPool.Prewarm(expOrbPrefab.gameObject, 64);
             s_prewarmed = true;
         }
+        
+        _killCountSource = FindFirstObjectByType<KillCountSource>();
     }
 
     private void OnEnable()
@@ -92,6 +96,11 @@ public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
     {
         if (_isDead) return;
         _isDead = true;
+
+        if (_killCountSource != null) _killCountSource.AddKill();
+
+        if (debugLog)
+            Debug.Log("[EnemyHealth2D] 사망", this);
 
         DropExp();
 

@@ -54,8 +54,8 @@ MonoBehaviour:
   requireTargetToFire: 1
   balanceIdOverride: weapon_boomerang
   spawnOffsetRadius: 0.25
-  fireJitterDelayMin: 0.05
-  fireJitterDelayMax: 0.1
+  fireJitterDelayMin: 0.1
+  fireJitterDelayMax: 0.2
   projectileSortingBase: 0
   projectileSortingStepPerKind: 10
   fallbackCooldownSeconds: 1
@@ -65,6 +65,7 @@ MonoBehaviour:
   pool: {fileID: 3347461500216058642}
   spawnPoint: {fileID: 8164408622599587690}
   burstIntervalSeconds: 0.08
+  searchRange: 25
   spinDegreesPerSecond: 720
 --- !u!114 &3347461500216058642
 MonoBehaviour:

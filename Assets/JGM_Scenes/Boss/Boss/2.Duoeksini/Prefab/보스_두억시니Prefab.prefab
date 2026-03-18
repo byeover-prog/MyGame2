@@ -1,0 +1,285 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &5767848229110689292
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_Name
+      value: "\uBCF4\uC2A4_\uB450\uC5B5\uC2DC\uB2C8"
+      objectReference: {fileID: 0}
+    - target: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_TagString
+      value: Boss
+      objectReference: {fileID: 0}
+    - target: {fileID: 1160356261127867848, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 73afdabae79578945881f3e924754d65, type: 2}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -9.49
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.17
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7878350319992209165, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6027089338392588978}
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7092541056933764507}
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1879285213655450787}
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7770482933063094314}
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8080413286730568041}
+  m_SourcePrefab: {fileID: -8435245712485981826, guid: d6d6c60790273f141a7d244333f6f22a,
+    type: 3}
+--- !u!1 &3509425851428895076 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -2253911629886400664, guid: d6d6c60790273f141a7d244333f6f22a,
+    type: 3}
+  m_PrefabInstance: {fileID: 5767848229110689292}
+  m_PrefabAsset: {fileID: 0}
+--- !u!50 &6027089338392588978
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3509425851428895076}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
+--- !u!70 &7092541056933764507
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3509425851428895076}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0.099999994, y: 0.13}
+  m_Size: {x: 0.96, y: 0.9}
+  m_Direction: 0
+--- !u!114 &1879285213655450787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3509425851428895076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914f9a1ba194bdc4e84e97e5275f7e06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DuryeoksiniBossChase2D
+  playerTarget: {fileID: 0}
+  moveSpeed: 3.5
+  stopDistance: 1.2
+  spriteRenderer: {fileID: 7088356132924767976}
+  useFlip: 1
+  showDebug: 1
+  showPositionLog: 1
+  blockMovementExternally: 0
+--- !u!114 &7770482933063094314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3509425851428895076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de6bb067ad138a4418e98b93c7c9350a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DuryeoksiniBasicAttack
+  playerTarget: {fileID: 0}
+  animator: {fileID: 4616729171374072772}
+  attackInterval: 0.5
+  attackRange: 4
+  attackDamage: 20
+  attackHitCount: 3
+  hitInterval: 0.25
+  isAttacking: 0
+--- !u!114 &8080413286730568041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3509425851428895076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff27739c850a2894e90d0b821ff22578, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DuryeoksiniChargeAttack
+  player: {fileID: 0}
+  rb: {fileID: 6027089338392588978}
+  chaseController: {fileID: 1879285213655450787}
+  chargeDistance: 10
+  chargeCooldown: 5
+  chargeSpeed: 14
+  chargeTime: 1.5
+  chargePrepareTime: 0.15
+  damage: 20
+  hitOnlyOncePerCharge: 1
+  hitRadius: 2
+  hitForwardOffset: 1.1
+  playerLayerMask:
+    serializedVersion: 2
+    m_Bits: 4096
+  knockbackDistance: 5
+  knockbackDuration: 0.18
+  knockbackUpBias: 0.35
+  disablePlayerMoverDuringKnockback: 1
+  useSafeCastMove: 1
+  obstacleLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  showDebug: 1
+  showGizmos: 1
+--- !u!95 &4616729171374072772 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1160356261127867848, guid: d6d6c60790273f141a7d244333f6f22a,
+    type: 3}
+  m_PrefabInstance: {fileID: 5767848229110689292}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &7088356132924767976 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 3626916397498700004, guid: d6d6c60790273f141a7d244333f6f22a,
+    type: 3}
+  m_PrefabInstance: {fileID: 5767848229110689292}
+  m_PrefabAsset: {fileID: 0}
