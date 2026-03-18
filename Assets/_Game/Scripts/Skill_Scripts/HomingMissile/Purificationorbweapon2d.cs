@@ -8,7 +8,6 @@
 // CommonSkillWeapon2D를 상속하지 않는 이유:
 //   정화구는 "발사 → 부착 → 지속 피해" 라는 독자적인 사이클이라
 //   베이스 클래스의 TryBeginFire/cooldownTimer 흐름과 맞지 않음.
-//   또한 enemyMask, OnAttached, ApplyLevel 등의 이름 충돌을 완전히 회피.
 //
 // [레벨 테이블] (기획서 확정)
 //  Lv │ 틱 데미지 │ 틱 횟수 │ 총 데미지 │ 부착 시간
@@ -76,7 +75,8 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
     private float tickInterval = 0.5f;
 
     [Header("디버그")]
-    [SerializeField] private bool debugLog = false;
+    [SerializeField]
+    private bool debugLog;
 
     // ══════════════════════════════════════════════════════════════
     // 런타임 상태
@@ -97,9 +97,8 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
     // 레벨 테이블 (하드코딩 — 기획서 확정치)
     // ══════════════════════════════════════════════════════════════
 
-    // 인덱스 0 = Lv1, 인덱스 7 = Lv8
-    private static readonly float[] s_tickDamageByLevel = { 5f, 7.5f, 10f, 10f, 10f, 10f, 10f, 10f };
-    private static readonly int[]   s_tickCountByLevel  = { 5,  5,    5,   6,   7,   8,   9,   10  };
+    private static readonly float[] TickDamageByLevel = { 5f, 7.5f, 10f, 10f, 10f, 10f, 10f, 10f };
+    private static readonly int[]   TickCountByLevel  = { 5,  5,    5,   6,   7,   8,   9,   10  };
 
     // ══════════════════════════════════════════════════════════════
     // ILevelableSkill 인터페이스 구현
@@ -145,11 +144,9 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
         _cooldownTimer -= Time.deltaTime;
         if (_cooldownTimer > 0f) return;
 
-        // 타겟 탐색
         Transform target = FindPriorityTarget();
         if (target == null) return;
 
-        // 발사
         Fire(target);
         _cooldownTimer = ComputeCooldown();
     }
@@ -166,7 +163,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
             return;
         }
 
-        // ProjectilePool2D.Get<T>(Vector3, Quaternion) 시그니처 사용
+        // PooledObject2D 상속 덕분에 제네릭 제약 충족
         var orb = pool.Get<PurificationOrbProjectile2D>(
             _owner.position, Quaternion.identity);
 
@@ -192,10 +189,9 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
 
     private int GetTickDamage()
     {
-        int idx = Mathf.Clamp(_level - 1, 0, s_tickDamageByLevel.Length - 1);
-        float dmg = s_tickDamageByLevel[idx];
+        int idx = Mathf.Clamp(_level - 1, 0, TickDamageByLevel.Length - 1);
+        float dmg = TickDamageByLevel[idx];
 
-        // 공격력 패시브 반영
         if (_stats != null)
             dmg *= _stats.DamageMul;
 
@@ -204,8 +200,8 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
 
     private int GetTickCount()
     {
-        int idx = Mathf.Clamp(_level - 1, 0, s_tickCountByLevel.Length - 1);
-        return s_tickCountByLevel[idx];
+        int idx = Mathf.Clamp(_level - 1, 0, TickCountByLevel.Length - 1);
+        return TickCountByLevel[idx];
     }
 
     private float ComputeCooldown()
@@ -240,25 +236,23 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
 
         for (int i = 0; i < count; i++)
         {
-            var hit = _enemyHits[i];
+            Collider2D hit = _enemyHits[i];
             if (hit == null) continue;
 
-            GameObject enemyGO = hit.gameObject;
-            if (!enemyGO.activeInHierarchy) continue;
+            GameObject enemyGo = hit.gameObject;
+            if (!enemyGo.activeInHierarchy) continue;
 
-            // 부착 가능한 대상만 (이미 꽉 찬 대상 제외)
-            if (!PurificationOrbAttachTracker.CanAttachTo(enemyGO)) continue;
+            if (!PurificationOrbAttachTracker.CanAttachTo(enemyGo)) continue;
 
-            // 등급 확인
             EnemyGrade grade = EnemyGrade.Normal;
-            var gradeTag = enemyGO.GetComponent<EnemyGradeTag>();
+            EnemyGradeTag gradeTag = enemyGo.GetComponent<EnemyGradeTag>();
             if (gradeTag != null) grade = gradeTag.Grade;
 
-            float distSq = ((Vector2)enemyGO.transform.position - ownerPos).sqrMagnitude;
+            float distSq = ((Vector2)enemyGo.transform.position - ownerPos).sqrMagnitude;
 
             if (grade < bestGrade || (grade == bestGrade && distSq < bestDistSq))
             {
-                bestTarget = enemyGO.transform;
+                bestTarget = enemyGo.transform;
                 bestGrade = grade;
                 bestDistSq = distSq;
             }
