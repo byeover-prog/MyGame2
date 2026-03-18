@@ -1,29 +1,31 @@
 // UTF-8
+// Assets/_Game/Scripts/Combat/Skills/ThunderTalisman/ThunderStrikeArea2D.cs
 using UnityEngine;
 
 /// <summary>
-/// 번개 범위 공격 + 애니메이션
+/// 번개 범위 공격 + VFX 파티클 연출
 ///
-/// Strike() 호출 → 범위 내 적 즉시 데미지 + 애니메이션 재생 → 자동 비활성화
+/// Strike() 호출 → 범위 내 적 즉시 데미지 + VFX 파티클 재생 → 자동 비활성화
 ///
-/// [변경 요약]
-/// - 비주얼 스케일은 visualRoot에만 적용(루트 스케일 건드리지 않음)
-/// - 마지막 radius를 저장해서 Gizmo가 실제 반경으로 표시되게 함
+/// [변경 요약 — Animator→VFX 전환]
+/// - Animator, SpriteRenderer 완전 제거
+/// - VFXSpawner.Spawn()으로 번개 파티클 프리팹을 풀링 기반 생성
+/// - VFX 크기는 vfxScaleMultiplier로 조절 (데미지 범위와 독립)
+/// - VFX 수명은 VFXAutoReturn이 자동 관리 → 이 스크립트에서 관여하지 않음
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class ThunderStrikeArea2D : MonoBehaviour
 {
-    [Header("연출")]
-    [SerializeField] private Animator animator;
-    [SerializeField] private string triggerName = "Strike";
-    [SerializeField, Min(0.05f)] private float thunderDuration = 0.5f;
+    [Header("VFX 파티클")]
+    [Tooltip("번개 이펙트 파티클 프리팹.\nVFXSpawner를 통해 풀링 관리됩니다.")]
+    [SerializeField] private GameObject thunderVFXPrefab;
 
-    [Header("스케일(비주얼만)")]
-    [Tooltip("번개 이미지(Animator가 달린 쪽)의 루트 Transform.\n비우면 Animator의 Transform을 사용합니다.")]
-    [SerializeField] private Transform visualRoot;
+    [Tooltip("VFX 크기 배수. 1=원본, 2=2배.\n데미지 범위와 무관하게 비주얼만 조절합니다.")]
+    [SerializeField, Min(0.1f)] private float vfxScaleMultiplier = 1f;
 
-    [Tooltip("비주얼 스케일 배수(이미지 크기만). 데미지 범위와 무관.\n1=원본, 2=2배")]
-    [SerializeField, Min(0.1f)] private float visualScaleMultiplier = 1f;
+    [Header("타이밍")]
+    [Tooltip("Strike 후 이 오브젝트가 비활성화되기까지의 시간(초).\nVFX 수명과 별개로, 데미지 판정 오브젝트의 재사용 대기 시간입니다.")]
+    [SerializeField, Min(0.05f)] private float strikeDuration = 0.5f;
 
     [Header("디버그")]
     [SerializeField] private bool debugLog = true;
@@ -31,48 +33,98 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
     private float _timer;
     private bool _active;
     private readonly Collider2D[] _hits = new Collider2D[64];
-
-    private Vector3 _visualBaseScale = Vector3.one;
-
-    // 마지막으로 사용한 반경(기즈모 표시용)
-    [SerializeField, Min(0.05f)] private float _lastRadius = 1.5f;
-
-    private void Awake()
-    {
-        if (animator == null) animator = GetComponentInChildren<Animator>(true);
-
-        if (visualRoot == null && animator != null)
-            visualRoot = animator.transform;
-
-        if (visualRoot != null)
-            _visualBaseScale = visualRoot.localScale;
-    }
+    private ContactFilter2D _enemyFilter;
 
     /// <summary>
-    /// 번개 소환: 지정 위치에서 범위 데미지 + 애니메이션
+    /// 마지막으로 사용한 반경 (기즈모 표시용)
     /// </summary>
+    [SerializeField, Min(0.05f)] private float _lastRadius = 1.5f;
+
+    /* ───────────── 공개 API ───────────── */
+
+    /// <summary>
+    /// 번개 소환: 현재 위치에서 범위 데미지 + VFX 파티클 생성
+    /// </summary>
+    /// <param name="radius">데미지 판정 반경 (VFX 크기와 별개)</param>
+    /// <param name="damage">적용 피해량</param>
+    /// <param name="mask">적 레이어 마스크</param>
     public void Strike(float radius, int damage, LayerMask mask)
     {
         gameObject.SetActive(true);
 
         radius = Mathf.Max(0.05f, radius);
         damage = Mathf.Max(1, damage);
-
         _lastRadius = radius;
 
-        // 비주얼만 배수 스케일 적용(루트 스케일 건드리지 않음)
-        if (visualRoot != null)
-            visualRoot.localScale = _visualBaseScale * visualScaleMultiplier;
+        if (debugLog)
+            Debug.Log($"[ThunderStrike] Strike pos={transform.position} radius={radius} " +
+                      $"dmg={damage} mask={mask.value}");
+
+        // ── 1. VFX 파티클 생성 ──
+        SpawnVFX();
+
+        // ── 2. 범위 데미지 (즉시 1회) ──
+        ApplyAreaDamage(radius, damage, mask);
+
+        // ── 3. 비활성화 타이머 시작 ──
+        _timer = 0f;
+        _active = true;
+    }
+
+    /* ───────────── 내부 로직 ───────────── */
+
+    /// <summary>
+    /// VFXSpawner를 통해 번개 파티클을 풀링 기반으로 생성합니다.
+    /// VFX 수명 관리(반환)는 VFXAutoReturn이 담당합니다.
+    /// </summary>
+    private void SpawnVFX()
+    {
+        if (thunderVFXPrefab == null)
+        {
+            if (debugLog)
+                Debug.LogWarning("[ThunderStrike] thunderVFXPrefab이 null! " +
+                                 "Inspector에서 VFX 프리팹을 연결하세요.");
+            return;
+        }
+
+        GameObject vfx = VFXSpawner.Spawn(
+            thunderVFXPrefab,
+            transform.position,
+            Quaternion.identity
+        );
+
+        if (vfx == null)
+        {
+            if (debugLog)
+                Debug.LogWarning("[ThunderStrike] VFXSpawner.Spawn()이 null 반환!");
+            return;
+        }
+
+        // VFX 스케일 적용 (비주얼만, 데미지 범위와 무관)
+        if (!Mathf.Approximately(vfxScaleMultiplier, 1f))
+        {
+            vfx.transform.localScale = Vector3.one * vfxScaleMultiplier;
+        }
 
         if (debugLog)
-            Debug.Log($"[ThunderStrike] Strike pos={transform.position} radius={radius} dmg={damage} mask={mask.value}");
+            Debug.Log($"[ThunderStrike] VFX 생성 완료 scale={vfxScaleMultiplier}");
+    }
 
-        // 범위 데미지 (즉시 1회)
-        int hitCount = Physics2DCompat.OverlapCircleNonAlloc(
+    /// <summary>
+    /// OverlapCircle로 범위 내 적에게 즉시 데미지를 적용합니다.
+    /// </summary>
+    private void ApplyAreaDamage(float radius, int damage, LayerMask mask)
+    {
+        // Unity 6: ContactFilter2D + 배열 오버로드 (deprecated NonAlloc 대체, GC 0)
+        _enemyFilter.useLayerMask = true;
+        _enemyFilter.layerMask = mask;
+        _enemyFilter.useTriggers = true;
+
+        int hitCount = Physics2D.OverlapCircle(
             (Vector2)transform.position,
             radius,
-            _hits,
-            mask
+            _enemyFilter,
+            _hits
         );
 
         if (debugLog)
@@ -85,8 +137,7 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
             var col = _hits[i];
             if (col == null) continue;
 
-            // 자식 콜라이더가 잡혀도 부모 체력에 적용되도록 TryApplyDamage가 내부에서 InParent를 찾는 게 이상적
-            // 여기서는 최소한 TryApplyDamage 실패 시 root쪽도 한 번 더 시도
+            // TryApplyDamage 실패 시 root 쪽에도 한 번 더 시도
             bool success = DamageUtil2D.TryApplyDamage(col, damage);
             if (!success)
             {
@@ -96,36 +147,26 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
             }
 
             if (debugLog)
-                Debug.Log($"[ThunderStrike]   hit[{i}]={col.name} layer={LayerMask.LayerToName(col.gameObject.layer)} dmgApplied={success}");
+                Debug.Log($"[ThunderStrike]   hit[{i}]={col.name} " +
+                          $"layer={LayerMask.LayerToName(col.gameObject.layer)} " +
+                          $"dmgApplied={success}");
 
             if (success) damageApplied++;
         }
 
         if (debugLog)
-            Debug.Log($"[ThunderStrike] Total damaged={damageApplied}/{hitCount}");
-
-        if (animator != null)
-            animator.SetTrigger(triggerName);
-
-        _timer = 0f;
-        _active = true;
+            Debug.Log($"[ThunderStrike] 총 데미지 적용={damageApplied}/{hitCount}");
     }
+
+    /* ───────────── 라이프사이클 ───────────── */
 
     private void Update()
     {
         if (!_active) return;
 
         _timer += Time.deltaTime;
-        if (_timer >= thunderDuration)
+        if (_timer >= strikeDuration)
             Finish();
-    }
-
-    /// <summary>
-    /// Animation Event용: 클립 마지막 프레임에서 호출
-    /// </summary>
-    public void OnAnimationFinished()
-    {
-        Finish();
     }
 
     private void Finish()
