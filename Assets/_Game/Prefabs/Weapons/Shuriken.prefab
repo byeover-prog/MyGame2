@@ -153,10 +153,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RicochetShurikenProjectile2D
   rotateDegPerSec: 1080
+  bounceSearchRadius: 10
   exitKickSeconds: 0.06
   exitKickSpeedMul: 1.2
   hitImmunitySeconds: 0.12
-  despawnDelay: 0.1
+  despawnDelay: 0.18
 --- !u!114 &-6176851753979407180
 MonoBehaviour:
   m_ObjectHideFlags: 0
