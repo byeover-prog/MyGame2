@@ -93,9 +93,9 @@ MonoBehaviour:
   fallbackProjectileLife: 2
   shurikenProjectilePrefab: {fileID: 5000209898010349714, guid: 7935c7cec6de13948ad780e1512bee6f,
     type: 3}
-  detectRange: 10
+  detectRange: 5
   firePivot: {fileID: 244080834077732029}
-  spawnSeparation: 0.25
-  fanAngleDeg: 10
+  fireInterval: 0.15
+  spawnSeparation: 0
+  fanAngleDeg: 0
   maxTargetCandidates: 12
-  _runtimeLevel: 1
