@@ -33,5 +33,8 @@ MonoBehaviour:
   supportBuffType: 3
   supportBuffValue: 60
   supportBuffDuration: 10
-  supportVisualPrefab: {fileID: 0}
-  animatorController: {fileID: 0}
+  playerIdleSprite: {fileID: -5819949379204106110, guid: a3aeac537a8481f4cb203c7a7f61d51b,
+    type: 3}
+  supportVisualPrefab: {fileID: 2448833564552998235, guid: 4fef947d26cdffb4295575391fab7191,
+    type: 3}
+  animatorController: {fileID: 9100000, guid: d95c239ca35920741bd8007736940892, type: 2}

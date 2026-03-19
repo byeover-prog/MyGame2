@@ -62,7 +62,7 @@ public static class CommonSkillWeaponPrefabBuilder
         new WeaponBuildSpec(
             prefabName: "Weapon_Balsi",
             weaponType: typeof(BalsiWeapon2D),
-            projectileType: typeof(_Game.Scripts.Object_Scripts.WeaponSystem.WeaponPrefab_Scripts.BalsiProjectile2D),
+            projectileType: typeof(BalsiProjectile2D),
             extraSetup: null
         ),
         new WeaponBuildSpec(
