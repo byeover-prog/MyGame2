@@ -1,5 +1,3 @@
-// UTF-8
-// Assets/_Game/Scripts/Ultimate/UltimateController2D.cs
 // R키 궁극기 입력 + 쿨다운 관리. Player 루트에 부착.
 using UnityEngine;
 
@@ -15,8 +13,8 @@ public sealed class UltimateController2D : MonoBehaviour
     private KeyCode ultimateKey = KeyCode.R;
 
     [Header("참조")]
-    [SerializeField, Tooltip("하율 궁극기 실행기. 같은 오브젝트 또는 자식.")]
-    private HayulUltimateExecutor2D executor;
+    [SerializeField, Tooltip("공용 궁극기 실행기. Player에 붙은 UltimateExecutor2D.")]
+    private UltimateExecutor2D executor;
 
     [Header("애니메이션")]
     [SerializeField, Tooltip("Animator 참조. 없으면 자동 탐색.")]
@@ -34,7 +32,7 @@ public sealed class UltimateController2D : MonoBehaviour
     private void Awake()
     {
         if (executor == null)
-            executor = GetComponentInChildren<HayulUltimateExecutor2D>();
+            executor = GetComponentInChildren<UltimateExecutor2D>();
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
     }
@@ -65,6 +63,16 @@ public sealed class UltimateController2D : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 현재 메인 캐릭터의 궁극기를 설정한다.
+    /// 편성 시스템에서 메인 캐릭터가 바뀔 때 호출.
+    /// </summary>
+    public void SetCharacter(CharacterDefinitionSO charDef)
+    {
+        if (executor != null)
+            executor.SetCharacter(charDef);
+    }
+
     private void TryActivate()
     {
         if (_isExecuting)
@@ -85,13 +93,20 @@ public sealed class UltimateController2D : MonoBehaviour
             return;
         }
 
+        if (!executor.IsExecuting && executor.CurrentCharacterId == null)
+        {
+            Debug.LogWarning("[궁극기] 캐릭터가 설정되지 않았습니다! SetCharacter()를 먼저 호출하세요.");
+            return;
+        }
+
         // 애니메이션 트리거
         if (animator != null)
-            animator.SetTrigger("ULT");
+            animator.SetTrigger("Trigger_Ult");
 
         // 실행
         _isExecuting = true;
-        Debug.Log("[궁극기] R키 발동 — 하율 천강뇌전부");
+        string charId = executor.CurrentCharacterId ?? "unknown";
+        Debug.Log($"[궁극기] R키 발동 — {charId}");
         executor.Execute(OnUltimateFinished);
     }
 
