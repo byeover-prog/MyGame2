@@ -331,7 +331,7 @@ MonoBehaviour:
   target: {fileID: 0}
   chaseMovement: {fileID: 5712550118548066777}
   rb: {fileID: 7938777745075436355}
-  projectileSpawnPoint: {fileID: 6131544368047525963}
+  projectileSpawnPoint: {fileID: 8709160439373752743}
   projectilePrefab: {fileID: 3563845399520762193, guid: 450790bbbcd59fa4ea64458ff1328942,
     type: 3}
   playerTag: Player
@@ -352,6 +352,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8709160439373752743}
+  - component: {fileID: 1515396566762140982}
   m_Layer: 16
   m_Name: ProjectileSpawnPoint
   m_TagString: Untagged
@@ -368,9 +369,26 @@ Transform:
   m_GameObject: {fileID: 6735016442985675849}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.2043, y: 0.004, z: 0}
+  m_LocalPosition: {x: -0.341, y: -0.005, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6131544368047525963}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1515396566762140982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6735016442985675849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a01df545fc652e45855e6ee20338e75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileSpawnPointMirror2D
+  bodySpriteRenderer: {fileID: 9087728960384241881}
+  useCurrentLocalPositionAsAuthoredPosition: 1
+  authoredLocalPosition: {x: -0.341, y: -0.012, z: 0}
+  authoredFlipXState: 0
+  updateEveryFrame: 1

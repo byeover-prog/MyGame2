@@ -1,11 +1,13 @@
 using UnityEngine;
 
 /// <summary>
-/// 적 투사체의 이동, 수명, 화면 밖 제거, 플레이어 충돌 데미지를 담당합니다.
+/// 적 투사체의 차징 미리보기, 발사, 이동, 수명, 화면 밖 제거, 플레이어 충돌 데미지를 담당합니다.
+///
 /// 구현 원리:
-/// 1. Launch로 발사 방향을 한 번 설정한 뒤 Rigidbody2D.linearVelocity로 직선 이동합니다.
-/// 2. 일정 시간이 지나거나 화면 밖으로 나가면 DestroySelf로 정리합니다.
-/// 3. 플레이어 Trigger 충돌 시 지정한 메서드명으로 피해를 전달하고 사라집니다.
+/// 1. 투사체가 처음 생성될 때 프리팹의 원본 localScale / worldScale을 저장합니다.
+/// 2. 차징 미리보기 상태에서는 SpawnPoint의 자식으로 붙이되, 부모가 바뀌어도 저장한 원본 worldScale을 다시 적용하여 크기가 변하지 않게 합니다.
+/// 3. 발사 시에는 부모에서 분리한 뒤 다시 한 번 원본 worldScale을 적용하여, 차징을 거쳤든 안 거쳤든 항상 같은 크기로 날아가게 합니다.
+/// 4. 차징 중에는 외부에서 UpdateChargePreviewAim을 호출하여 현재 타겟 방향으로 계속 조준 회전을 갱신할 수 있고, 발사 후에는 저장된 방향으로 직선 이동합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public class EnemyProjectile2D : MonoBehaviour
@@ -54,7 +56,12 @@ public class EnemyProjectile2D : MonoBehaviour
     private float _lifeTimer;
     private float _offscreenTimer;
     private bool _isLaunched;
+    private bool _isChargePreview;
     private Camera _mainCamera;
+
+    // 프리팹 원본 크기 보존용
+    private Vector3 _authoredLocalScale = Vector3.one;
+    private Vector3 _authoredWorldScale = Vector3.one;
 
     private void Reset()
     {
@@ -77,6 +84,7 @@ public class EnemyProjectile2D : MonoBehaviour
             return;
         }
 
+        CacheAuthoredScale();
         _mainCamera = Camera.main;
     }
 
@@ -85,12 +93,21 @@ public class EnemyProjectile2D : MonoBehaviour
         if (!enabled)
             return;
 
+        // 현재 프로젝트는 Destroy 기반이라 Instantiate 직후의 값이 곧 프리팹 원본 값입니다.
+        // 나중에 풀링으로 바꾸더라도, '최초 생성 직후 스케일을 기준값으로 삼는다'는 의도는 유지됩니다.
+        if (transform.parent == null)
+            CacheAuthoredScale();
+
         _lifeTimer = 0f;
         _offscreenTimer = 0f;
         _isLaunched = false;
+        _isChargePreview = false;
 
         if (rb != null)
             rb.linearVelocity = Vector2.zero;
+
+        if (triggerCollider != null)
+            triggerCollider.enabled = true;
     }
 
     private void OnValidate()
@@ -109,7 +126,66 @@ public class EnemyProjectile2D : MonoBehaviour
     }
 
     /// <summary>
-    /// 외부에서 발사 방향을 받아 투사체를 시작합니다.
+    /// 차징 중 손에 들고 있는 것처럼 보이도록 미리보기 상태로 전환합니다.
+    /// 부모가 바뀌어도 프리팹의 원래 world scale이 유지되도록 보정합니다.
+    /// </summary>
+    public void PrepareForChargePreview(Transform previewAnchor, Vector2 direction)
+    {
+        if (!enabled)
+            return;
+
+        if (direction.sqrMagnitude <= 0.0001f)
+            direction = Vector2.right;
+
+        _moveDirection = direction.normalized;
+        _lifeTimer = 0f;
+        _offscreenTimer = 0f;
+        _isLaunched = false;
+        _isChargePreview = true;
+
+        if (rb != null)
+            rb.linearVelocity = Vector2.zero;
+
+        if (triggerCollider != null)
+            triggerCollider.enabled = false;
+
+        if (previewAnchor != null)
+        {
+            // worldPositionStays = true 로 부모를 붙인 뒤,
+            // 저장해 둔 원본 world scale을 다시 강제로 적용해서 크기 변형을 막습니다.
+            transform.SetParent(previewAnchor, true);
+            transform.localPosition = Vector3.zero;
+            ApplyAuthoredWorldScale();
+        }
+
+        UpdateChargePreviewAim(_moveDirection);
+    }
+
+    /// <summary>
+    /// 차징 미리보기 상태에서 현재 타겟 방향으로 조준을 계속 갱신합니다.
+    /// </summary>
+    public void UpdateChargePreviewAim(Vector2 direction)
+    {
+        if (!enabled)
+            return;
+
+        if (direction.sqrMagnitude <= 0.0001f)
+            return;
+
+        _moveDirection = direction.normalized;
+
+        if (rotateToMoveDirection)
+            transform.right = _moveDirection;
+
+        // 부모가 있는 상태에서 회전까지 반영한 뒤 world scale을 다시 맞춰주면
+        // 차징 중에도 크기 틀어짐을 더 안정적으로 막을 수 있습니다.
+        if (_isChargePreview)
+            ApplyAuthoredWorldScale();
+    }
+
+    /// <summary>
+    /// 차징 미리보기 상태를 끝내고 실제 투사체로 발사합니다.
+    /// 부모에서 분리한 뒤에도 프리팹 원래 world scale을 유지합니다.
     /// </summary>
     public void Launch(Vector2 direction)
     {
@@ -122,10 +198,18 @@ public class EnemyProjectile2D : MonoBehaviour
         _moveDirection = direction.normalized;
         _lifeTimer = 0f;
         _offscreenTimer = 0f;
+        _isChargePreview = false;
         _isLaunched = true;
+
+        transform.SetParent(null, true);
 
         if (rotateToMoveDirection)
             transform.right = _moveDirection;
+
+        ApplyAuthoredWorldScale();
+
+        if (triggerCollider != null)
+            triggerCollider.enabled = true;
 
         rb.linearVelocity = _moveDirection * moveSpeed;
     }
@@ -189,14 +273,60 @@ public class EnemyProjectile2D : MonoBehaviour
 
     private void DestroySelf()
     {
-        if (!_isLaunched)
-            return;
-
         _isLaunched = false;
+        _isChargePreview = false;
 
         if (rb != null)
             rb.linearVelocity = Vector2.zero;
 
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// 현재 투사체가 처음 생성되었을 때의 크기를 기준값으로 저장합니다.
+    /// </summary>
+    private void CacheAuthoredScale()
+    {
+        _authoredLocalScale = transform.localScale;
+        _authoredWorldScale = transform.lossyScale;
+    }
+
+    /// <summary>
+    /// 부모가 바뀐 뒤에도 저장된 원본 world scale을 다시 맞춥니다.
+    /// </summary>
+    private void ApplyAuthoredWorldScale()
+    {
+        SetWorldScale(_authoredWorldScale);
+    }
+
+    /// <summary>
+    /// 현재 부모의 lossyScale을 고려해서, 원하는 world scale이 나오도록 localScale을 역산합니다.
+    /// </summary>
+    private void SetWorldScale(Vector3 targetWorldScale)
+    {
+        Transform parent = transform.parent;
+
+        if (parent == null)
+        {
+            // 부모가 없으면 localScale == worldScale 이므로 그대로 넣으면 됩니다.
+            transform.localScale = targetWorldScale;
+            return;
+        }
+
+        Vector3 parentLossyScale = parent.lossyScale;
+
+        transform.localScale = new Vector3(
+            SafeDivideScale(targetWorldScale.x, parentLossyScale.x, _authoredLocalScale.x),
+            SafeDivideScale(targetWorldScale.y, parentLossyScale.y, _authoredLocalScale.y),
+            SafeDivideScale(targetWorldScale.z, parentLossyScale.z, _authoredLocalScale.z)
+        );
+    }
+
+    private float SafeDivideScale(float targetWorld, float parentWorld, float fallbackLocal)
+    {
+        if (Mathf.Abs(parentWorld) <= 0.0001f)
+            return fallbackLocal;
+
+        return targetWorld / parentWorld;
     }
 }
