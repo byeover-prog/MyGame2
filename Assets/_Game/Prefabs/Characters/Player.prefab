@@ -31,7 +31,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4190694949098890430}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &628413966493847509
+--- !u!1 &593228311670988857
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -39,22 +39,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7847826310654910425}
-  - component: {fileID: 9070543455973121913}
+  - component: {fileID: 1487555101690379736}
+  - component: {fileID: 4341151486296550556}
   m_Layer: 12
-  m_Name: PlayerSkillLoadout
+  m_Name: HayulUltimatePresenter2D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7847826310654910425
+--- !u!4 &1487555101690379736
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 628413966493847509}
+  m_GameObject: {fileID: 593228311670988857}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -63,19 +63,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4190694949098890430}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9070543455973121913
+--- !u!114 &4341151486296550556
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 628413966493847509}
+  m_GameObject: {fileID: 593228311670988857}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc37798b482a23746a0e62a7c96c4bbc, type: 3}
+  m_Script: {fileID: 11500000, guid: b9668e57af89af745805c172b1e7106d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_Game.Player.PlayerSkillLoadout
-  balanceTable: {fileID: 11400000, guid: 45af5610723c56b4a8e9f914972a1a66, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::HayulUltimatePresenter2D
+  fullscreenVfxPrefab: {fileID: 1550705625387025901, guid: ab8fa77c002b5e24481a2e09a808ffda,
+    type: 3}
+  vfxOriginalWorldSize: 10
+  scaleMargin: 1.2
+  mainCamera: {fileID: 0}
 --- !u!1 &2448833564552998235
 GameObject:
   m_ObjectHideFlags: 0
@@ -88,7 +92,7 @@ GameObject:
   - component: {fileID: 1919909767591641912}
   - component: {fileID: 755554874796778754}
   - component: {fileID: 7860177874705673016}
-  - component: {fileID: 1882193107018059819}
+  - component: {fileID: 4647107411677863048}
   - component: {fileID: 2705074325802471618}
   - component: {fileID: 2491341694663641043}
   - component: {fileID: 2567311258014471434}
@@ -101,6 +105,11 @@ GameObject:
   - component: {fileID: 6050163584835897625}
   - component: {fileID: 4633536343807085861}
   - component: {fileID: 3643547768900288814}
+  - component: {fileID: 3876108120180533697}
+  - component: {fileID: 1917345489163748299}
+  - component: {fileID: 476021461681456854}
+  - component: {fileID: 1424634346308500864}
+  - component: {fileID: 8240770092769723947}
   m_Layer: 12
   m_Name: Player
   m_TagString: Player
@@ -118,13 +127,15 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4443526053670800817}
   - {fileID: 360696652443707109}
   - {fileID: 1515076063968802505}
-  - {fileID: 7847826310654910425}
+  - {fileID: 4635584435544448468}
+  - {fileID: 1487555101690379736}
+  - {fileID: 1924827254929805743}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1919909767591641912
@@ -236,7 +247,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &1882193107018059819
+--- !u!61 &4647107411677863048
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -266,21 +277,21 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.012720428, y: 0.585}
+  m_Offset: {x: 0.025000006, y: 0.004999995}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.46268654, y: -0.4}
+    pivot: {x: 0.46268654, y: 0.4923077}
     oldSize: {x: 0.67, y: 0.65}
     newSize: {x: 0.35, y: 0.56}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.30384547, y: 0.65}
+  m_Size: {x: 0.67, y: 0.65}
   m_EdgeRadius: 0
 --- !u!114 &2705074325802471618
 MonoBehaviour:
@@ -387,6 +398,9 @@ MonoBehaviour:
   combatStats: {fileID: 3643547768900288814}
   walkOnSpeed: 0.05
   walkOffSpeed: 0.02
+  lockMoveDuringAction: 1
+  exitFadeDuration: 0.25
+  debugLog: 0
 --- !u!114 &4444325608737869858
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -498,7 +512,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRuntimeApplier2D
   baseStatProfile: {fileID: 11400000, guid: d9ff6d3783f7f634bb7d841bc0299ded, type: 2}
-  loadout: {fileID: 9070543455973121913}
+  loadout: {fileID: 0}
   combatStats: {fileID: 3643547768900288814}
   playerHealth: {fileID: 2567311258014471434}
   healToFullWhenMaxHpChanges: 1
@@ -515,6 +529,87 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8208c4ccd20867d45826206cc149398d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCombatStats2D
+--- !u!114 &3876108120180533697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aad10c91bba6975488e8343075f4e4be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UltimateController2D
+  cooldownSeconds: 240
+  ultimateKey: 114
+  executor: {fileID: 1917345489163748299}
+  animator: {fileID: 755554874796778754}
+--- !u!114 &1917345489163748299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 723a4305d12fc1d4c85e8ef566496275, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UltimateExecutor2D
+  presenter: {fileID: 476021461681456854}
+  playerTransform: {fileID: 4190694949098890430}
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 65536
+--- !u!114 &476021461681456854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd4d3b01086cad4468dae8bff0f6d93f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UltimatePresenter2D
+  mainCamera: {fileID: 0}
+  playerTransform: {fileID: 4190694949098890430}
+--- !u!114 &1424634346308500864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe3757e5b764d984a94120a52143a38c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquadLoadout2D
+  catalog: {fileID: 11400000, guid: 6a4332e066ce2da47bee0a32fb63c1e7, type: 2}
+  defaultMain: {fileID: 11400000, guid: 5f133d7897e6b744c9094fa421ae5da4, type: 2}
+  defaultSupport1: {fileID: 11400000, guid: a7777efb354593b4dadca3a8d47b4309, type: 2}
+  defaultSupport2: {fileID: 11400000, guid: 77c40edaff23b024a8868ada5f376cbc, type: 2}
+--- !u!114 &8240770092769723947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d07028e86968a654799d3b7f5e6240a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquadApplier2D
+  loadout: {fileID: 1424634346308500864}
+  skillManager: {fileID: 0}
+  ultimateController: {fileID: 3876108120180533697}
+  playerSpriteRenderer: {fileID: 0}
+  playerAnimator: {fileID: 0}
+  debugLog: 1
 --- !u!1 &2880635546030048868
 GameObject:
   m_ObjectHideFlags: 0
@@ -546,6 +641,114 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4190694949098890430}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2965383068931384801
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1924827254929805743}
+  - component: {fileID: 1729912584674634500}
+  m_Layer: 12
+  m_Name: HayulUltimateHitResolver2D
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1924827254929805743
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2965383068931384801}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4190694949098890430}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1729912584674634500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2965383068931384801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0090de61f6cf2094984e001604f2dc95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HayulUltimateHitResolver2D
+  baseDamage: 10
+  chainDamageRate: 0.15
+  hitRadius: 18
+  chainSearchRadius: 5
+  maxChainCount: 5
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 65536
+  attachedSparkVfxPrefab: {fileID: 0}
+  attachedSparkHoldTime: 0.25
+  attachedSparkOffset: {x: 0, y: 0, z: 0}
+  attachedSparkScale: {x: 1, y: 1, z: 1}
+  attachedSparkSortingLayer: 
+  attachedSparkOrderInLayer: 0
+  playerTransform: {fileID: 4190694949098890430}
+--- !u!1 &5056014124827814412
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4635584435544448468}
+  - component: {fileID: 2306607676699638683}
+  m_Layer: 12
+  m_Name: HayulUltimate
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4635584435544448468
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5056014124827814412}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4190694949098890430}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2306607676699638683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5056014124827814412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6ca3d51e0ae2144a8ccd8e7ce783ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HayulUltimateExecutor2D
+  duration: 4.5
+  hitDelay: 0.5
+  hitInterval: 0.5
+  presenter: {fileID: 4341151486296550556}
+  hitResolver: {fileID: 1729912584674634500}
 --- !u!1 &6640159768761201894
 GameObject:
   m_ObjectHideFlags: 0
