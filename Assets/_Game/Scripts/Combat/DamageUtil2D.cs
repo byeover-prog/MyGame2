@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 
 // [구현 원리 요약]
@@ -102,6 +101,12 @@ public static class DamageUtil2D
         {
             Vector3 pos = GetPopupWorldPos(hitGo, hitCol);
             DamageEvents2D.RaiseDamagePopup(pos, damage, element);
+
+            // ★ 속성 피격 이펙트 요청 (ElementVFXObserver2D가 구독)
+            DamageEvents2D.RaiseElementHit(hitGo, element);
+
+            // ★ 적 데미지 적용 완료 알림 (흡혈/후처리용)
+            DamageEvents2D.RaiseEnemyDamageApplied(hitGo, damage, element);
         }
 
         return applied;

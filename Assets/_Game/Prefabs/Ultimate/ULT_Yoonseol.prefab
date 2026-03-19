@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3538057671869789501
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6740658370952444336}
+  - component: {fileID: 6062579595646764705}
+  - component: {fileID: -1238075842052149174}
+  m_Layer: 0
+  m_Name: ULT_Yoonseol
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6740658370952444336
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3538057671869789501}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6062579595646764705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3538057671869789501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf72a0b1386522a4b92caf7f6565b020, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::YoonseolUltimateResolver
+  arrowsPerBurst: 6
+  burstDelay: 0.08
+  arrowVfxPrefab: {fileID: 1864982285856221224, guid: 2151e0569272e0c4da78b5ba0b34b4c5,
+    type: 3}
+  arrowSpeed: 18
+  arrowLifetime: 0.8
+  maxExtremeColdStacks: 100
+  ultimateVfxPrefab: {fileID: 3538057671869789501}
+--- !u!114 &-1238075842052149174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3538057671869789501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0588eb965c8eb240871db7fe8b051ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Game.Combat.Skills.TriangleVolleySkill2D
+  fireOrigin: {fileID: 0}
+  pieceVfxPrefab: {fileID: 1864982285856221224, guid: 2151e0569272e0c4da78b5ba0b34b4c5,
+    type: 3}
+  triangleRows: 3
+  lateralSpacing: 0.45
+  forwardSpacing: 0
+  flightSpeed: 13
+  maxFlightTime: 0.9
+  forwardSpawnOffset: 0.35
+  waveScale: 1
