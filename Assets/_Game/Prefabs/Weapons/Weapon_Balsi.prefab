@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fce41f4c8e72d43479d24aaaba0abfb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BalsiWeapon2D
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 28185b87f409f214ebad0f4f930488bc, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536
@@ -94,7 +94,6 @@ MonoBehaviour:
   fallbackProjectileLife: 2
   pool: {fileID: 6215998619112459940}
   spawnPoint: {fileID: 2223466731760306983}
-  pierceCount: 0
   debugLog: 0
 --- !u!114 &6215998619112459940
 MonoBehaviour:
