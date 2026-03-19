@@ -117,7 +117,8 @@ MonoBehaviour:
   attachOrbitSpeed: 180
   bodyVfxPrefab: {fileID: 2405880121242604530, guid: da892620055a54c4089f2b973f986d36,
     type: 3}
-  tickVfxPrefab: {fileID: 0}
+  tickVfxPrefab: {fileID: 30517238150269949, guid: 85422f3095822bf40a014b2e4f96dc4b,
+    type: 3}
   despawnVfxPrefab: {fileID: 0}
   tickFlashColor: {r: 1, g: 1, b: 1, a: 1}
   tickFlashDuration: 0.1
