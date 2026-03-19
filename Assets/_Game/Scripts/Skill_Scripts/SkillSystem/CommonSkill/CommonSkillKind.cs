@@ -11,4 +11,5 @@ public enum CommonSkillKind
     
     Balsi = 8, // 발시(윤설)
     ThunderTalisman = 9, // 낙뢰부(하율 전용)
+    JwagyeokYose = 10, // 좌격요세(하린 전용)
 }

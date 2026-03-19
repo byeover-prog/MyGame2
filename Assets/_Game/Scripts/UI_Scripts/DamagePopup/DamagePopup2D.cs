@@ -74,20 +74,29 @@ public sealed class DamagePopup2D : MonoBehaviour
         {
             default:
             case DamageElement2D.Physical: _baseColor = Color.white; break;                         // 물리: 흰색
-            case DamageElement2D.Ice:      _baseColor = new Color(0.55f, 0.82f, 1.00f, 1f); break; // 빙결: 하늘색
-            case DamageElement2D.Fire:     _baseColor = new Color(1.00f, 0.36f, 0.16f, 1f); break; // 화염: 빨간 주황
-            case DamageElement2D.Earth:    _baseColor = new Color(0.78f, 0.64f, 0.44f, 1f); break; // 땅: 연갈색
-            case DamageElement2D.Wind:     _baseColor = new Color(0.44f, 0.90f, 0.76f, 1f); break; // 바람: 민트
-            case DamageElement2D.Water:    _baseColor = new Color(0.24f, 0.62f, 1.00f, 1f); break; // 물: 파랑 계열
-            case DamageElement2D.Light:    _baseColor = new Color(0.80f, 0.66f, 1.00f, 1f); break; // 양: 연보라
+            case DamageElement2D.Ice:      _baseColor = new Color(0.55f, 0.85f, 1.00f, 1f); break; // 빙결: 하늘색 (겨울왕국 느낌)
+            case DamageElement2D.Fire:     _baseColor = new Color(1.00f, 0.45f, 0.10f, 1f); break; // 화염: 주황 (원신/디아블로)
+            case DamageElement2D.Electric: _baseColor = new Color(1.00f, 0.95f, 0.30f, 1f); break; // 전기: 밝은 노랑 (포켓몬/LoL)
+            case DamageElement2D.Earth:    _baseColor = new Color(0.82f, 0.60f, 0.32f, 1f); break; // 땅: 황토색
+            case DamageElement2D.Wind:     _baseColor = new Color(0.50f, 0.92f, 0.65f, 1f); break; // 바람: 연초록 (원신 풍원소)
+            case DamageElement2D.Water:    _baseColor = new Color(0.20f, 0.55f, 1.00f, 1f); break; // 물: 진한 파랑
+            case DamageElement2D.Light:
+                _useGradient = true;
+                text.enableVertexGradient = true;
+                Color lightTop = new Color(1.00f, 1.00f, 0.85f, 1f);    // 위: 밝은 크림
+                Color lightBot = new Color(1.00f, 0.80f, 0.20f, 1f);    // 아래: 따뜻한 금색
+                _baseGradient = new VertexGradient(lightTop, lightTop, lightBot, lightBot);
+                text.colorGradient = _baseGradient;
+                _baseColor = lightTop;
+                break;
             case DamageElement2D.Dark:
                 _useGradient = true;
                 text.enableVertexGradient = true;
-                Color top = Color.white;
-                Color bottom = new Color(0.55f, 0.82f, 1.00f, 1f); // 흰색 -> 하늘색
+                Color top = new Color(0.75f, 0.45f, 1.00f, 1f);    // 위: 보라
+                Color bottom = new Color(0.30f, 0.10f, 0.50f, 1f); // 아래: 짙은 보라 (음 속성 그라데이션)
                 _baseGradient = new VertexGradient(top, top, bottom, bottom);
                 text.colorGradient = _baseGradient;
-                _baseColor = Color.white; // 안전 기본값
+                _baseColor = top;
                 break;
         }
 
