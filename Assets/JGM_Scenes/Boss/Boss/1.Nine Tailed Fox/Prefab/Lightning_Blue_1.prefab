@@ -4908,6 +4908,7 @@ GameObject:
   - component: {fileID: 2814400853590277813}
   - component: {fileID: 8791749195989240678}
   - component: {fileID: 8361292206209967764}
+  - component: {fileID: -6491171167592458814}
   m_Layer: 0
   m_Name: Lightning_Blue_1
   m_TagString: Untagged
@@ -9828,13 +9829,27 @@ MonoBehaviour:
   warningPrefab: {fileID: 826050219743908991, guid: a8170be43f67f0745b47d3963cca2a11,
     type: 3}
   spawnInterval: 5
-  spawnPerTick: 2
+  spawnPerTick: 5
   warningTime: 0.6
-  duration: 3
+  duration: 5
   minDistance: 3
   maxTries: 10
   warningScaleY: 0.7
   warningRotation: 60
+--- !u!114 &-6491171167592458814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009145834550670130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3622c4f12adb57d4b9fdcbf177ebc925, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KumihoLightningDamage
+  damage: 20
+  destroyOnHit: 1
 --- !u!1 &1009145834593142095
 GameObject:
   m_ObjectHideFlags: 0
