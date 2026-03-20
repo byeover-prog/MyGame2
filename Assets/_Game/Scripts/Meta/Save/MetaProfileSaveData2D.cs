@@ -1,201 +1,87 @@
 using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// 아웃게임 메타 프로필의 최상위 세이브 데이터입니다.
+/// SaveManager2D.Data 안에 이 객체를 포함시켜야 합니다.
+/// </summary>
 [Serializable]
 public sealed class MetaProfileSaveData2D
 {
-    public WalletSaveData2D wallet = WalletSaveData2D.CreateDefault();
-    public FormationSaveData2D formation = FormationSaveData2D.CreateDefault();
-    public CharacterProgressionCollectionSaveData2D progression = CharacterProgressionCollectionSaveData2D.CreateDefault();
-    public CharacterUpgradeCollectionSaveData2D upgrades = CharacterUpgradeCollectionSaveData2D.CreateDefault();
+    /// <summary>보유 냥 (재화)입니다.</summary>
+    public int nyang;
+
+    /// <summary>편성 정보입니다.</summary>
+    public FormationSaveData2D formation;
+
+    /// <summary>캐릭터별 강화 상태입니다.</summary>
+    public CharacterUpgradeCollectionSaveData2D upgrades;
+
+    /// <summary>캐릭터별 진행 상태(레벨, 해금)입니다.</summary>
+    public CharacterProgressionCollectionSaveData2D progression;
+
+    /// <summary>기본값을 보장합니다.</summary>
+    public void EnsureDefaults()
+    {
+        if (formation == null) formation = FormationSaveData2D.CreateDefault();
+        formation.EnsureDefaults();
+
+        if (upgrades == null) upgrades = new CharacterUpgradeCollectionSaveData2D();
+        if (progression == null) progression = new CharacterProgressionCollectionSaveData2D();
+    }
 
     public static MetaProfileSaveData2D CreateDefault()
     {
-        return new MetaProfileSaveData2D
+        MetaProfileSaveData2D data = new MetaProfileSaveData2D
         {
-            wallet = WalletSaveData2D.CreateDefault(),
-            formation = FormationSaveData2D.CreateDefault(),
-            progression = CharacterProgressionCollectionSaveData2D.CreateDefault(),
-            upgrades = CharacterUpgradeCollectionSaveData2D.CreateDefault()
+            nyang = 0,
         };
-    }
-
-    public void EnsureDefaults()
-    {
-        if (wallet == null) wallet = WalletSaveData2D.CreateDefault();
-        if (formation == null) formation = FormationSaveData2D.CreateDefault();
-        if (progression == null) progression = CharacterProgressionCollectionSaveData2D.CreateDefault();
-        if (upgrades == null) upgrades = CharacterUpgradeCollectionSaveData2D.CreateDefault();
-
-        wallet.EnsureDefaults();
-        formation.EnsureDefaults();
-        progression.EnsureDefaults();
-        upgrades.EnsureDefaults();
+        data.EnsureDefaults();
+        return data;
     }
 }
 
-[Serializable]
-public sealed class WalletSaveData2D
-{
-    public int nyang = 0;
+// ─────────────────────────────────────────────────────────────
+// 강화 세이브
+// ─────────────────────────────────────────────────────────────
 
-    public static WalletSaveData2D CreateDefault()
-    {
-        return new WalletSaveData2D { nyang = 0 };
-    }
-
-    public void EnsureDefaults()
-    {
-        if (nyang < 0) nyang = 0;
-    }
-}
-
-[Serializable]
-public sealed class CharacterProgressionCollectionSaveData2D
-{
-    public List<CharacterProgressionSaveData2D> characters = new List<CharacterProgressionSaveData2D>(16);
-
-    public static CharacterProgressionCollectionSaveData2D CreateDefault()
-    {
-        return new CharacterProgressionCollectionSaveData2D();
-    }
-
-    public void EnsureDefaults()
-    {
-        if (characters == null) characters = new List<CharacterProgressionSaveData2D>(16);
-
-        for (int i = characters.Count - 1; i >= 0; i--)
-        {
-            if (characters[i] == null || string.IsNullOrWhiteSpace(characters[i].characterId))
-            {
-                characters.RemoveAt(i);
-                continue;
-            }
-
-            characters[i].EnsureDefaults();
-        }
-    }
-
-    public CharacterProgressionSaveData2D GetOrCreate(string characterId, bool unlockedByDefault)
-    {
-        if (characters == null) characters = new List<CharacterProgressionSaveData2D>(16);
-
-        for (int i = 0; i < characters.Count; i++)
-        {
-            CharacterProgressionSaveData2D entry = characters[i];
-            if (entry == null) continue;
-            if (entry.characterId != characterId) continue;
-
-            entry.EnsureDefaults();
-            return entry;
-        }
-
-        CharacterProgressionSaveData2D created = new CharacterProgressionSaveData2D
-        {
-            characterId = characterId,
-            isUnlocked = unlockedByDefault,
-            level = 1,
-            currentXp = 0,
-            totalXp = 0
-        };
-
-        created.EnsureDefaults();
-        characters.Add(created);
-        return created;
-    }
-}
-
-[Serializable]
-public sealed class CharacterProgressionSaveData2D
-{
-    public string characterId;
-    public bool isUnlocked = true;
-    public int level = 1;
-    public int currentXp = 0;
-    public int totalXp = 0;
-
-    public void EnsureDefaults()
-    {
-        if (level < 1) level = 1;
-        if (currentXp < 0) currentXp = 0;
-        if (totalXp < 0) totalXp = 0;
-    }
-}
-
+/// <summary>
+/// 모든 캐릭터의 강화 상태를 모아 두는 컬렉션입니다.
+/// </summary>
 [Serializable]
 public sealed class CharacterUpgradeCollectionSaveData2D
 {
-    public List<CharacterUpgradeStateSaveData2D> characters = new List<CharacterUpgradeStateSaveData2D>(16);
+    public List<CharacterUpgradeStateSaveData2D> entries = new List<CharacterUpgradeStateSaveData2D>(3);
 
-    public static CharacterUpgradeCollectionSaveData2D CreateDefault()
-    {
-        return new CharacterUpgradeCollectionSaveData2D();
-    }
-
-    public void EnsureDefaults()
-    {
-        if (characters == null) characters = new List<CharacterUpgradeStateSaveData2D>(16);
-
-        for (int i = characters.Count - 1; i >= 0; i--)
-        {
-            if (characters[i] == null || string.IsNullOrWhiteSpace(characters[i].characterId))
-            {
-                characters.RemoveAt(i);
-                continue;
-            }
-
-            characters[i].EnsureDefaults();
-        }
-    }
-
+    /// <summary>
+    /// 해당 캐릭터의 강화 상태를 찾거나, 없으면 새로 만듭니다.
+    /// </summary>
     public CharacterUpgradeStateSaveData2D GetOrCreate(string characterId)
     {
-        if (characters == null) characters = new List<CharacterUpgradeStateSaveData2D>(16);
+        if (string.IsNullOrWhiteSpace(characterId)) return null;
 
-        for (int i = 0; i < characters.Count; i++)
+        for (int i = 0; i < entries.Count; i++)
         {
-            CharacterUpgradeStateSaveData2D entry = characters[i];
-            if (entry == null) continue;
-            if (entry.characterId != characterId) continue;
-
-            entry.EnsureDefaults();
-            return entry;
+            if (entries[i] != null && entries[i].characterId == characterId)
+                return entries[i];
         }
 
-        CharacterUpgradeStateSaveData2D created = new CharacterUpgradeStateSaveData2D
-        {
-            characterId = characterId,
-            purchasedNodes = new List<CharacterPurchasedUpgradeNodeSaveData2D>(16)
-        };
-
-        created.EnsureDefaults();
-        characters.Add(created);
-        return created;
+        CharacterUpgradeStateSaveData2D newState = new CharacterUpgradeStateSaveData2D { characterId = characterId };
+        entries.Add(newState);
+        return newState;
     }
 }
 
+/// <summary>
+/// 한 캐릭터의 강화 트리 구매 상태입니다.
+/// </summary>
 [Serializable]
 public sealed class CharacterUpgradeStateSaveData2D
 {
     public string characterId;
-    public List<CharacterPurchasedUpgradeNodeSaveData2D> purchasedNodes = new List<CharacterPurchasedUpgradeNodeSaveData2D>(16);
+    public List<CharacterPurchasedUpgradeNodeSaveData2D> purchasedNodes = new List<CharacterPurchasedUpgradeNodeSaveData2D>(10);
 
-    public void EnsureDefaults()
-    {
-        if (purchasedNodes == null) purchasedNodes = new List<CharacterPurchasedUpgradeNodeSaveData2D>(16);
-
-        for (int i = purchasedNodes.Count - 1; i >= 0; i--)
-        {
-            if (purchasedNodes[i] == null || string.IsNullOrWhiteSpace(purchasedNodes[i].nodeId))
-            {
-                purchasedNodes.RemoveAt(i);
-                continue;
-            }
-
-            purchasedNodes[i].EnsureDefaults();
-        }
-    }
-
+    /// <summary>해당 노드의 현재 랭크를 반환합니다.</summary>
     public int GetRank(string nodeId)
     {
         if (string.IsNullOrWhiteSpace(nodeId) || purchasedNodes == null) return 0;
@@ -203,62 +89,89 @@ public sealed class CharacterUpgradeStateSaveData2D
         for (int i = 0; i < purchasedNodes.Count; i++)
         {
             CharacterPurchasedUpgradeNodeSaveData2D entry = purchasedNodes[i];
-            if (entry == null) continue;
-            if (entry.nodeId != nodeId) continue;
-            return entry.rank;
+            if (entry != null && entry.nodeId == nodeId)
+                return entry.rank;
         }
-
         return 0;
     }
 
+    /// <summary>해당 노드의 랭크를 설정합니다.</summary>
     public void SetRank(string nodeId, int rank)
     {
         if (string.IsNullOrWhiteSpace(nodeId)) return;
-        if (purchasedNodes == null) purchasedNodes = new List<CharacterPurchasedUpgradeNodeSaveData2D>(16);
 
         for (int i = 0; i < purchasedNodes.Count; i++)
         {
             CharacterPurchasedUpgradeNodeSaveData2D entry = purchasedNodes[i];
-            if (entry == null) continue;
-            if (entry.nodeId != nodeId) continue;
-
-            if (rank <= 0)
+            if (entry != null && entry.nodeId == nodeId)
             {
-                purchasedNodes.RemoveAt(i);
+                entry.rank = rank;
                 return;
             }
-
-            entry.rank = rank;
-            entry.EnsureDefaults();
-            return;
         }
 
-        if (rank <= 0) return;
-
-        CharacterPurchasedUpgradeNodeSaveData2D created = new CharacterPurchasedUpgradeNodeSaveData2D
-        {
-            nodeId = nodeId,
-            rank = rank
-        };
-        created.EnsureDefaults();
-        purchasedNodes.Add(created);
+        purchasedNodes.Add(new CharacterPurchasedUpgradeNodeSaveData2D { nodeId = nodeId, rank = rank });
     }
 
+    /// <summary>모든 구매 기록을 초기화합니다.</summary>
     public void ClearAll()
     {
-        if (purchasedNodes == null) purchasedNodes = new List<CharacterPurchasedUpgradeNodeSaveData2D>(16);
-        purchasedNodes.Clear();
+        if (purchasedNodes != null)
+            purchasedNodes.Clear();
     }
 }
 
+/// <summary>
+/// 구매한 노드 하나의 저장 데이터입니다.
+/// </summary>
 [Serializable]
 public sealed class CharacterPurchasedUpgradeNodeSaveData2D
 {
     public string nodeId;
-    public int rank = 1;
+    public int rank;
+}
 
-    public void EnsureDefaults()
+// ─────────────────────────────────────────────────────────────
+// 진행(레벨·해금) 세이브
+// ─────────────────────────────────────────────────────────────
+
+/// <summary>
+/// 모든 캐릭터의 레벨·해금 상태를 모아 두는 컬렉션입니다.
+/// </summary>
+[Serializable]
+public sealed class CharacterProgressionCollectionSaveData2D
+{
+    public List<CharacterProgressionEntrySaveData2D> entries = new List<CharacterProgressionEntrySaveData2D>(3);
+
+    public CharacterProgressionEntrySaveData2D GetOrCreate(string characterId)
     {
-        if (rank < 1) rank = 1;
+        if (string.IsNullOrWhiteSpace(characterId)) return null;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (entries[i] != null && entries[i].characterId == characterId)
+                return entries[i];
+        }
+
+        CharacterProgressionEntrySaveData2D newEntry = new CharacterProgressionEntrySaveData2D
+        {
+            characterId = characterId,
+            level = 1,
+            unlocked = false
+        };
+        entries.Add(newEntry);
+        return newEntry;
     }
+}
+
+/// <summary>
+/// 한 캐릭터의 레벨·해금 상태입니다.
+/// </summary>
+[Serializable]
+public sealed class CharacterProgressionEntrySaveData2D
+{
+    public string characterId;
+    public int level = 1;
+    public bool unlocked = false;
+    public int totalExp = 0;
 }

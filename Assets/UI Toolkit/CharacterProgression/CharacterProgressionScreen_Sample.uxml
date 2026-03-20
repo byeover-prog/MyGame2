@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="screen">
+        <ui:VisualElement class="content-row">
+            <ui:ScrollView name="character-list" class="left-list" />
+            <ui:VisualElement class="detail-panel">
+                <ui:Label name="level-label" text="Lv 1" />
+                <ui:Label name="xp-label" text="XP 0/0" />
+                <ui:Label name="attack-label" text="공격력 +0%" />
+                <ui:Label name="defense-label" text="방어력 +0%" />
+                <ui:Label name="hp-label" text="최대체력 +0" />
+                <ui:Button name="debug-add-xp-button" text="XP +120" />
+                <ui:ScrollView name="unlock-list" class="unlock-list" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

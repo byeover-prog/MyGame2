@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 993ba19d6d010214c9e5fb8fa9d99e69, type: 3}
+  m_Name: CharacterLevelCurve_Default
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterLevelCurveSO
+  maxLevel: 50
+  useCustomRequiredXp: 0
+  requiredXpByLevel: 64000000760000008b000000a4000000c2000000e50000000e0100003f01000078010000bc0100000b0200006a020000d90200005c030000f7030000ad0400008505000083060000af07000011090000b30a0000a00c0000e60e000095110000bf1400007b180000e31c00001622000039280000762f00000138000016420000fb4d0000045c0000946c0000208000003097000066b2000083d2000067f800001e250100e05901002298010099e1010049380200949e020048170300b7a50300c84d0400
+  baseRequiredXp: 100
+  requiredXpGrowth: 1.18
+  attackPowerPercentPerLevel: 2
+  defensePercentPerLevel: 1
+  maxHpFlatPerLevel: 4
+  unlocks:
+  - level: 5
+    unlockId: unlock_basic_5
+    titleKr: "\uAE30\uBCF8\uAE30 \uBCF4\uAC15"
+    descriptionKr: "\uAE30\uBCF8 \uC2A4\uD0AC \uCD94\uAC00 \uAC15\uD654 \uBD84\uAE30\uAC00
+      \uC5F4\uB9BD\uB2C8\uB2E4."
+    kind: 1
+  - level: 10
+    unlockId: unlock_ult_10
+    titleKr: "\uAD81\uADF9\uAE30 \uBCF4\uAC15"
+    descriptionKr: "\uAD81\uADF9\uAE30 \uAC15\uD654 \uBD84\uAE30\uAC00 \uC5F4\uB9BD\uB2C8\uB2E4."
+    kind: 2
+  - level: 15
+    unlockId: unlock_passive_15
+    titleKr: "\uD328\uC2DC\uBE0C \uC99D\uD3ED"
+    descriptionKr: "\uD328\uC2DC\uBE0C \uAC15\uD654 \uBD84\uAE30\uAC00 \uC5F4\uB9BD\uB2C8\uB2E4."
+    kind: 3
+  - level: 20
+    unlockId: unlock_support_20
+    titleKr: "\uC9C0\uC6D0 \uC2DC\uB108\uC9C0"
+    descriptionKr: "\uC9C0\uC6D0 \uCE90\uB9AD\uD130 \uC6B4\uC6A9 \uD574\uAE08\uC774
+      \uC5F4\uB9BD\uB2C8\uB2E4."
+    kind: 4

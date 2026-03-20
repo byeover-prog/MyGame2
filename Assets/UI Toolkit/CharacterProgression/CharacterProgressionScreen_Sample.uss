@@ -1,0 +1,46 @@
+.screen {
+    flex-direction: column;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
+.content-row {
+    flex-direction: row;
+    gap: 12px;
+    flex-grow: 1;
+}
+
+.left-list {
+    width: 240px;
+}
+
+.detail-panel {
+    flex-grow: 1;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.unlock-list {
+    min-height: 300px;
+}
+
+.progression-character-portrait {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.progression-character-item {
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.progression-unlock-item {
+    flex-direction: column;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom-width: 1px;
+}

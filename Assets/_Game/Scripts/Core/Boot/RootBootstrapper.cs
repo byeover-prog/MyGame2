@@ -1,53 +1,60 @@
 using UnityEngine;
 
 /// <summary>
-/// 프로젝트 전역 데이터 Root 3개를 "반드시" 먼저 잡아두는 부트스트랩.
-/// 
-/// 왜 필요한가?
-/// - Unity의 Awake 순서는 같은 씬 내에서도 보장되지 않는다.
-/// - 따라서 "아무 스크립트나 Awake에서 RootBootstrapper.Instance를 읽는" 방식은
-///   null 참조를 일으킬 수 있다.
-/// 
-/// 해결
-/// - DefaultExecutionOrder(-10000)으로 최대한 먼저 실행.
-/// - 그래도 '절대 안전'을 위해, 다른 시스템은 Awake가 아닌 Start에서 Root를 읽는 것을 권장.
-/// 
-/// 복잡도
-/// - O(1)
+/// 아웃게임/인게임 씬의 루트 부트스트래퍼 싱글톤입니다.
+/// 캐릭터 카탈로그, 레벨업 설정, 스킬 설정 등 공용 참조를 한 곳에서 제공합니다.
 /// </summary>
-[DefaultExecutionOrder(-10000)]
-[DisallowMultipleComponent]
 public sealed class RootBootstrapper : MonoBehaviour
 {
-    public static RootBootstrapper Instance { get; private set; }
+    [Header("캐릭터 시스템")]
+    [Tooltip("캐릭터 카탈로그 SO를 가진 컨테이너입니다.")]
+    [SerializeField] private CharacterRootContainer characterRoot;
 
-    [Header("Roots")]
-    [SerializeField] private CharacterRootSO characterRoot;
-    [SerializeField] private SkillRootSO skillRoot;
+    [Header("레벨업 시스템")]
+    [Tooltip("레벨업 설정 SO입니다. LevelUpSystem2D에서 참조합니다.")]
     [SerializeField] private LevelUpRootSO levelUpRoot;
 
-    public CharacterRootSO CharacterRoot => characterRoot;
-    public SkillRootSO SkillRoot => skillRoot;
+    [Header("스킬 시스템")]
+    [Tooltip("스킬 루트 설정 SO입니다. LevelUpSystem2D/CommonSkillManager에서 참조합니다.")]
+    [SerializeField] private SkillRootSO skillRoot;
+
+    /// <summary>싱글톤 인스턴스입니다.</summary>
+    public static RootBootstrapper Instance { get; private set; }
+
+    /// <summary>캐릭터 시스템 루트 참조입니다.</summary>
+    public CharacterRootContainer CharacterRoot => characterRoot;
+
+    /// <summary>레벨업 설정 SO입니다.</summary>
     public LevelUpRootSO LevelUpRoot => levelUpRoot;
+
+    /// <summary>스킬 루트 설정 SO입니다.</summary>
+    public SkillRootSO SkillRoot => skillRoot;
 
     private void Awake()
     {
         if (Instance != null && Instance != this)
         {
-            // 중복 부트 방지: 두 번째부터는 파괴
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
-        DontDestroyOnLoad(gameObject);
 
-        // 최소 검증(에디터에서 바로 원인 확인 가능)
-        if (characterRoot == null)
-            Debug.LogWarning("[RootBootstrapper] CharacterRootSO가 비어 있습니다.", this);
-        if (skillRoot == null)
-            Debug.LogWarning("[RootBootstrapper] SkillRootSO가 비어 있습니다.", this);
-        if (levelUpRoot == null)
-            Debug.LogWarning("[RootBootstrapper] LevelUpRootSO가 비어 있습니다.", this);
+        // 세이브에서 편성 로드
+        SquadLoadoutRuntime.LoadFromSave();
     }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+}
+
+/// <summary>
+/// CharacterCatalogSO를 Inspector에서 할당받기 위한 컨테이너입니다.
+/// </summary>
+[System.Serializable]
+public sealed class CharacterRootContainer
+{
+    [Tooltip("캐릭터 카탈로그 SO입니다.")]
+    public CharacterCatalogSO catalog;
 }

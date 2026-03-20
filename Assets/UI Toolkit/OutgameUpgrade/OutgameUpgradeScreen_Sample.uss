@@ -1,0 +1,58 @@
+.screen {
+    flex-direction: column;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    gap: 12px;
+}
+
+.header-row {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.content-row {
+    flex-direction: row;
+    gap: 12px;
+    flex-grow: 1;
+}
+
+.left-list {
+    width: 240px;
+}
+
+.tree-root {
+    flex-grow: 1;
+    min-height: 560px;
+}
+
+.detail-panel {
+    width: 320px;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.upgrade-character-portrait {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.upgrade-character-item {
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.upgrade-node {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+}
