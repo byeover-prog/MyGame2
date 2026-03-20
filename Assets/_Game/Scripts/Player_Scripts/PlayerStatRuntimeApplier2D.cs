@@ -2,19 +2,14 @@ using UnityEngine;
 using _Game.Player;
 
 /// <summary>
-/// 캐릭터 기본 능력치 SO + PlayerSkillLoadout 패시브 스냅샷을 합쳐서
+/// 캐릭터 기본 능력치 SO + 메타 보정 + PlayerSkillLoadout 패시브 스냅샷을 합쳐서
 /// 실제 런타임(PlayerCombatStats2D / PlayerHealth)에 반영합니다.
-///
-/// 공식:
-///   최종 배율 = (1 + 캐릭터%/100) × (1 + 패시브%/100)
-///   최종 방어 = 100 / (100 + 총방어력)             ← LoL 유효체력 공식
-///   스킬 가속 = 100 / (100 + 총가속)               ← LoL 스킬 가속 공식 (상한 60% 감소)
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
 {
     [Header("=== 기본 데이터 ===")]
-    [Tooltip("캐릭터 기본 능력치 SO. 비우면 0 보정으로 처리합니다.")]
+    [Tooltip("캐릭터 기본 능력치 SO. 메타 런타임에 선택된 캐릭터 프로필이 있으면 그 값을 우선 사용합니다.")]
     [SerializeField] private PlayerBaseStatProfileSO baseStatProfile;
 
     [Header("=== 참조 ===")]
@@ -28,19 +23,25 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
     private PlayerHealth playerHealth;
 
     [Header("=== 동작 옵션 ===")]
-    [Tooltip("★ false 권장! true면 어떤 패시브를 배워도 풀피 회복되는 버그 발생.\n최대 HP 패시브를 배울 때는 증가분만큼만 회복됩니다.")]
-     #pragma warning disable 0414
+    [Tooltip("이 값은 사용하지 않습니다. 최대 HP 증가분만큼만 회복하도록 고정합니다.")]
+#pragma warning disable 0414
     [SerializeField] private bool healToFullWhenMaxHpChanges = false;
-     #pragma warning disable 0414
-    
+#pragma warning restore 0414
+
     [Tooltip("적용 로그를 보고 싶을 때만 켜세요")]
     [SerializeField] private bool debugLog = false;
 
     [ContextMenu("지금 스탯 다시 적용")]
     public void ReapplyFromLoadout()
     {
-        PlayerStatSnapshot baseSnapshot = baseStatProfile != null ? baseStatProfile.BuildSnapshot() : default;
+        PlayerBaseStatProfileSO resolvedBaseProfile = ResolveBaseProfile();
+        PlayerStatSnapshot baseSnapshot = resolvedBaseProfile != null ? resolvedBaseProfile.BuildSnapshot() : default;
+        PlayerStatSnapshot metaSnapshot = MetaBattleSnapshotRuntime2D.HasMainCharacter
+            ? MetaBattleSnapshotRuntime2D.Current.mainBonus.coreStats
+            : default;
         PlayerStatSnapshot passiveSnapshot = loadout != null ? loadout.BuildStatSnapshot() : default;
+
+        baseSnapshot = Merge(baseSnapshot, metaSnapshot);
 
         EnsureTargets();
         ApplyRuntime(baseSnapshot, passiveSnapshot);
@@ -54,6 +55,18 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
     private void Start()
     {
         ReapplyFromLoadout();
+    }
+
+    private PlayerBaseStatProfileSO ResolveBaseProfile()
+    {
+        if (MetaBattleSnapshotRuntime2D.HasMainCharacter && MetaBattleSnapshotRuntime2D.Current.mainDefinition != null)
+        {
+            PlayerBaseStatProfileSO runtimeProfile = MetaBattleSnapshotRuntime2D.Current.mainDefinition.BaseStatProfile;
+            if (runtimeProfile != null)
+                return runtimeProfile;
+        }
+
+        return baseStatProfile;
     }
 
     private void EnsureTargets()
@@ -75,22 +88,16 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
     {
         if (combatStats == null) return;
 
-        // ── 공격력 / 이동속도 / 픽업 / 범위 / 경험치: 곱연산 ──
-        float attackMul  = ToMul(baseSnapshot.AttackPowerPercent) * ToMul(passiveSnapshot.AttackPowerPercent);
-        float moveMul    = ToMul(baseSnapshot.MoveSpeedPercent) * ToMul(passiveSnapshot.MoveSpeedPercent);
-        float pickupMul  = ToMul(baseSnapshot.PickupRangePercent) * ToMul(passiveSnapshot.PickupRangePercent);
-        float areaMul    = ToMul(baseSnapshot.SkillAreaPercent) * ToMul(passiveSnapshot.SkillAreaPercent);
-        float expMul     = ToMul(baseSnapshot.ExpGainPercent) * ToMul(passiveSnapshot.ExpGainPercent);
+        float attackMul = ToMul(baseSnapshot.AttackPowerPercent) * ToMul(passiveSnapshot.AttackPowerPercent);
+        float moveMul = ToMul(baseSnapshot.MoveSpeedPercent) * ToMul(passiveSnapshot.MoveSpeedPercent);
+        float pickupMul = ToMul(baseSnapshot.PickupRangePercent) * ToMul(passiveSnapshot.PickupRangePercent);
+        float areaMul = ToMul(baseSnapshot.SkillAreaPercent) * ToMul(passiveSnapshot.SkillAreaPercent);
+        float expMul = ToMul(baseSnapshot.ExpGainPercent) * ToMul(passiveSnapshot.ExpGainPercent);
 
-        // [핵심 수정] 스킬 가속: LoL 공식 — 100/(100+가속)
-        // 기존 코드는 ToMul()로 곱연산하여 쿨다운이 '증가'하는 버그가 있었음.
-        // 예: 가속 10이면 기존=1.1배(쿨다운 10% 증가), 수정=0.909배(쿨다운 9.1% 감소)
         float totalHaste = Mathf.Max(0f, baseSnapshot.SkillHastePercent + passiveSnapshot.SkillHastePercent);
         float cooldownMul = 100f / (100f + totalHaste);
-        // 상한: 최대 60% 쿨다운 감소 (설계 문서 기준)
         cooldownMul = Mathf.Clamp(cooldownMul, 0.4f, 1f);
 
-        // LoL 유효체력 공식: 받는피해 = 초기피해 × 100/(100+방어력)
         float totalDefense = Mathf.Max(0f, baseSnapshot.DefensePercent + passiveSnapshot.DefensePercent);
         float incomingDamageMul = Mathf.Clamp(100f / (100f + totalDefense), 0.1f, 1f);
 
@@ -102,20 +109,14 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
         combatStats.SetExpGainMul(expMul);
         combatStats.SetIncomingDamageMul(incomingDamageMul);
 
-        // [핵심 수정] 체력 회복 버그 수정
-        // 기존: healToFullWhenMaxHpChanges = true → 어떤 패시브든 배우면 풀피 회복
-        // 수정: MaxHp가 실제로 '증가'한 경우에만 증가분만큼 현재 HP 회복
         if (playerHealth != null)
         {
             int maxHpBonus = Mathf.Max(0, baseSnapshot.MaxHpFlat + passiveSnapshot.MaxHpFlat);
             int oldMaxHp = playerHealth.MaxHp;
 
-            // healToFull은 항상 false로 호출 (풀피 회복 방지)
             playerHealth.SetMaxHpBonus(maxHpBonus, healToFull: false);
 
             int newMaxHp = playerHealth.MaxHp;
-
-            // MaxHp가 실제로 증가한 경우에만, 증가분만큼 현재 HP도 회복
             if (newMaxHp > oldMaxHp)
             {
                 int hpGain = newMaxHp - oldMaxHp;
@@ -139,5 +140,18 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
     private static float ToMul(float percent)
     {
         return 1f + (percent / 100f);
+    }
+
+    private static PlayerStatSnapshot Merge(PlayerStatSnapshot a, PlayerStatSnapshot b)
+    {
+        a.AttackPowerPercent += b.AttackPowerPercent;
+        a.PickupRangePercent += b.PickupRangePercent;
+        a.MoveSpeedPercent += b.MoveSpeedPercent;
+        a.DefensePercent += b.DefensePercent;
+        a.MaxHpFlat += b.MaxHpFlat;
+        a.SkillHastePercent += b.SkillHastePercent;
+        a.SkillAreaPercent += b.SkillAreaPercent;
+        a.ExpGainPercent += b.ExpGainPercent;
+        return a;
     }
 }
