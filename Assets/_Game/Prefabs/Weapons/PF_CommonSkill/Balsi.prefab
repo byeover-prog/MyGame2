@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.28, y: 0.28, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -180,9 +180,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca74c0eec08d6914cbe3da41c59a0304, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BalsiProjectile2D
-  _spriteForwardAngleOffsetDeg: 1
-  _debugLog: 0
-  _rb: {fileID: 9106754863539150079}
+  spriteAngleOffset: 0
+  debugLog: 0
+  rb: {fileID: 0}
 --- !u!114 &2194834019390329344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,3 +200,4 @@ MonoBehaviour:
   explosionVfxPrefab: {fileID: 0}
   attachToProjectile: 1
   vfxLifetime: 3
+  hideSpriteRenderer: 1

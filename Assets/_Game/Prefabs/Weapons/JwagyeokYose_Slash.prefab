@@ -45,6 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JwagyeokYoseSlash2D
   hitDelay: 0.1
-  hitVfxPrefab: {fileID: 534765604963962814, guid: c8a049b1d809eef4d90d5f59619ecf11,
+  slashVfxPrefab: {fileID: 534765604963962814, guid: c8a049b1d809eef4d90d5f59619ecf11,
     type: 3}
-  hitVfxLifetime: 0.5
+  slashVfxLifetime: 0.4

@@ -1,19 +1,5 @@
-// UTF-8
-// ============================================================================
-// BalsiLevelAutoFill.cs
-// 경로: Assets/_Game/Scripts/Editor/BalsiLevelAutoFill.cs
-//
-// [사용법]
-// Unity 메뉴 → Tools → 그날이후 → 발시 레벨 자동 채우기
-// CommonSkillConfigSO 에셋(CS_Balsi)을 선택한 상태에서 실행하면
-// 8레벨 밸런스 데이터를 자동으로 채워준다.
-//
-// [밸런스 설계]
-// 단발 비관통, 가장 가까운 적, DamageElement2D.Ice
-// Lv1: 데미지 30, 쿨타임 1.00초
-// Lv8: 데미지 65, 쿨타임 0.50초
-// 투사체 수 = 1 고정 (레벨업으로 증가하지 않음)
-// ============================================================================
+// [사용법] Tools → 그날이후 → 발시 레벨 자동 채우기
+// CommonSkillConfigSO 에셋(CS_Balsi)을 선택한 상태에서 실행.
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;

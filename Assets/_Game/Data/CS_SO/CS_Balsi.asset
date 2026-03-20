@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: "\uBC1C\uC2DC"
   visualDescriptionKr: 
   icon: {fileID: 21300000, guid: 5c5b97ecbd09aa9498e31fa51f4f49cb, type: 3}
-  weaponPrefab: {fileID: 425592778455410491, guid: 6359eeee6eaa82d4b9bcd87a8f233db8,
+  weaponPrefab: {fileID: 3016128824251240296, guid: dd45205a343eea94e87c6e8d4915b0c1,
     type: 3}
   maxLevel: 8
   levels:

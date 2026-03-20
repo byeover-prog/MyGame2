@@ -30,7 +30,7 @@ MonoBehaviour:
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 2
+    explosionRadius: 4
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
@@ -47,7 +47,7 @@ MonoBehaviour:
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 2
+    explosionRadius: 4
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
@@ -64,7 +64,7 @@ MonoBehaviour:
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 2.3
+    explosionRadius: 4.3
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
@@ -81,7 +81,7 @@ MonoBehaviour:
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 2.3
+    explosionRadius: 4.3
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
@@ -98,7 +98,7 @@ MonoBehaviour:
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 2.6
+    explosionRadius: 4.6
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
@@ -115,7 +115,7 @@ MonoBehaviour:
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 2.6
+    explosionRadius: 4.6
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
@@ -132,7 +132,7 @@ MonoBehaviour:
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 3
+    explosionRadius: 5
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
@@ -149,7 +149,7 @@ MonoBehaviour:
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 3
+    explosionRadius: 5.5
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0

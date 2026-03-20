@@ -1,80 +1,64 @@
-// [구현 원리]
-// PooledObject2D를 상속받는 참격 판정 오브젝트.
-// 활성화(OnEnable) 시 잠깐 대기(hitDelay) 후 OverlapCircle로
-// 범위 내 모든 적에게 DamageUtil2D.TryApplyDamage()를 호출.
-// 수명(lifetime)이 끝나면 풀로 반환.
-//
-// [왜 OnTriggerEnter2D를 안 쓰는가?]
-// Unity 물리 규칙상, 이미 겹쳐있는 콜라이더에는 OnTriggerEnter2D가
-// 발동하지 않는다. 참격은 적 위치에 스폰되므로 처음부터 겹쳐있을 수 있어서
-// Physics2D.OverlapCircle로 능동적으로 탐색해야 한다.
-//
-// [VFX]
-// 프리팹 자체에 ParticleSystem이나 SpriteRenderer 애니메이션을 넣어두면
-// 활성화 시 자동 재생된다. 별도 VFX 스폰은 불필요.
-// 추가 히트 VFX가 필요하면 hitVfxPrefab 슬롯에 연결.
-// ============================================================================
+// UTF-8
 using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
 /// 좌격요세 참격 판정 오브젝트.
-/// 활성화 시 범위 내 모든 적에게 음(Dark) 속성 데미지를 넣고 풀로 반환.
+/// 판정 중심 = 플레이어 + aimDirection × hitForwardOffset (전방 오프셋).
+/// 각도 제한으로 전방 부채꼴 판정. VFX 방향과 판정 방향 일치.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class JwagyeokYoseSlash2D : PooledObject2D
 {
-    // ══════════════════════════════════════════════════════
-    //  Inspector
-    // ══════════════════════════════════════════════════════
-
     [Header("히트 타이밍")]
-    [Tooltip("활성화 후 데미지 판정까지의 대기 시간 (초).\n참격 VFX 시작 타이밍에 맞추기 위해 사용.")]
     [SerializeField] private float hitDelay = 0.1f;
 
-    [Header("히트 VFX (선택)")]
-    [Tooltip("적 피격 시 스폰할 추가 VFX 프리팹. 없으면 비워둬도 됨.")]
-    [SerializeField] private GameObject hitVfxPrefab;
+    [Header("판정 설정")]
+    [Tooltip("플레이어에서 판정 중심까지의 전방 오프셋")]
+    [SerializeField] private float hitForwardOffset = 1.5f;
 
-    [Tooltip("히트 VFX 수명 (초)")]
-    [SerializeField] private float hitVfxLifetime = 0.5f;
+    [Tooltip("이 반각(도) 안에 있는 적만 적중. 90 = 전방 반원")]
+    [Range(1f, 180f)]
+    [SerializeField] private float hitHalfAngle = 75f;
 
-    // ══════════════════════════════════════════════════════
-    //  런타임 (Initialize로 주입)
-    // ══════════════════════════════════════════════════════
+    [Header("베기 VFX")]
+    [SerializeField] private GameObject slashVfxPrefab;
 
+    [Tooltip("VFX 전방 오프셋 (hitForwardOffset과 비슷하게 맞추기)")]
+    [SerializeField] private float vfxForwardOffset = 1.5f;
+
+    // ── 런타임 ──
     private int _damage;
     private float _radius;
     private float _lifetime;
     private LayerMask _enemyMask;
+    private Transform _owner;
+    private float _angleDeg;
+    private Vector2 _aimDir;
 
     private float _timer;
     private bool _hasHit;
     private ContactFilter2D _filter;
+    private GameObject _activeVfx;
 
-    // GC 0 탐색 버퍼
-    private readonly List<Collider2D> _hitBuffer = new(16);
-    // 중복 히트 방지용 HashSet
-    private readonly HashSet<int> _hitIds = new(16);
-
-    // ══════════════════════════════════════════════════════
-    //  초기화 (JwagyeokYoseWeapon2D에서 호출)
-    // ══════════════════════════════════════════════════════
+    private readonly List<Collider2D> _hitBuffer = new(32);
+    private readonly HashSet<int> _hitIds = new(32);
 
     /// <summary>
-    /// 무기에서 참격 오브젝트를 초기화한다.
-    /// 풀에서 꺼낸 직후, SetActive(true) 전에 호출할 것.
+    /// 무기에서 호출. aimDirection = 적 방향 정규화, angleDeg = VFX 회전용.
     /// </summary>
-    /// <param name="damage">피해량</param>
-    /// <param name="radius">참격 판정 반경</param>
-    /// <param name="lifetime">참격 총 수명 (초)</param>
-    /// <param name="enemyMask">적 레이어마스크</param>
-    public void Initialize(int damage, float radius, float lifetime, LayerMask enemyMask)
+    public void Initialize(int damage, float radius, float lifetime,
+                           LayerMask enemyMask, Transform owner,
+                           Vector2 aimDirection, float angleDeg)
     {
-        _damage   = damage;
-        _radius   = radius;
-        _lifetime = lifetime;
+        _damage    = damage;
+        _radius    = radius;
+        _lifetime  = lifetime;
         _enemyMask = enemyMask;
+        _owner     = owner;
+        _angleDeg  = angleDeg;
+        _aimDir    = aimDirection.sqrMagnitude > 0.0001f
+                     ? aimDirection.normalized : Vector2.right;
 
         _filter = new ContactFilter2D();
         _filter.SetLayerMask(enemyMask);
@@ -84,11 +68,33 @@ public sealed class JwagyeokYoseSlash2D : PooledObject2D
         _timer  = 0f;
         _hasHit = false;
         _hitIds.Clear();
+
+        SpawnSlashVfx();
     }
 
-    // ══════════════════════════════════════════════════════
-    //  라이프사이클
-    // ══════════════════════════════════════════════════════
+    private void SpawnSlashVfx()
+    {
+        if (_activeVfx != null) { Destroy(_activeVfx); _activeVfx = null; }
+        if (slashVfxPrefab == null || _owner == null) return;
+
+        Vector3 spawnPos = _owner.position + (Vector3)(_aimDir * vfxForwardOffset);
+
+        // ★ Billboard 파티클은 오브젝트 회전을 무시함
+        // → ParticleSystem의 startRotation을 코드에서 직접 설정해야 확실히 돌아감
+        _activeVfx = Instantiate(slashVfxPrefab, spawnPos, Quaternion.identity);
+
+        // 모든 파티클 시스템(루트 + 자식)에 회전 적용
+        float rotRad = -_angleDeg * Mathf.Deg2Rad; // 파티클은 시계방향이 양수라 부호 반전
+        var allPS = _activeVfx.GetComponentsInChildren<ParticleSystem>(true);
+        foreach (var ps in allPS)
+        {
+            var main = ps.main;
+            main.startRotation = rotRad;
+        }
+        Destroy(_activeVfx, _lifetime + 0.5f);
+    }
+
+    // ── 라이프사이클 ──
 
     private void OnEnable()
     {
@@ -97,93 +103,95 @@ public sealed class JwagyeokYoseSlash2D : PooledObject2D
         _hitIds.Clear();
     }
 
+    private void OnDisable()
+    {
+        if (_activeVfx != null) { Destroy(_activeVfx); _activeVfx = null; }
+    }
+
     private void Update()
     {
         _timer += Time.deltaTime;
 
-        // hitDelay 이후 1회 판정
+        // 플레이어 + VFX 위치 추적
+        if (_owner != null)
+        {
+            transform.position = _owner.position;
+            if (_activeVfx != null)
+                _activeVfx.transform.position = _owner.position + (Vector3)(_aimDir * vfxForwardOffset);
+        }
+
+        // hitDelay 후 1회 전방 판정
         if (!_hasHit && _timer >= hitDelay)
         {
             PerformSlashDamage();
             _hasHit = true;
         }
 
-        // 수명 만료 → 풀 반환
+        // 수명 만료
         if (_timer >= _lifetime)
         {
+            if (_activeVfx != null) { Destroy(_activeVfx); _activeVfx = null; }
+            _owner = null;
             ReturnToPool();
         }
     }
 
-    // ══════════════════════════════════════════════════════
-    //  데미지 판정
-    // ══════════════════════════════════════════════════════
+    // ── 데미지 판정 — 전방 오프셋 + 각도 제한 ──
 
-    /// <summary>
-    /// OverlapCircle로 범위 내 모든 적을 탐색하고
-    /// DamageUtil2D.TryApplyDamage()로 데미지를 넣는다.
-    /// </summary>
     private void PerformSlashDamage()
     {
-        Vector2 center = transform.position;
-        _hitBuffer.Clear();
+        if (_owner == null) return;
 
-        int count = Physics2D.OverlapCircle(center, _radius, _filter, _hitBuffer);
+        // ★ 판정 중심 = 플레이어 + 적 방향 × 오프셋 (전방에서 판정)
+        Vector2 hitCenter = (Vector2)_owner.position + _aimDir * hitForwardOffset;
+
+        _hitBuffer.Clear();
+        int count = Physics2D.OverlapCircle(hitCenter, _radius, _filter, _hitBuffer);
         if (count == 0) return;
 
         int hitCount = 0;
-
         for (int i = 0; i < count; i++)
         {
             Collider2D col = _hitBuffer[i];
             if (col == null) continue;
 
-            // 루트 ID로 중복 히트 방지
+            // ★ 각도 제한 — 적 방향과 조준 방향의 각도차가 hitHalfAngle 이내만 적중
+            Vector2 toTarget = ((Vector2)col.bounds.center - (Vector2)_owner.position).normalized;
+            float angle = Vector2.Angle(_aimDir, toTarget);
+            if (angle > hitHalfAngle) continue;
+
             int rootId = DamageUtil2D.GetRootId(col);
             if (!_hitIds.Add(rootId)) continue;
 
-            // 데미지 적용 — 반드시 DamageUtil2D 경유 (팝업 + 속성 VFX)
             bool applied = DamageUtil2D.TryApplyDamage(col, _damage, DamageElement2D.Dark);
-
-            if (applied)
-            {
-                hitCount++;
-
-                // 히트 VFX 스폰 (선택)
-                if (hitVfxPrefab != null)
-                {
-                    SpawnHitVfx(col.transform.position);
-                }
-            }
+            if (applied) hitCount++;
         }
 
 #if UNITY_EDITOR
         if (hitCount > 0)
-        {
-            Debug.Log($"[좌격요세] 참격 적중! — {hitCount}명 피해량={_damage}");
-        }
+            Debug.Log($"[좌격요세] 전방 베기 적중! {hitCount}명 피해량={_damage}");
 #endif
     }
-
-    /// <summary>
-    /// 피격 위치에 히트 VFX를 스폰한다.
-    /// 간단한 Instantiate + Destroy 방식. VFX가 무거우면 VFXSpawner로 교체 권장.
-    /// </summary>
-    private void SpawnHitVfx(Vector3 position)
-    {
-        GameObject vfx = Instantiate(hitVfxPrefab, position, Quaternion.identity);
-        Destroy(vfx, hitVfxLifetime);
-    }
-
-    // ══════════════════════════════════════════════════════
-    //  기즈모
-    // ══════════════════════════════════════════════════════
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = new Color(0.8f, 0.2f, 0.8f, 0.3f);
-        Gizmos.DrawWireSphere(transform.position, _radius > 0f ? _radius : 2f);
+        Vector3 ownerPos = _owner != null ? _owner.position : transform.position;
+        Vector2 aim = _aimDir.sqrMagnitude > 0.0001f ? _aimDir : Vector2.right;
+        Vector3 hitCenter = ownerPos + (Vector3)(aim * hitForwardOffset);
+
+        // 판정 원 (보라)
+        Gizmos.color = new Color(0.85f, 0.2f, 0.85f, 0.25f);
+        Gizmos.DrawWireSphere(hitCenter, _radius > 0f ? _radius : 3f);
+
+        // 전방 각도 범위 (노랑)
+        float drawLen = hitForwardOffset + (_radius > 0f ? _radius : 3f);
+        Vector3 left  = Quaternion.Euler(0f, 0f, hitHalfAngle)  * (Vector3)aim;
+        Vector3 right = Quaternion.Euler(0f, 0f, -hitHalfAngle) * (Vector3)aim;
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(ownerPos, ownerPos + (Vector3)aim * drawLen);
+        Gizmos.DrawLine(ownerPos, ownerPos + left * drawLen);
+        Gizmos.DrawLine(ownerPos, ownerPos + right * drawLen);
     }
 #endif
 }
