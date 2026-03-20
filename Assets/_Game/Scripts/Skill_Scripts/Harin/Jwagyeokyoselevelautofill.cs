@@ -1,19 +1,6 @@
-// ============================================================================
-// JwagyeokYoseLevelAutoFill.cs
-// 경로: Assets/_Game/Scripts/Editor/JwagyeokYoseLevelAutoFill.cs
-//
-// [사용법]
-// Unity 메뉴 → Tools → 그날이후 → 좌격요세 레벨 자동 채우기
-// CommonSkillConfigSO 에셋을 선택한 상태에서 실행하면
-// 8레벨 밸런스 데이터를 자동으로 채워준다.
-//
-// [CommonSkillLevelParams 필드 매핑]
-// damage          → 피해량
-// cooldown        → 재사용 대기시간
-// explosionRadius → 참격 판정 반경 (AoE 반경 개념 동일)
-// lifeSeconds     → 참격 수명 (VFX 재생 시간)
-// projectileCount → 1 고정 (참격 1회)
-// ============================================================================
+// UTF-8
+// [사용법] Tools → 그날이후 → 좌격요세 레벨 자동 채우기
+// CommonSkillConfigSO 에셋을 선택한 상태에서 실행.
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
@@ -34,19 +21,19 @@ public static class JwagyeokYoseLevelAutoFill
     //
     //  | Lv | 피해량 | 쿨타임 | 참격범위 | 비고           |
     //  |----|--------|--------|----------|----------------|
-    //  | 1  | 20     | 1.20   | 2.0      | 기본           |
-    //  | 2  | 24     | 1.10   | 2.0      | 피해량↑ 쿨↓   |
-    //  | 3  | 28     | 1.00   | 2.3      | 범위 증가      |
-    //  | 4  | 32     | 0.95   | 2.3      | 피해량↑ 쿨↓   |
-    //  | 5  | 36     | 0.90   | 2.6      | 범위 증가      |
-    //  | 6  | 40     | 0.85   | 2.6      | 피해량↑ 쿨↓   |
-    //  | 7  | 45     | 0.80   | 3.0      | 범위 최대치    |
-    //  | 8  | 50     | 0.70   | 3.0      | 최종           |
+    //  | 1  | 20     | 1.20   | 4.0      | 기본           |
+    //  | 2  | 24     | 1.10   | 4.0      | 피해량↑ 쿨↓   |
+    //  | 3  | 28     | 1.00   | 4.3      | 범위 증가      |
+    //  | 4  | 32     | 0.95   | 4.3      | 피해량↑ 쿨↓   |
+    //  | 5  | 36     | 0.90   | 4.6      | 범위 증가      |
+    //  | 6  | 40     | 0.85   | 4.6      | 피해량↑ 쿨↓   |
+    //  | 7  | 45     | 0.80   | 5.0      | 범위 증가      |
+    //  | 8  | 50     | 0.70   | 5.5      | 최종           |
     // ══════════════════════════════════════════════════════
 
     private static readonly int[]   Damages   = { 20, 24, 28, 32, 36, 40, 45, 50 };
     private static readonly float[] Cooldowns = { 1.20f, 1.10f, 1.00f, 0.95f, 0.90f, 0.85f, 0.80f, 0.70f };
-    private static readonly float[] Radii     = { 2.0f, 2.0f, 2.3f, 2.3f, 2.6f, 2.6f, 3.0f, 3.0f };
+    private static readonly float[] Radii     = { 4.0f, 4.0f, 4.3f, 4.3f, 4.6f, 4.6f, 5.0f, 5.5f };
     private static readonly float[] Lifetimes = { 0.4f, 0.4f, 0.4f, 0.4f, 0.4f, 0.4f, 0.4f, 0.4f };
 
     [MenuItem("Tools/그날이후/좌격요세 레벨 자동 채우기")]
