@@ -110,6 +110,9 @@ GameObject:
   - component: {fileID: 476021461681456854}
   - component: {fileID: 1424634346308500864}
   - component: {fileID: 8240770092769723947}
+  - component: {fileID: 796904804376548588}
+  - component: {fileID: -763766003085214251}
+  - component: {fileID: 4029116142212849518}
   m_Layer: 12
   m_Name: Player
   m_TagString: Player
@@ -605,10 +608,60 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SquadApplier2D
   loadout: {fileID: 1424634346308500864}
-  skillManager: {fileID: 0}
   ultimateController: {fileID: 3876108120180533697}
   playerSpriteRenderer: {fileID: 0}
   playerAnimator: {fileID: 0}
+  debugLog: 1
+--- !u!114 &796904804376548588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b02446ebf3055324f92bcd487290f5b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SupportUltimateController2D
+  cooldownSeconds: 240
+  supportKey: 116
+  sideDistance: 4
+  staggerDelay: 0.08
+  loadout: {fileID: 0}
+  executor: {fileID: 0}
+  playerTransform: {fileID: 4190694949098890430}
+  landingPresenter: {fileID: 0}
+  buffController: {fileID: 0}
+  debugLog: 1
+--- !u!114 &-763766003085214251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5dd66f0e50851d469d7c9100933b371, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleBuffController2D
+  combatStats: {fileID: 0}
+  statApplier: {fileID: 0}
+  debugLog: 1
+--- !u!114 &4029116142212849518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cd1b7ece29bc894d9f7c628fb81d0cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SupportLandingPresenter2D
+  defaultShadowPrefab: {fileID: 0}
   debugLog: 1
 --- !u!1 &2880635546030048868
 GameObject:

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UltimateDataSO
   ultimateId: ult_yoonseol_ice
   displayName: "\uD639\uD55C\uC758 \uC9D1\uB150"
-  duration: 5
+  duration: 4
   hitDelay: 0.2
   hitInterval: 0.5
   baseDamage: 10
