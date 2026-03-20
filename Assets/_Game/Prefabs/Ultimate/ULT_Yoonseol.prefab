@@ -45,12 +45,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf72a0b1386522a4b92caf7f6565b020, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::YoonseolUltimateResolver
-  arrowsPerBurst: 6
-  burstDelay: 0.08
+  arrowsPerBurst: 8
+  burstDelay: 0.0625
   arrowVfxPrefab: {fileID: 1864982285856221224, guid: 2151e0569272e0c4da78b5ba0b34b4c5,
     type: 3}
   arrowSpeed: 18
   arrowLifetime: 0.8
+  spreadWidth: 1.5
   maxExtremeColdStacks: 100
   ultimateVfxPrefab: {fileID: 3538057671869789501}
 --- !u!114 &-1238075842052149174
@@ -65,7 +66,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0588eb965c8eb240871db7fe8b051ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Game.Combat.Skills.TriangleVolleySkill2D
-  fireOrigin: {fileID: 0}
   pieceVfxPrefab: {fileID: 1864982285856221224, guid: 2151e0569272e0c4da78b5ba0b34b4c5,
     type: 3}
   triangleRows: 3

@@ -31,6 +31,12 @@ MonoBehaviour:
   supportDamageMultiplier: 0.55
   supportVisualPrefab: {fileID: 4612122562724480527, guid: 97de675c8da170447ac345cfdf15b906,
     type: 3}
+  supportBuff:
+    kind: 1
+    value: 30
+    duration: 10
+  supportLandingConfig: {fileID: 11400000, guid: 457dd46708f838344be4f1981fa5d5d6,
+    type: 2}
   baseStatProfile: {fileID: 11400000, guid: d9ff6d3783f7f634bb7d841bc0299ded, type: 2}
   upgradeTree: {fileID: 11400000, guid: 47498a9fd0662cc45a5f4e48d588bdc6, type: 2}
   unlockedByDefault: 0

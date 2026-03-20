@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -37,7 +38,7 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("Player의 Animator Controller입니다.")]
     [SerializeField] private RuntimeAnimatorController animatorController;
 
-    // ─── 스킬/궁극기 ──────────────────────────────────
+    // ─── 기본 스킬 ────────────────────────────────────
 
     [Header("기본 스킬")]
     [Tooltip("기본 스킬 아이콘입니다.")]
@@ -48,6 +49,8 @@ public sealed class CharacterDefinitionSO : ScriptableObject
 
     [Tooltip("이 캐릭터의 시작 스킬(무기) Config SO입니다.")]
     [SerializeField] private CommonSkillConfigSO startingSkill;
+
+    // ─── 궁극기 ────────────────────────────────────────
 
     [Header("궁극기")]
     [Tooltip("궁극기 아이콘입니다.")]
@@ -71,6 +74,19 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("지원 캐릭터가 T키로 등장할 때 사용하는 비주얼 프리팹입니다.")]
     [SerializeField] private GameObject supportVisualPrefab;
 
+    [Header("지원 버프 (T키 궁극기 시 메인 캐릭터에게 부여)")]
+    [Tooltip("이 캐릭터가 지원일 때 메인에게 주는 버프입니다.")]
+    [SerializeField] private SupportBuffData2D supportBuff = new SupportBuffData2D
+    {
+        kind = SupportBuffKind2D.None,
+        value = 0f,
+        duration = 10f
+    };
+
+    [Header("지원 등장 연출")]
+    [Tooltip("이 캐릭터의 등장/퇴장 연출 설정입니다. 비워두면 기본값을 사용합니다.")]
+    [SerializeField] private SupportLandingConfigSO supportLandingConfig;
+
     // ─── 능력치 ────────────────────────────────────────
 
     [Header("능력치 프로파일")]
@@ -93,28 +109,45 @@ public sealed class CharacterDefinitionSO : ScriptableObject
 
     public string CharacterId => characterId;
     public string DisplayName => displayName;
-
-    /// <summary>캐릭터 속성입니다. 기존 CharacterAttributeKind 열거형을 사용합니다.</summary>
     public CharacterAttributeKind Attribute => attribute;
-
     public Sprite Portrait => portrait;
     public Sprite Thumbnail => thumbnail;
     public Sprite PlayerIdleSprite => playerIdleSprite;
     public RuntimeAnimatorController AnimatorController => animatorController;
-
     public Sprite BasicSkillIcon => basicSkillIcon;
     public string BasicSkillId => basicSkillId;
     public CommonSkillConfigSO StartingSkill => startingSkill;
-
     public Sprite UltimateSkillIcon => ultimateSkillIcon;
     public string UltimateSkillId => ultimateSkillId;
     public UltimateDataSO UltimateData => ultimateData;
     public GameObject UltimateResolverPrefab => ultimateResolverPrefab;
-
     public float SupportDamageMultiplier => supportDamageMultiplier;
     public GameObject SupportVisualPrefab => supportVisualPrefab;
+    public SupportBuffData2D SupportBuff => supportBuff;
+
+    /// <summary>이 캐릭터의 등장/퇴장 연출 설정입니다. null이면 기본값을 사용합니다.</summary>
+    public SupportLandingConfigSO SupportLandingConfig => supportLandingConfig;
 
     public PlayerBaseStatProfileSO BaseStatProfile => baseStatProfile;
     public CharacterUpgradeTreeSO UpgradeTree => upgradeTree;
     public bool UnlockedByDefault => unlockedByDefault;
+}
+
+/// <summary>
+/// 지원 궁극기 발동 시 메인 캐릭터에게 부여하는 버프 데이터입니다.
+/// </summary>
+[Serializable]
+public struct SupportBuffData2D
+{
+    [Tooltip("버프 종류입니다.")]
+    public SupportBuffKind2D kind;
+
+    [Tooltip("버프 수치입니다. (%, 고정값 등 종류에 따라 해석)")]
+    public float value;
+
+    [Tooltip("버프 지속시간(초)입니다.")]
+    public float duration;
+
+    /// <summary>유효한 버프 데이터인지 확인합니다.</summary>
+    public bool IsValid => kind != SupportBuffKind2D.None && value > 0f && duration > 0f;
 }
