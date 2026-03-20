@@ -14,27 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterDefinitionSO
   characterId: hayul
   displayName: "\uD558\uC728"
+  attribute: 3
   portrait: {fileID: 5798507855648391752, guid: f6efd088fb53b1c48b8e95cc6a591514,
     type: 3}
-  basicSkillIcon: {fileID: 21300000, guid: 5c5b97ecbd09aa9498e31fa51f4f49cb, type: 3}
   thumbnail: {fileID: -209263859, guid: 70f8a13841272fc4eae100778f95da98, type: 3}
+  playerIdleSprite: {fileID: -5819949379204106110, guid: a3aeac537a8481f4cb203c7a7f61d51b,
+    type: 3}
+  animatorController: {fileID: 9100000, guid: d95c239ca35920741bd8007736940892, type: 2}
+  basicSkillIcon: {fileID: 21300000, guid: 5c5b97ecbd09aa9498e31fa51f4f49cb, type: 3}
+  basicSkillId: 
+  startingSkill: {fileID: 11400000, guid: dc37c8bf22f65f64ebe0a1e1ecc24c0f, type: 2}
   ultimateSkillIcon: {fileID: 2102040697523899506, guid: f6efd088fb53b1c48b8e95cc6a591514,
     type: 3}
-  attribute: 3
-  startingSkill: {fileID: 11400000, guid: dc37c8bf22f65f64ebe0a1e1ecc24c0f, type: 2}
+  ultimateSkillId: 
   ultimateData: {fileID: 11400000, guid: 582d2343d81583741b553c80eaba6694, type: 2}
   ultimateResolverPrefab: {fileID: 4368902744537951787, guid: 1c2d85e0139b10d468742b714b3f44ca,
     type: 3}
-  passiveName: "\uB3C4\uC220"
-  passiveDescription: "\uC804\uAE30 \uC18D\uC131 \uC2A4\uD0AC\uC5D0 \uC804\uD30C
-    \uCD5C\uB300\uCE58\uB97C 5 \uC99D\uAC00\uC2DC\uD0A4\uACE0 20% \uCD94\uAC00 \uB370\uBBF8\uC9C0\uB97C
-    \uBD80\uC5EC\uD55C\uB2E4."
   supportDamageMultiplier: 0.55
-  supportBuffType: 3
-  supportBuffValue: 60
-  supportBuffDuration: 10
-  playerIdleSprite: {fileID: -5819949379204106110, guid: a3aeac537a8481f4cb203c7a7f61d51b,
-    type: 3}
   supportVisualPrefab: {fileID: 2448833564552998235, guid: 4fef947d26cdffb4295575391fab7191,
     type: 3}
-  animatorController: {fileID: 9100000, guid: d95c239ca35920741bd8007736940892, type: 2}
+  baseStatProfile: {fileID: 0}
+  upgradeTree: {fileID: 11400000, guid: 41141dab7db4a1147bfac86d93183771, type: 2}
+  unlockedByDefault: 0

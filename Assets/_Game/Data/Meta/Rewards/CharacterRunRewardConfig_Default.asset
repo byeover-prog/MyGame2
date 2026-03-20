@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ccd84dbfce5ba54d902db2b8e61d022, type: 3}
+  m_Name: CharacterRunRewardConfig_Default
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterRunRewardConfigSO
+  storyVictoryMainXp: 120
+  storyDefeatMainXp: 70
+  casualVictoryMainXp: 80
+  casualDefeatMainXp: 45
+  supportXpSharePercent: 60
+  storyVictoryNyang: 140
+  storyDefeatNyang: 70
+  casualVictoryNyang: 90
+  casualDefeatNyang: 40
