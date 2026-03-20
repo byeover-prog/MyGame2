@@ -4924,7 +4924,7 @@ Transform:
   m_GameObject: {fileID: 1009145834550670130}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.88435, y: -6.05315, z: 0}
+  m_LocalPosition: {x: -4.29084, y: -0.39505, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -9824,8 +9824,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4d8b25c2b5eb6944b07792d807a974a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KumihoLightning
-  damage: 20
-  lifeTime: 1.5
+  lightningPrefab: {fileID: 1009145834550670130}
+  warningPrefab: {fileID: 826050219743908991, guid: a8170be43f67f0745b47d3963cca2a11,
+    type: 3}
+  spawnInterval: 5
+  spawnPerTick: 2
+  warningTime: 0.6
+  duration: 3
+  minDistance: 3
+  maxTries: 10
+  warningScaleY: 0.7
+  warningRotation: 60
 --- !u!1 &1009145834593142095
 GameObject:
   m_ObjectHideFlags: 0
@@ -29689,7 +29698,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 6
+      scalar: 3
       minScalar: 1
       maxCurve:
         serializedVersion: 2

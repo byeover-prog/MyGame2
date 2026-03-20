@@ -1,88 +1,91 @@
 // UTF-8
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
-/// <summary>
-/// [구현 원리 요약]
-/// 보스 주변 "원형(링)" 형태로 번개를 떨어뜨리는 패턴
-/// - 각도를 나눠서 일정 간격으로 생성
-/// - 부모 없이 생성하여 위치 고정
-/// </summary>
-
-[DisallowMultipleComponent]
 public class KumihoLightningAttack : MonoBehaviour
 {
-    [Header("===== 참조 =====")]
+    [Header("참조")]
 
-    [Tooltip("플레이어 Transform\n비워두면 자동 탐색")]
+    [Tooltip("플레이어")]
     [SerializeField] private Transform player;
 
     [Tooltip("번개 프리팹")]
     [SerializeField] private GameObject lightningPrefab;
 
-
-    [Header("===== 원형 설정 =====")]
-
-    [Tooltip("원 반경")]
-    [SerializeField] private float radius = 5f;
-
-    [Tooltip("번개 개수 (원에 배치됨)")]
-    [SerializeField] private int spawnCount = 8;
+    [Tooltip("경고 원 프리팹")]
+    [SerializeField] private GameObject warningPrefab;
 
 
-    [Header("===== 타이밍 =====")]
+    [Header("범위 설정")]
 
-    [Tooltip("패턴 반복 간격")]
-    [SerializeField] private float interval = 4f;
+    [Tooltip("최소 거리")]
+    [SerializeField] private float minRange = 1.5f;
+
+    [Tooltip("최대 거리")]
+    [SerializeField] private float maxRange = 4f;
+
+
+    [Header("패턴 설정")]
+
+    [Tooltip("번개 개수")]
+    [SerializeField] private int lightningCount = 6;
+
+    [Tooltip("번개 간격")]
+    [SerializeField] private float delay = 0.3f;
 
     [Tooltip("경고 후 떨어지는 시간")]
-    [SerializeField] private float delayBeforeStrike = 1f;
+    [SerializeField] private float warningTime = 0.8f;
 
 
-    private void Start()
+    void Start()
     {
-        if (player == null)
-            player = GameObject.FindGameObjectWithTag("Player")?.transform;
-
-        StartCoroutine(LightningRoutine());
+        StartCoroutine(LightningPattern());
     }
 
 
-    private IEnumerator LightningRoutine()
+    IEnumerator LightningPattern()
     {
         while (true)
         {
-            yield return new WaitForSeconds(interval);
+            for (int i = 0; i < lightningCount; i++)
+            {
+                StartCoroutine(SpawnLightningWithWarning());
 
-            SpawnCircleLightning();
+                yield return new WaitForSeconds(delay);
+            }
+
+            yield return new WaitForSeconds(3f);
         }
     }
 
 
-    // 🔥 원형 배치 핵심 함수
-    private void SpawnCircleLightning()
+    IEnumerator SpawnLightningWithWarning()
     {
-        Vector2 center = transform.position;
+        if (player == null) yield break;
 
-        for (int i = 0; i < spawnCount; i++)
+        // 랜덤 위치 계산
+        Vector2 dir = Random.insideUnitCircle.normalized;
+        float dist = Random.Range(minRange, maxRange);
+        Vector3 pos = player.position + (Vector3)(dir * dist);
+
+        // 🔥 경고 원 생성
+        GameObject warning = null;
+
+        if (warningPrefab != null)
         {
-            float angle = i * Mathf.PI * 2f / spawnCount;
-
-            Vector2 pos = new Vector2(
-                center.x + Mathf.Cos(angle) * radius,
-                center.y + Mathf.Sin(angle) * radius
-            );
-
-            StartCoroutine(SpawnLightning(pos));
+            warning = Instantiate(warningPrefab, pos, Quaternion.identity);
         }
-    }
 
+        // 🔥 대기 (경고 시간)
+        yield return new WaitForSeconds(warningTime);
 
-    private IEnumerator SpawnLightning(Vector2 pos)
-    {
-        yield return new WaitForSeconds(delayBeforeStrike);
-
-        // 부모 없음 → 고정 위치
+        // 🔥 번개 생성
         Instantiate(lightningPrefab, pos, Quaternion.identity);
+
+        // 🔥 경고 제거
+        if (warning != null)
+        {
+            Destroy(warning);
+        }
     }
 }
