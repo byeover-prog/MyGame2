@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EnemyRoot
   m_EditorClassIdentifier: Assembly-CSharp::EnemyRootSO
   Enemies:
-  - Id: armyghsot
+  - Id: armyghost
     Prefab: {fileID: 1554796069673931401, guid: 566eed40b2e18fc47a2ee031b5193545,
       type: 3}
     Weight: 0

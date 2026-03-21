@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &9091997307569312612
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5544330620289205752}
+  - component: {fileID: -3918206541154631176}
+  m_Layer: 0
+  m_Name: Mouse_SwarmRushPattern
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5544330620289205752
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9091997307569312612}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-3918206541154631176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9091997307569312612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8538ba656db0de146bf8ca31aad1d011, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RatSwarmRushPattern2D
+  memberPrefab: {fileID: 4358049814022447941, guid: a78859d04dbc40b489e21639d6e02a0e,
+    type: 3}
+  target: {fileID: 0}
+  playerTag: Player
+  gameplayCamera: {fileID: 0}
+  swarmSize: 12
+  formationColumns: 4
+  formationSpacing: {x: 1.2, y: 0.7}
+  formationJitter: 0.15
+  aimMoveSpeed: 5
+  detectionRange: 15
+  dashSpeed: 15
+  swarmLifeTime: 4
+  warningViewportMargin: 0.1
+  warningDuration: 0.5
+  despawnWhenAllMembersLeaveView: 1
+  despawnViewportPadding: 0.15
+  memberOrientationMode: 0
+  memberDefaultFacingDirection: 0
+  disableEnemyChaserOnMembers: 1
+  disableEnemyAutoDespawnOnMembers: 1
+  disableEnemySpriteFlipOnMembers: 1
+  autoStartOnEnable: 1
+  drawDebugGizmos: 1
+  debugLog: 0

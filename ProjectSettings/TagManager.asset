@@ -53,5 +53,11 @@ TagManager:
   - name: Layer 3
     uniqueID: 4189426099
     locked: 0
+  - name: DropItem
+    uniqueID: 1488522827
+    locked: 0
+  - name: Character
+    uniqueID: 2128616165
+    locked: 0
   m_RenderingLayers:
   - Default
