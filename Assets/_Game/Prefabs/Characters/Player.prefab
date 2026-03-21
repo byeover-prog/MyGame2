@@ -113,6 +113,7 @@ GameObject:
   - component: {fileID: 796904804376548588}
   - component: {fileID: -763766003085214251}
   - component: {fileID: 4029116142212849518}
+  - component: {fileID: 5249650449308856174}
   m_Layer: 12
   m_Name: Player
   m_TagString: Player
@@ -548,6 +549,8 @@ MonoBehaviour:
   ultimateKey: 114
   executor: {fileID: 1917345489163748299}
   animator: {fileID: 755554874796778754}
+  ultStateName: ULT
+  idleStateName: Idle
 --- !u!114 &1917345489163748299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -628,9 +631,12 @@ MonoBehaviour:
   supportKey: 116
   sideDistance: 4
   staggerDelay: 0.08
+  followSpeed: 12
+  exitLingerDuration: 1.5
   loadout: {fileID: 0}
   executor: {fileID: 0}
   playerTransform: {fileID: 4190694949098890430}
+  playerSpriteRenderer: {fileID: 0}
   landingPresenter: {fileID: 0}
   buffController: {fileID: 0}
   debugLog: 1
@@ -662,7 +668,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SupportLandingPresenter2D
   defaultShadowPrefab: {fileID: 0}
+  idleStateName: Idle
+  idleCrossFadeDuration: 0.1
   debugLog: 1
+--- !u!114 &5249650449308856174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7b3e68e6d9d23c40939919d07320b67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSpirit2D
+  currentSpirit: 0
+  debugLog: 0
 --- !u!1 &2880635546030048868
 GameObject:
   m_ObjectHideFlags: 0

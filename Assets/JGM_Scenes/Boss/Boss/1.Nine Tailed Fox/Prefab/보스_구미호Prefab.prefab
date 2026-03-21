@@ -90,7 +90,7 @@ PrefabInstance:
     - target: {fileID: -2253911629886400664, guid: 2e361b6468a8a8641a0deaef5cbad821,
         type: 3}
       propertyPath: m_Name
-      value: "\uBCF4\uC2A4_\uAD6C\uBBF8\uD638"
+      value: "\uBCF4\uC2A4_\uAD6C\uBBF8\uD638Prefab"
       objectReference: {fileID: 0}
     - target: {fileID: -2253911629886400664, guid: 2e361b6468a8a8641a0deaef5cbad821,
         type: 3}
@@ -208,6 +208,22 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5201520895467095074}
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 2e361b6468a8a8641a0deaef5cbad821,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3203031319281666780}
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 2e361b6468a8a8641a0deaef5cbad821,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -3078058787239869298}
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 2e361b6468a8a8641a0deaef5cbad821,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6625959250760757227}
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 2e361b6468a8a8641a0deaef5cbad821,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -2267517328005604700}
   m_SourcePrefab: {fileID: -8435245712485981826, guid: 2e361b6468a8a8641a0deaef5cbad821,
     type: 3}
 --- !u!95 &500850716539098488 stripped
@@ -355,6 +371,7 @@ MonoBehaviour:
   player: {fileID: 0}
   foxFirePrefab: {fileID: 362002621279640493, guid: 2cd0753856598d349ba28424c762f455,
     type: 3}
+  bossHealth: {fileID: 0}
   radius: 2.5
   angularSpeed: 180
   fireCount: 8
@@ -362,6 +379,7 @@ MonoBehaviour:
   startDelay: 5
   orbitTime: 2
   patternDelay: 5
+  destroyFoxFireOnBossDeath: 1
 --- !u!114 &5201520895467095074
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -385,6 +403,78 @@ MonoBehaviour:
   buffProjectileCount: 3
   rotateSpeed: 120
   patternInterval: 10
+--- !u!114 &3203031319281666780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8525727089687695320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca92c0246d560704daeb88a730eedab5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossHealth2D
+  maxHp: 1000
+  currentHp: 1000
+  hitCollider: {fileID: 0}
+  autoAddReceiverToChildren: 1
+  destroyOnDeath: 0
+  disableOnDeath: 1
+  destroyDelay: 0
+  onDamaged:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLog: 1
+--- !u!114 &-3078058787239869298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8525727089687695320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebb91fc118b561b40840a2a05951b3fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyRegistryMember2D
+--- !u!114 &6625959250760757227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8525727089687695320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f6b219a1bccb5b4cafcfe1c55fc7b64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossDamageReceiver2D
+  bossHealth: {fileID: 3203031319281666780}
+  debugLog: 1
+--- !u!114 &-2267517328005604700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8525727089687695320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7141ac5d95c3b1b42b9e363de985fc55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KumihoLightningAttack
+  player: {fileID: 0}
+  lightningPrefab: {fileID: 0}
+  warningPrefab: {fileID: 0}
+  minRange: 1.5
+  maxRange: 4
+  lightningCount: 6
+  delay: 0.3
+  warningTime: 0.8
 --- !u!4 &8916156472858322877 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7878350319992209165, guid: 2e361b6468a8a8641a0deaef5cbad821,
