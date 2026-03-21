@@ -4,52 +4,69 @@ using System.Collections;
 
 /// <summary>
 /// [구현 원리 요약]
-/// 일정 주기마다 DarkZone 프리팹을 생성해서
-/// 보스 주변 어둠 영역을 전개합니다.
+/// 저승사자 어둠 장판 스킬
+/// - 시작 지연
+/// - 지속 시간
+/// - 재사용 대기시간
+/// 모두 인스펙터에서 설정 가능
 /// </summary>
 [DisallowMultipleComponent]
 public class GrimReaperDarkZoneSkill : MonoBehaviour
 {
     [Header("참조")]
 
-    [Tooltip("DarkZone 프리팹")]
+    [Tooltip("어둠 장판 프리팹")]
     [SerializeField] private GameObject darkZonePrefab;
 
 
 
-    [Header("스킬 설정")]
+    [Header("패턴 타이밍")]
 
-    [Tooltip("영역 지속시간(초)")]
-    [SerializeField] private float activeDuration = 5f;
+    [Tooltip("게임 시작 후 첫 발동까지 대기시간")]
+    [SerializeField] private float startDelay = 3f;
 
-    [Tooltip("재사용 대기시간(초)")]
+    [Tooltip("패턴 유지 시간")]
+    [SerializeField] private float duration = 5f;
+
+    [Tooltip("패턴 재사용 대기시간")]
     [SerializeField] private float cooldown = 5f;
+
+
+
+    private Coroutine skillCoroutine;
 
 
 
     private void Start()
     {
-        StartCoroutine(SkillRoutine());
+        skillCoroutine = StartCoroutine(SkillRoutine());
     }
 
 
 
     private IEnumerator SkillRoutine()
     {
+        // 🔥 1. 시작 대기
+        yield return new WaitForSeconds(startDelay);
+
         while (true)
         {
-            // 영역 생성
-            GameObject zoneObject = Instantiate(darkZonePrefab, transform.position, Quaternion.identity);
+            // 🔥 2. 장판 생성
+            GameObject zoneObj = Instantiate(darkZonePrefab, transform.position, Quaternion.identity);
 
-            GrimReaperDarkZone zone = zoneObject.GetComponent<GrimReaperDarkZone>();
+            GrimReaperDarkZone zone = zoneObj.GetComponent<GrimReaperDarkZone>();
+
             if (zone != null)
             {
                 zone.Init(transform);
-                zone.ActivateZone();
+                zone.ActivateZone(duration); // duration 전달
             }
 
-            // 지속시간 + 쿨타임
-            yield return new WaitForSeconds(activeDuration + cooldown);
+            // 🔥 3. 유지 시간
+            yield return new WaitForSeconds(duration);
+
+            // 🔥 4. 쿨타임
+            yield return new WaitForSeconds(cooldown);
         }
     }
 }

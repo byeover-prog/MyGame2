@@ -3,58 +3,50 @@ using UnityEngine;
 
 /// <summary>
 /// [구현 원리 요약]
-/// 보스를 따라다니는 어둠 영역입니다.
-/// 자식 CircleCollider2D를 직접 검사해서 플레이어가 범위 안에 있으면
-/// 일정 간격마다 독 데미지를 줍니다.
-/// 트리거 이벤트에 의존하지 않아 구조 문제에 강합니다.
+/// 보스를 따라다니는 어둠 영역
+/// - 외부에서 지속시간을 받아 동작
+/// - 범위 내 플레이어에게 지속 데미지
 /// </summary>
 [DisallowMultipleComponent]
 public class GrimReaperDarkZone : MonoBehaviour
 {
     [Header("참조")]
 
-    [Tooltip("따라갈 보스 Transform")]
+    [Tooltip("보스 Transform")]
     [SerializeField] private Transform boss;
 
-    [Tooltip("데미지 판정용 원형 콜라이더")]
+    [Tooltip("데미지 판정 영역")]
     [SerializeField] private CircleCollider2D damageArea;
 
 
 
     [Header("데미지 설정")]
 
-    [Tooltip("1틱당 독 데미지")]
+    [Tooltip("1틱 데미지")]
     [SerializeField] private int damage = 5;
 
-    [Tooltip("데미지 적용 간격(초)")]
+    [Tooltip("데미지 간격")]
     [SerializeField] private float tickInterval = 1f;
 
 
 
-    [Header("영역 유지 설정")]
+    [Header("레이어")]
 
-    [Tooltip("영역 유지 시간(초)")]
-    [SerializeField] private float duration = 5f;
-
-
-
-    [Header("대상 레이어")]
-
-    [Tooltip("플레이어 레이어만 체크")]
+    [Tooltip("플레이어 레이어")]
     [SerializeField] private LayerMask playerLayer;
 
 
 
     private float tickTimer;
     private float lifeTimer;
-    private readonly Collider2D[] hitResults = new Collider2D[16];
+    private float duration;
+
+    private readonly Collider2D[] results = new Collider2D[16];
+
     private bool isRunning;
 
 
 
-    /// <summary>
-    /// 보스 추적 대상 초기화
-    /// </summary>
     public void Init(Transform bossTransform)
     {
         boss = bossTransform;
@@ -62,41 +54,34 @@ public class GrimReaperDarkZone : MonoBehaviour
 
 
 
-    /// <summary>
-    /// 영역 시작
-    /// </summary>
-    public void ActivateZone()
+    // 🔥 duration을 외부에서 받음
+    public void ActivateZone(float durationValue)
     {
-        isRunning = true;
-        tickTimer = 0f;
+        duration = durationValue;
         lifeTimer = 0f;
+        tickTimer = 0f;
+        isRunning = true;
     }
 
 
 
     private void Awake()
     {
-        // 자식 Circle을 자동 탐색
         if (damageArea == null)
-        {
             damageArea = GetComponentInChildren<CircleCollider2D>();
-        }
     }
 
 
 
     private void Update()
     {
-        if (!isRunning)
-            return;
+        if (!isRunning) return;
 
-        // 보스를 따라다님
+        // 보스 따라가기
         if (boss != null)
-        {
             transform.position = boss.position;
-        }
 
-        // 유지 시간 체크
+        // 지속시간 체크
         lifeTimer += Time.deltaTime;
         if (lifeTimer >= duration)
         {
@@ -104,50 +89,38 @@ public class GrimReaperDarkZone : MonoBehaviour
             return;
         }
 
-        // 틱 간격 체크
+        // 데미지 타이머
         tickTimer += Time.deltaTime;
-        if (tickTimer < tickInterval)
-            return;
+        if (tickTimer < tickInterval) return;
 
         tickTimer = 0f;
 
-        ApplyPoisonDamage();
+        ApplyDamage();
     }
 
 
 
-    /// <summary>
-    /// 현재 원형 범위 안의 플레이어를 직접 검사해서 데미지를 적용
-    /// </summary>
-    private void ApplyPoisonDamage()
+    private void ApplyDamage()
     {
-        if (damageArea == null)
-        {
-            Debug.LogError("GrimReaperDarkZone: damageArea가 비어 있습니다.");
-            return;
-        }
-
         ContactFilter2D filter = new ContactFilter2D();
         filter.useLayerMask = true;
         filter.layerMask = playerLayer;
         filter.useTriggers = true;
 
-        int hitCount = damageArea.Overlap(filter, hitResults);
+        int count = damageArea.Overlap(filter, results);
 
-        for (int i = 0; i < hitCount; i++)
+        for (int i = 0; i < count; i++)
         {
-            Collider2D target = hitResults[i];
-            if (target == null)
-                continue;
+            var col = results[i];
+            if (col == null) continue;
 
-            PlayerHealth playerHealth =
-                target.GetComponent<PlayerHealth>() ??
-                target.GetComponentInParent<PlayerHealth>() ??
-                target.GetComponentInChildren<PlayerHealth>();
+            PlayerHealth hp =
+                col.GetComponent<PlayerHealth>() ??
+                col.GetComponentInParent<PlayerHealth>();
 
-            if (playerHealth != null)
+            if (hp != null)
             {
-                playerHealth.TakeDamage(damage);
+                hp.TakeDamage(damage);
             }
         }
     }
