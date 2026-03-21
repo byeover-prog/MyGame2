@@ -70,11 +70,17 @@ public sealed class SaveManager2D : MonoBehaviour
         if (JsonIO2D.TryLoadFromPersistent(SaveKeys2D.PlayerSaveFile, out PlayerSaveData2D loaded, out string error))
         {
             Data = loaded;
+            if (Data == null)
+                Data = PlayerSaveData2D.CreateDefault();
+
+            Data.EnsureDefaults();
+
             if (log) Debug.Log("[SaveManager2D] 세이브 로드 성공");
             return;
         }
 
         Data = PlayerSaveData2D.CreateDefault();
+        Data.EnsureDefaults();
         if (log) Debug.LogWarning($"[SaveManager2D] 세이브 로드 실패 → 기본값 생성: {error}");
 
         Save(); // 기본값이라도 파일을 만들어서 안정화
@@ -84,6 +90,7 @@ public sealed class SaveManager2D : MonoBehaviour
     {
         if (Data == null) return;
 
+        Data.EnsureDefaults();
         Data.lastSavedUnixMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         if (!JsonIO2D.TrySaveToPersistent(SaveKeys2D.PlayerSaveFile, Data, prettyPrint: true, out string error))
@@ -103,6 +110,7 @@ public sealed class SaveManager2D : MonoBehaviour
         }
 
         Data = PlayerSaveData2D.CreateDefault();
+        Data.EnsureDefaults();
         Save();
     }
 }

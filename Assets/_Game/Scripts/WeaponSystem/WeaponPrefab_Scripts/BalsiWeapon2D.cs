@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 
 /// <summary>
@@ -65,24 +64,18 @@ public sealed class BalsiWeapon2D : CommonSkillWeapon2D
             ? (target.Position - origin).normalized
             : Vector2.right;
 
-        int count = Mathf.Max(1, StatProjectileCount);
+        var proj = pool.Get<BalsiProjectile2D>(origin, Quaternion.identity);
+        ApplyProjectileSorting(proj.gameObject);
 
-        for (int i = 0; i < count; i++)
-        {
-            var proj = pool.Get<BalsiProjectile2D>(origin, Quaternion.identity);
-            ApplyProjectileSorting(proj.gameObject);
-
-            proj.Init(
-                mask: enemyMask,
-                dmg: StatDamage,
-                spd: StatProjectileSpeed,
-                life: StatProjectileLife,
-                direction: dir
-            );
-        }
+        proj.Init(
+            mask: enemyMask,
+            dmg: StatDamage,
+            spd: StatProjectileSpeed,
+            life: StatProjectileLife,
+            direction: dir
+        );
 
         if (debugLog)
-            Debug.Log($"[발시] 발사 | dmg={StatDamage} count={count} " +
-                      $"spd={StatProjectileSpeed} cd={P.cooldown:F2}");
+            Debug.Log($"[발시] 발사 | dmg={StatDamage} spd={StatProjectileSpeed} cd={P.cooldown:F2}");
     }
 }

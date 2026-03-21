@@ -12,144 +12,144 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e145025ec83b9db4f8cd8df69737373e, type: 3}
   m_Name: CS_Balsi
   m_EditorClassIdentifier: Assembly-CSharp::CommonSkillConfigSO
-  kind: 9
-  displayName: "\uD558\uC728 \uC804\uC6A9 \uC2A4\uD0AC"
+  kind: 8
+  displayName: "\uBC1C\uC2DC"
   visualDescriptionKr: 
   icon: {fileID: 21300000, guid: 5c5b97ecbd09aa9498e31fa51f4f49cb, type: 3}
-  weaponPrefab: {fileID: 425592778455410491, guid: 6359eeee6eaa82d4b9bcd87a8f233db8,
+  weaponPrefab: {fileID: 3016128824251240296, guid: dd45205a343eea94e87c6e8d4915b0c1,
     type: 3}
   maxLevel: 8
   levels:
-  - cooldown: 1.8
-    damage: 15
-    projectileCount: 1
-    projectileSpeed: 8
-    lifeSeconds: 2
-    maxDistance: 0
-    spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 1.5
-    childSpeed: 0
-    hitInterval: 0
-    orbitRadius: 0
-    orbitAngularSpeed: 0
-    returnSpeed: 0
-    turnSpeedDeg: 0
-  - cooldown: 1.7
-    damage: 17
-    projectileCount: 1
-    projectileSpeed: 8
-    lifeSeconds: 2
-    maxDistance: 0
-    spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 1.6
-    childSpeed: 0
-    hitInterval: 0
-    orbitRadius: 0
-    orbitAngularSpeed: 0
-    returnSpeed: 0
-    turnSpeedDeg: 0
-  - cooldown: 1.6
-    damage: 20
-    projectileCount: 1
-    projectileSpeed: 8
-    lifeSeconds: 2
-    maxDistance: 0
-    spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 1.7
-    childSpeed: 0
-    hitInterval: 0
-    orbitRadius: 0
-    orbitAngularSpeed: 0
-    returnSpeed: 0
-    turnSpeedDeg: 0
-  - cooldown: 1.6
-    damage: 25
-    projectileCount: 1
-    projectileSpeed: 8
-    lifeSeconds: 2
-    maxDistance: 0
-    spreadAngleDeg: 0
-    bounceCount: 0
-    chainCount: 0
-    splitCount: 0
-    explosionRadius: 1.7
-    childSpeed: 0
-    hitInterval: 0
-    orbitRadius: 0
-    orbitAngularSpeed: 0
-    returnSpeed: 0
-    turnSpeedDeg: 0
-  - cooldown: 1.5
+  - cooldown: 1
     damage: 30
     projectileCount: 1
-    projectileSpeed: 8
+    projectileSpeed: 14
     lifeSeconds: 2
     maxDistance: 0
     spreadAngleDeg: 0
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 1.8
+    explosionRadius: 0
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
-  - cooldown: 1.5
-    damage: 30
+  - cooldown: 0.95
+    damage: 35
     projectileCount: 1
-    projectileSpeed: 8
+    projectileSpeed: 14
     lifeSeconds: 2
     maxDistance: 0
     spreadAngleDeg: 0
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 1.8
+    explosionRadius: 0
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
-  - cooldown: 1.5
-    damage: 30
+  - cooldown: 0.88
+    damage: 40
     projectileCount: 1
-    projectileSpeed: 8
+    projectileSpeed: 15
     lifeSeconds: 2
     maxDistance: 0
     spreadAngleDeg: 0
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 1.8
+    explosionRadius: 0
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0
     orbitAngularSpeed: 0
     returnSpeed: 0
     turnSpeedDeg: 0
-  - cooldown: 1.5
-    damage: 30
+  - cooldown: 0.8
+    damage: 45
     projectileCount: 1
-    projectileSpeed: 8
+    projectileSpeed: 15
     lifeSeconds: 2
     maxDistance: 0
     spreadAngleDeg: 0
     bounceCount: 0
     chainCount: 0
     splitCount: 0
-    explosionRadius: 1.8
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.72
+    damage: 50
+    projectileCount: 1
+    projectileSpeed: 16
+    lifeSeconds: 2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.65
+    damage: 55
+    projectileCount: 1
+    projectileSpeed: 16
+    lifeSeconds: 2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.58
+    damage: 60
+    projectileCount: 1
+    projectileSpeed: 17
+    lifeSeconds: 2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
+    childSpeed: 0
+    hitInterval: 0
+    orbitRadius: 0
+    orbitAngularSpeed: 0
+    returnSpeed: 0
+    turnSpeedDeg: 0
+  - cooldown: 0.5
+    damage: 65
+    projectileCount: 1
+    projectileSpeed: 17
+    lifeSeconds: 2
+    maxDistance: 0
+    spreadAngleDeg: 0
+    bounceCount: 0
+    chainCount: 0
+    splitCount: 0
+    explosionRadius: 0
     childSpeed: 0
     hitInterval: 0
     orbitRadius: 0

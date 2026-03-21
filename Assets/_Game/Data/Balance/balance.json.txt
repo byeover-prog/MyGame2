@@ -140,6 +140,20 @@
                 { "cooldown": 0.66, "damage": 32, "projectileSpeed": 11.6, "life": 1.7, "count": 1 },
                 { "cooldown": 0.62, "damage": 34, "projectileSpeed": 11.9, "life": 1.7, "count": 1 }
             ]
+        },
+        {
+            "id": "weapon_jwagyekyose",
+            "_name": "좌격요세 — 하린 기본 스킬(음 속성, 근접 횡베기)",
+            "levels": [
+                { "cooldown": 1.20, "damage": 20, "explosionRadius": 4.0, "life": 0.4 },
+                { "cooldown": 1.10, "damage": 24, "explosionRadius": 4.0, "life": 0.4 },
+                { "cooldown": 1.00, "damage": 28, "explosionRadius": 4.3, "life": 0.4 },
+                { "cooldown": 0.95, "damage": 32, "explosionRadius": 4.3, "life": 0.4 },
+                { "cooldown": 0.90, "damage": 36, "explosionRadius": 4.6, "life": 0.4 },
+                { "cooldown": 0.85, "damage": 40, "explosionRadius": 4.6, "life": 0.4 },
+                { "cooldown": 0.80, "damage": 45, "explosionRadius": 5.0, "life": 0.4 },
+                { "cooldown": 0.70, "damage": 50, "explosionRadius": 5.5, "life": 0.4 }
+            ]
         }
     ]
 }

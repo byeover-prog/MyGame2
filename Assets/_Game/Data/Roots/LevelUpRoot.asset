@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1039eecf8b2bd149ac41608fb2b1d36, type: 3}
+  m_Name: LevelUpRoot
+  m_EditorClassIdentifier: Assembly-CSharp::LevelUpRootSO
+  offerCount: 3
+  pauseGameWhileOpen: 1
+  openIntervalRealtime: 0.25
+  debugOpenKey: 282
+  weaponWeightMultiplier: 1
+  commonSkillWeightMultiplier: 10

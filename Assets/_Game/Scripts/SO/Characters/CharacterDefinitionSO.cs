@@ -1,168 +1,153 @@
+using System;
 using UnityEngine;
 
 /// <summary>
-/// 캐릭터 1명의 전체 정의 데이터.
-/// UI 표시 + 전투 데이터(기본 스킬, 궁극기, 패시브, 비주얼)를 모두 담는다.
-///
-/// [기존 필드] — 이름/순서 변경 금지 (Inspector 참조 유지)
-/// characterId, displayName, portrait, basicSkillIcon, thumbnail,
-/// ultimateSkillIcon, attribute
-///
-/// [신규 필드] — 기존 뒤에 추가
-/// 기본 스킬, 궁극기 SO, 패시브, 캐릭터 프리팹 등
+/// 개별 캐릭터의 기본 정의입니다.
+/// 윤설, 하율, 하린 각각 하나의 에셋으로 만들어 CharacterCatalogSO에 등록합니다.
 /// </summary>
-[CreateAssetMenu(menuName = "그날이후/캐릭터/캐릭터 정의", fileName = "SO_Character_")]
+[CreateAssetMenu(menuName = "혼령검/메타/캐릭터 정의", fileName = "CharacterDefinition_")]
 public sealed class CharacterDefinitionSO : ScriptableObject
 {
-    // ═══════════════════════════════════════════════════════
-    //  기존 필드 (순서/이름 변경 금지 — Inspector 참조 유지)
-    // ═══════════════════════════════════════════════════════
+    // ─── 식별 ──────────────────────────────────────────
 
-    [Header("식별자(변경 금지)")]
-    [Tooltip("저장/런타임에서 캐릭터를 구분하는 고유 ID입니다. 출시 후 변경하면 세이브가 깨질 수 있습니다.")]
+    [Header("식별")]
+    [Tooltip("저장·코드에서 사용하는 고유 ID입니다. 예: yunseol, hayul, harin")]
     [SerializeField] private string characterId;
 
-    [Header("표시")]
+    [Tooltip("UI에 표시할 한글 이름입니다.")]
     [SerializeField] private string displayName;
-    [SerializeField] private Sprite portrait;
 
-    [Header("아이콘")]
-    [Tooltip("기본 스킬 아이콘(상단 슬롯 왼쪽)")]
-    [SerializeField] private Sprite basicSkillIcon;
-    [Tooltip("ClearUI 스쿼드 패널용 상체 썸네일")]
-    [SerializeField] private Sprite thumbnail;
-    public Sprite Thumbnail => thumbnail;
-
-    [Tooltip("궁극기 아이콘(상단 슬롯 오른쪽)")]
-    [SerializeField] private Sprite ultimateSkillIcon;
+    // ─── 속성 ──────────────────────────────────────────
 
     [Header("속성")]
+    [Tooltip("이 캐릭터의 기본 속성입니다. (기존 CharacterAttributeKind 사용)")]
     [SerializeField] private CharacterAttributeKind attribute = CharacterAttributeKind.None;
 
-    // ═══════════════════════════════════════════════════════
-    //  기존 프로퍼티 (변경 없음)
-    // ═══════════════════════════════════════════════════════
+    // ─── 비주얼 ────────────────────────────────────────
+
+    [Header("비주얼")]
+    [Tooltip("편성 화면 등에 표시할 초상화 스프라이트입니다.")]
+    [SerializeField] private Sprite portrait;
+
+    [Tooltip("클리어 UI 등에 표시할 썸네일 스프라이트입니다.")]
+    [SerializeField] private Sprite thumbnail;
+
+    [Tooltip("Player의 Idle 상태 스프라이트입니다.")]
+    [SerializeField] private Sprite playerIdleSprite;
+
+    [Tooltip("Player의 Animator Controller입니다.")]
+    [SerializeField] private RuntimeAnimatorController animatorController;
+
+    // ─── 기본 스킬 ────────────────────────────────────
+
+    [Header("기본 스킬")]
+    [Tooltip("기본 스킬 아이콘입니다.")]
+    [SerializeField] private Sprite basicSkillIcon;
+
+    [Tooltip("기본 스킬 ID입니다. 예: weapon_balsi, weapon_nakroebu, weapon_jwagyekyose")]
+    [SerializeField] private string basicSkillId;
+
+    [Tooltip("이 캐릭터의 시작 스킬(무기) Config SO입니다.")]
+    [SerializeField] private CommonSkillConfigSO startingSkill;
+
+    // ─── 궁극기 ────────────────────────────────────────
+
+    [Header("궁극기")]
+    [Tooltip("궁극기 아이콘입니다.")]
+    [SerializeField] private Sprite ultimateSkillIcon;
+
+    [Tooltip("궁극기 스킬 ID입니다. 예: ult_hokhan, ult_cheongang, ult_wolgwang")]
+    [SerializeField] private string ultimateSkillId;
+
+    [Tooltip("궁극기 데이터 SO입니다.")]
+    [SerializeField] private UltimateDataSO ultimateData;
+
+    [Tooltip("궁극기 실행 로직 프리팹입니다.")]
+    [SerializeField] private GameObject ultimateResolverPrefab;
+
+    // ─── 지원 캐릭터 전용 ──────────────────────────────
+
+    [Header("지원 캐릭터 전용")]
+    [Tooltip("지원 궁극기 사용 시 데미지 배율입니다. (예: 0.6 = 60%)")]
+    [SerializeField] private float supportDamageMultiplier = 0.6f;
+
+    [Tooltip("지원 캐릭터가 T키로 등장할 때 사용하는 비주얼 프리팹입니다.")]
+    [SerializeField] private GameObject supportVisualPrefab;
+
+    [Header("지원 버프 (T키 궁극기 시 메인 캐릭터에게 부여)")]
+    [Tooltip("이 캐릭터가 지원일 때 메인에게 주는 버프입니다.")]
+    [SerializeField] private SupportBuffData2D supportBuff = new SupportBuffData2D
+    {
+        kind = SupportBuffKind2D.None,
+        value = 0f,
+        duration = 10f
+    };
+
+    [Header("지원 등장 연출")]
+    [Tooltip("이 캐릭터의 등장/퇴장 연출 설정입니다. 비워두면 기본값을 사용합니다.")]
+    [SerializeField] private SupportLandingConfigSO supportLandingConfig;
+
+    // ─── 능력치 ────────────────────────────────────────
+
+    [Header("능력치 프로파일")]
+    [Tooltip("이 캐릭터의 기본 능력치 SO입니다. (기존 PlayerBaseStatProfileSO 연결)")]
+    [SerializeField] private PlayerBaseStatProfileSO baseStatProfile;
+
+    // ─── 아웃게임 강화 ────────────────────────────────
+
+    [Header("아웃게임 강화")]
+    [Tooltip("캐릭터별 강화 트리 SO입니다. 비워두면 런타임 기본 트리가 생성됩니다.")]
+    [SerializeField] private CharacterUpgradeTreeSO upgradeTree;
+
+    // ─── 해금 ──────────────────────────────────────────
+
+    [Header("해금 조건")]
+    [Tooltip("true면 게임 시작 시 기본 해금 상태입니다.")]
+    [SerializeField] private bool unlockedByDefault = false;
+
+    // ─── 프로퍼티 ──────────────────────────────────────
 
     public string CharacterId => characterId;
     public string DisplayName => displayName;
-    public Sprite Portrait => portrait;
-    public Sprite BasicSkillIcon => basicSkillIcon;
-    public Sprite UltimateSkillIcon => ultimateSkillIcon;
     public CharacterAttributeKind Attribute => attribute;
-
-    // ═══════════════════════════════════════════════════════
-    //  신규: 기본 스킬
-    // ═══════════════════════════════════════════════════════
-
-    [Header("기본 스킬")]
-    [Tooltip("이 캐릭터가 메인일 때 시작하는 기본 스킬 SO (CommonSkillConfigSO)")]
-    [SerializeField] private CommonSkillConfigSO startingSkill;
-
+    public Sprite Portrait => portrait;
+    public Sprite Thumbnail => thumbnail;
+    public Sprite PlayerIdleSprite => playerIdleSprite;
+    public RuntimeAnimatorController AnimatorController => animatorController;
+    public Sprite BasicSkillIcon => basicSkillIcon;
+    public string BasicSkillId => basicSkillId;
     public CommonSkillConfigSO StartingSkill => startingSkill;
-
-    // ═══════════════════════════════════════════════════════
-    //  신규: 궁극기
-    // ═══════════════════════════════════════════════════════
-
-    [Header("궁극기")]
-    [Tooltip("이 캐릭터의 궁극기 데이터 SO")]
-    [SerializeField] private UltimateDataSO ultimateData;
-
-    [Tooltip("이 캐릭터 궁극기 Resolver 프리팹.\n" +
-             "UltimateResolverBase를 상속한 컴포넌트가 붙은 프리팹을 연결.\n" +
-             "런타임에 Instantiate 후 사용.")]
-    [SerializeField] private GameObject ultimateResolverPrefab;
-
+    public Sprite UltimateSkillIcon => ultimateSkillIcon;
+    public string UltimateSkillId => ultimateSkillId;
     public UltimateDataSO UltimateData => ultimateData;
     public GameObject UltimateResolverPrefab => ultimateResolverPrefab;
-
-    // ═══════════════════════════════════════════════════════
-    //  신규: 패시브
-    // ═══════════════════════════════════════════════════════
-
-    [Header("패시브")]
-    [Tooltip("캐릭터 고유 패시브 이름 (한글)")]
-    [SerializeField] private string passiveName;
-
-    [Tooltip("캐릭터 고유 패시브 설명 (한글)")]
-    [TextArea(2, 4)]
-    [SerializeField] private string passiveDescription;
-
-    public string PassiveName => passiveName;
-    public string PassiveDescription => passiveDescription;
-
-    // ═══════════════════════════════════════════════════════
-    //  신규: 지원 궁극기 보정
-    // ═══════════════════════════════════════════════════════
-
-    [Header("지원 궁극기 보정")]
-    [Tooltip("지원 캐릭터로 궁극기 사용 시 데미지 배율 (0.55 = 55%)")]
-    [SerializeField] private float supportDamageMultiplier = 0.55f;
-
-    [Tooltip("지원 궁극기 사용 시 메인 캐릭터에게 주는 버프 타입")]
-    [SerializeField] private SupportBuffType supportBuffType = SupportBuffType.None;
-
-    [Tooltip("지원 버프 수치 (공격력%/흡혈비율/스킬가속 등)")]
-    [SerializeField] private float supportBuffValue;
-
-    [Tooltip("지원 버프 지속시간 (초)")]
-    [SerializeField] private float supportBuffDuration = 10f;
-
     public float SupportDamageMultiplier => supportDamageMultiplier;
-    public SupportBuffType SupportBuff => supportBuffType;
-    public float SupportBuffValue => supportBuffValue;
-    public float SupportBuffDuration => supportBuffDuration;
-
-    // ═══════════════════════════════════════════════════════
-    //  신규: 캐릭터 비주얼
-    // ═══════════════════════════════════════════════════════
-
-    [Header("캐릭터 비주얼")]
-    [Tooltip("메인 캐릭터일 때 사용할 기본 Idle 스프라이트.\n" +
-             "Animator Controller가 없거나 교체 전 기본 표시용.")]
-    [SerializeField] private Sprite playerIdleSprite;
-
-    [Tooltip("지원 궁극기 연출 시 생성할 캐릭터 비주얼 프리팹")]
-    [SerializeField] private GameObject supportVisualPrefab;
-
-    [Tooltip("캐릭터 Animator Controller (메인/지원 공용)")]
-    [SerializeField] private RuntimeAnimatorController animatorController;
-
-    public Sprite PlayerIdleSprite => playerIdleSprite;
     public GameObject SupportVisualPrefab => supportVisualPrefab;
-    public RuntimeAnimatorController AnimatorController => animatorController;
+    public SupportBuffData2D SupportBuff => supportBuff;
 
-    // ═══════════════════════════════════════════════════════
-    //  편의 메서드
-    // ═══════════════════════════════════════════════════════
+    /// <summary>이 캐릭터의 등장/퇴장 연출 설정입니다. null이면 기본값을 사용합니다.</summary>
+    public SupportLandingConfigSO SupportLandingConfig => supportLandingConfig;
 
-    /// <summary>
-    /// CharacterAttributeKind → DamageElement2D 변환.
-    /// 데미지 시스템에서 속성을 전달할 때 사용.
-    /// </summary>
-    public DamageElement2D GetDamageElement()
-    {
-        return attribute.ToDamageElement();
-    }
-
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (!string.IsNullOrWhiteSpace(characterId)) return;
-    }
-#endif
+    public PlayerBaseStatProfileSO BaseStatProfile => baseStatProfile;
+    public CharacterUpgradeTreeSO UpgradeTree => upgradeTree;
+    public bool UnlockedByDefault => unlockedByDefault;
 }
 
 /// <summary>
-/// 지원 궁극기 사용 시 메인 캐릭터에게 주는 버프 타입.
+/// 지원 궁극기 발동 시 메인 캐릭터에게 부여하는 버프 데이터입니다.
 /// </summary>
-public enum SupportBuffType
+[Serializable]
+public struct SupportBuffData2D
 {
-    None = 0,
-    /// <summary>공격력 증가 (%) — 윤설 지원</summary>
-    AttackPower = 1,
-    /// <summary>모든 피해 흡혈 (비율) — 하린 지원</summary>
-    Omnivamp = 2,
-    /// <summary>스킬 가속 증가 — 하율 지원</summary>
-    SkillHaste = 3,
+    [Tooltip("버프 종류입니다.")]
+    public SupportBuffKind2D kind;
+
+    [Tooltip("버프 수치입니다. (%, 고정값 등 종류에 따라 해석)")]
+    public float value;
+
+    [Tooltip("버프 지속시간(초)입니다.")]
+    public float duration;
+
+    /// <summary>유효한 버프 데이터인지 확인합니다.</summary>
+    public bool IsValid => kind != SupportBuffKind2D.None && value > 0f && duration > 0f;
 }

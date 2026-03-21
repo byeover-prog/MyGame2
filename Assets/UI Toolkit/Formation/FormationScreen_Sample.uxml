@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="formation-root" class="screen">
+        <ui:VisualElement class="top-row">
+            <ui:VisualElement name="slot-support-1" class="slot" />
+            <ui:VisualElement name="slot-main" class="slot" />
+            <ui:VisualElement name="slot-support-2" class="slot" />
+        </ui:VisualElement>
+        <ui:Label name="hint-label" text="슬롯을 선택한 뒤 캐릭터를 배치하세요." />
+        <ui:ScrollView name="character-list" class="character-list" />
+        <ui:VisualElement class="bottom-row">
+            <ui:Button name="clear-button" text="초기화" />
+            <ui:Button name="start-button" text="시작" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

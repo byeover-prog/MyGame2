@@ -1,0 +1,65 @@
+.screen {
+    flex-direction: column;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    gap: 12px;
+}
+
+.top-row {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.slot {
+    flex-grow: 1;
+    min-height: 220px;
+}
+
+.character-list {
+    flex-grow: 1;
+    min-height: 360px;
+}
+
+.bottom-row {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.formation-slot-portrait,
+.formation-slot-skill-icon,
+.formation-roster-portrait {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.formation-slot-root {
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.formation-slot-button {
+    flex-direction: column;
+    gap: 6px;
+}
+
+.formation-slot-skill-row {
+    flex-direction: row;
+    gap: 6px;
+}
+
+.formation-roster-item {
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 6px;
+}

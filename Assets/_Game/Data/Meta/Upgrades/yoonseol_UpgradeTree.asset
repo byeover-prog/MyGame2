@@ -1,0 +1,170 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 238a64ad30340c0419f967b2bf692124, type: 3}
+  m_Name: yoonseol_UpgradeTree
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterUpgradeTreeSO
+  displayNameKr: "\uC724\uC124 \uAC15\uD654 \uD2B8\uB9AC"
+  nodes:
+  - nodeId: yoonseol_atk_training
+    titleKr: "\uACF5\uACA9 \uC218\uB828"
+    descriptionKr: "\uB3C5\uB9BD \uBAA8\uB4DC\uC758 \uD575\uC2EC\uC774 \uB418\uB294
+      \uAE30\uBCF8 \uD654\uB825\uC785\uB2C8\uB2E4."
+    branch: 0
+    gridPosition: {x: 0, y: 0}
+    maxRank: 3
+    baseCostNyang: 120
+    costStepNyang: 80
+    requiredCharacterLevel: 1
+    prerequisiteNodeIds: []
+    modifiers:
+    - kind: 1
+      valuePerRank: 3
+  - nodeId: yoonseol_guard_training
+    titleKr: "\uBC29\uC5B4 \uC218\uB828"
+    descriptionKr: "\uC720\uD2F8 \uB300\uC2E0 \uBC84\uD2F0\uB294 \uD798\uC744 \uC62C\uB9BD\uB2C8\uB2E4."
+    branch: 0
+    gridPosition: {x: 0, y: 2}
+    maxRank: 3
+    baseCostNyang: 120
+    costStepNyang: 80
+    requiredCharacterLevel: 1
+    prerequisiteNodeIds: []
+    modifiers:
+    - kind: 2
+      valuePerRank: 3
+  - nodeId: yoonseol_body_training
+    titleKr: "\uCCB4\uB825 \uC218\uB828"
+    descriptionKr: "\uCD5C\uB300 \uCCB4\uB825\uC744 \uC62C\uB824 \uB3C5\uB9BD \uC804\uD22C
+      \uC548\uC815\uC131\uC744 \uD655\uBCF4\uD569\uB2C8\uB2E4."
+    branch: 0
+    gridPosition: {x: 0, y: 4}
+    maxRank: 3
+    baseCostNyang: 120
+    costStepNyang: 80
+    requiredCharacterLevel: 1
+    prerequisiteNodeIds: []
+    modifiers:
+    - kind: 3
+      valuePerRank: 10
+  - nodeId: yoonseol_basic_damage
+    titleKr: "weapon_balsi \uC704\uB825"
+    descriptionKr: "\uAE30\uBCF8 \uC2A4\uD0AC\uC758 \uD575\uC2EC \uD53C\uD574\uB7C9\uC744
+      \uBC00\uC5B4\uC90D\uB2C8\uB2E4."
+    branch: 1
+    gridPosition: {x: 2, y: 0}
+    maxRank: 3
+    baseCostNyang: 180
+    costStepNyang: 100
+    requiredCharacterLevel: 1
+    prerequisiteNodeIds:
+    - yoonseol_atk_training
+    modifiers:
+    - kind: 4
+      valuePerRank: 6
+  - nodeId: yoonseol_basic_cooldown
+    titleKr: "weapon_balsi \uC219\uB828"
+    descriptionKr: "\uAE30\uBCF8 \uC2A4\uD0AC\uC758 \uD68C\uC804\uC728\uC744 \uAC15\uD654\uD569\uB2C8\uB2E4."
+    branch: 1
+    gridPosition: {x: 4, y: 0}
+    maxRank: 2
+    baseCostNyang: 240
+    costStepNyang: 120
+    requiredCharacterLevel: 5
+    prerequisiteNodeIds:
+    - yoonseol_basic_damage
+    modifiers:
+    - kind: 5
+      valuePerRank: 5
+  - nodeId: yoonseol_ultimate_damage
+    titleKr: "ult_hokhan \uC704\uB825"
+    descriptionKr: "\uAD81\uADF9\uAE30\uC758 \uD53C\uB2C8\uC2DC \uC131\uB2A5\uC744
+      \uAC15\uD654\uD569\uB2C8\uB2E4."
+    branch: 2
+    gridPosition: {x: 2, y: 2}
+    maxRank: 3
+    baseCostNyang: 220
+    costStepNyang: 120
+    requiredCharacterLevel: 1
+    prerequisiteNodeIds:
+    - yoonseol_guard_training
+    modifiers:
+    - kind: 6
+      valuePerRank: 7
+  - nodeId: yoonseol_ultimate_cooldown
+    titleKr: "ult_hokhan \uC219\uB828"
+    descriptionKr: "\uAD81\uADF9\uAE30 \uC7AC\uC0AC\uC6A9 \uC18D\uB3C4\uB97C \uB04C\uC5B4\uC62C\uB9BD\uB2C8\uB2E4."
+    branch: 2
+    gridPosition: {x: 4, y: 2}
+    maxRank: 2
+    baseCostNyang: 260
+    costStepNyang: 140
+    requiredCharacterLevel: 10
+    prerequisiteNodeIds:
+    - yoonseol_ultimate_damage
+    modifiers:
+    - kind: 7
+      valuePerRank: 6
+  - nodeId: yoonseol_passive_focus
+    titleKr: "\uD328\uC2DC\uBE0C \uC9D1\uC911"
+    descriptionKr: "\uD328\uC2DC\uBE0C \uD6A8\uC728\uC744 \uC548\uC815\uC801\uC73C\uB85C
+      \uB04C\uC5B4\uC62C\uB9BD\uB2C8\uB2E4."
+    branch: 3
+    gridPosition: {x: 2, y: 4}
+    maxRank: 3
+    baseCostNyang: 160
+    costStepNyang: 100
+    requiredCharacterLevel: 1
+    prerequisiteNodeIds:
+    - yoonseol_body_training
+    modifiers:
+    - kind: 8
+      valuePerRank: 5
+  - nodeId: yoonseol_independent_will
+    titleKr: "\uB3C5\uB9BD\uC758 \uC758\uC9C0"
+    descriptionKr: "\uD63C\uC790\uC11C\uB3C4 \uC644\uACB0\uB418\uB294 \uC6B4\uC601
+      \uCCA0\uD559\uC744 \uC804\uD22C \uC218\uCE58\uB85C \uACE0\uC815\uD569\uB2C8\uB2E4."
+    branch: 3
+    gridPosition: {x: 4, y: 4}
+    maxRank: 1
+    baseCostNyang: 400
+    costStepNyang: 0
+    requiredCharacterLevel: 15
+    prerequisiteNodeIds:
+    - yoonseol_passive_focus
+    modifiers:
+    - kind: 1
+      valuePerRank: 4
+    - kind: 2
+      valuePerRank: 4
+    - kind: 3
+      valuePerRank: 15
+  - nodeId: yoonseol_final_resolve
+    titleKr: "\uCD5C\uC885 \uACB0\uC758"
+    descriptionKr: "\uACF5\uACA9/\uBC29\uC5B4/\uCCB4\uB825\uC744 \uD55C \uBC88 \uB354
+      \uB04C\uC5B4\uC62C\uB9AC\uB294 \uB9C8\uAC10 \uB178\uB4DC\uC785\uB2C8\uB2E4."
+    branch: 0
+    gridPosition: {x: 6, y: 2}
+    maxRank: 1
+    baseCostNyang: 700
+    costStepNyang: 0
+    requiredCharacterLevel: 20
+    prerequisiteNodeIds:
+    - yoonseol_basic_cooldown
+    - yoonseol_ultimate_cooldown
+    - yoonseol_independent_will
+    modifiers:
+    - kind: 1
+      valuePerRank: 8
+    - kind: 2
+      valuePerRank: 8
+    - kind: 3
+      valuePerRank: 30
