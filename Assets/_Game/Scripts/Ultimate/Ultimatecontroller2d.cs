@@ -1,4 +1,5 @@
-// R키 궁극기 입력 + 쿨다운 관리. Player 루트에 부착.
+// R키 궁극기 입력 + 쿨다운 관리 + ULT 모션 유지/복귀.
+// Player 루트에 부착.
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -20,6 +21,12 @@ public sealed class UltimateController2D : MonoBehaviour
     [SerializeField, Tooltip("Animator 참조. 없으면 자동 탐색.")]
     private Animator animator;
 
+    [Tooltip("Animator의 ULT 상태 이름입니다. CrossFade로 강제 유지합니다.")]
+    [SerializeField] private string ultStateName = "ULT";
+
+    [Tooltip("Animator의 Idle 상태 이름입니다. 궁극기 종료 후 복귀합니다.")]
+    [SerializeField] private string idleStateName = "Idle";
+
     // 런타임
     private float _cooldownTimer;
     private bool _isExecuting;
@@ -39,28 +46,22 @@ public sealed class UltimateController2D : MonoBehaviour
 
     private void Start()
     {
-        // 게임 시작 시부터 쿨다운 진행 (바로 사용 불가)
         _cooldownTimer = cooldownSeconds;
     }
 
     private void Update()
     {
-        // 쿨다운 감소
         if (_cooldownTimer > 0f)
             _cooldownTimer -= Time.deltaTime;
 
-        // 디버그: F9 키 쿨타임 즉시 초기화
         if (Input.GetKeyDown(KeyCode.F9))
         {
             _cooldownTimer = 0f;
             Debug.Log("[궁극기] F9 키 — 쿨다운 초기화");
         }
 
-        // 입력
         if (Input.GetKeyDown(ultimateKey))
-        {
             TryActivate();
-        }
     }
 
     /// <summary>
@@ -99,11 +100,9 @@ public sealed class UltimateController2D : MonoBehaviour
             return;
         }
 
-        // 애니메이션 트리거
-        if (animator != null)
-            animator.SetTrigger("Trigger_Ult");
+        // ★ ULT 모션 강제 시작 — CrossFade로 FSM 전환 무시하고 유지
+        ForceUltAnimation();
 
-        // 실행
         _isExecuting = true;
         string charId = executor.CurrentCharacterId ?? "unknown";
         Debug.Log($"[궁극기] R키 발동 — {charId}");
@@ -114,10 +113,53 @@ public sealed class UltimateController2D : MonoBehaviour
     {
         _isExecuting = false;
         _cooldownTimer = cooldownSeconds;
+
+        // ★ 궁극기 끝 → Idle 복귀
+        ForceIdleAnimation();
+
         Debug.Log($"[궁극기] 종료 — 쿨다운 {cooldownSeconds}초 시작");
     }
 
-    /// <summary>디버그: 쿨다운 즉시 초기화</summary>
+    // ═══════════════════════════════════════════════════════
+    //  Animator 제어
+    // ═══════════════════════════════════════════════════════
+
+    /// <summary>
+    /// ULT 애니메이션을 강제로 재생하고 유지합니다.
+    /// CrossFade를 사용하여 FSM의 Has Exit Time/전환 조건에 관계없이
+    /// 코드가 명시적으로 ULT 상태를 잡아둡니다.
+    /// </summary>
+    private void ForceUltAnimation()
+    {
+        if (animator == null) return;
+
+        animator.ResetTrigger("Trigger_Ult");
+        animator.ResetTrigger("Trigger_Land");
+
+        // Trigger도 세팅 (FSM 호환)
+        animator.SetTrigger("Trigger_Ult");
+
+        // ★ CrossFade로 ULT 상태 강제 진입 — 1프레임 문제 해결
+        animator.CrossFade(ultStateName, 0.05f, 0);
+
+        Debug.Log("[궁극기] ULT 모션 강제 시작");
+    }
+
+    /// <summary>
+    /// Idle 애니메이션으로 강제 복귀합니다.
+    /// </summary>
+    private void ForceIdleAnimation()
+    {
+        if (animator == null) return;
+
+        animator.ResetTrigger("Trigger_Ult");
+        animator.ResetTrigger("Trigger_Land");
+
+        animator.CrossFade(idleStateName, 0.1f, 0);
+
+        Debug.Log("[궁극기] Idle 모션 복귀");
+    }
+
     [ContextMenu("디버그: 쿨다운 리셋")]
     public void DebugResetCooldown()
     {
