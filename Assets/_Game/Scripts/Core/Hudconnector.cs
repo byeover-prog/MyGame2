@@ -7,13 +7,9 @@ using _Game.Skills;
 /// <summary>
 /// 인게임 HUD 전체를 실제 게임 시스템에 연결하는 브릿지.
 ///
-/// 담당:
-///   - HP bar: PlayerHealth → PlayerHPUI (매 프레임 폴링)
-///   - 타이머: 경과 시간 표시 (00:01부터 올라감)
-///   - 스킬 슬롯 0~4: CommonSkillManager2D 이벤트 → InGameHudUI (액티브)
-///   - 스킬 슬롯 5: PlayerSkillLoadout 패시브 슬롯 → InGameHudUI (패시브)
-///   - HP 텍스트: "현재/최대" 형식
-///   - 퀘스트 UI: 이벤트 없으면 숨기기
+/// [수정 이력]
+/// - 패시브 슬롯 표시: 5번 하나에 요약 → 5~9번에 각각 개별 표시
+///   passiveSlotStartIndex(5)부터 패시브 슬롯 5칸에 순서대로 배치
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class HudConnector : MonoBehaviour
@@ -54,15 +50,18 @@ public sealed class HudConnector : MonoBehaviour
     [SerializeField, Tooltip("공통 스킬 카탈로그 (아이콘 조회용)")]
     private CommonSkillCatalogSO commonSkillCatalog;
 
-    // ── 패시브 슬롯 (신규 추가) ──────────────
+    // ── 패시브 슬롯 ─────────────────────────────
 
     [Header("=== 패시브 슬롯 HUD (신규) ===")]
 
     [SerializeField, Tooltip("패시브 로드아웃 (패시브 슬롯 상태 읽기).\n비우면 자동 탐색합니다.")]
     private PlayerSkillLoadout skillLoadout;
 
-    [Tooltip("패시브를 표시할 HUD 슬롯 인덱스.\n레이아웃: 0~4=액티브, 5=패시브, 6~7=궁극기")]
-    [SerializeField] private int passiveSlotIndex = 5;
+    [Tooltip("패시브 슬롯이 시작하는 HUD 인덱스입니다.\n레이아웃: 0~4=액티브, 5~9=패시브")]
+    [SerializeField] private int passiveSlotStartIndex = 5;
+
+    [Tooltip("패시브 슬롯 최대 개수입니다.")]
+    [SerializeField] private int passiveSlotCount = 5;
 
     // ── 퀘스트 UI ──────────────────────────────
 
@@ -80,9 +79,8 @@ public sealed class HudConnector : MonoBehaviour
     private int _lastCurrentHp;
     private int _lastTimerSeconds = -1;
 
-    // 패시브 상태 추적
-    private int _lastPassiveCount = -1;
-    private int _lastPassiveTotalLevel = -1;
+    // 패시브 변경 감지용: 슬롯별 해시
+    private int[] _lastPassiveHash;
 
     // ════════════════════════════════════════════
     //  초기화
@@ -95,9 +93,11 @@ public sealed class HudConnector : MonoBehaviour
         if (commonSkillManager == null) commonSkillManager = FindFirstObjectByType<CommonSkillManager2D>();
         if (hudUI == null) hudUI = GetComponent<InGameHudUI>();
         if (hudUI == null) hudUI = FindFirstObjectByType<InGameHudUI>();
-
-        // 패시브 로드아웃 자동 탐색
         if (skillLoadout == null) skillLoadout = FindFirstObjectByType<PlayerSkillLoadout>();
+
+        _lastPassiveHash = new int[passiveSlotCount];
+        for (int i = 0; i < _lastPassiveHash.Length; i++)
+            _lastPassiveHash[i] = -1;
     }
 
     private void OnEnable()
@@ -130,11 +130,9 @@ public sealed class HudConnector : MonoBehaviour
             UpdateHpText();
         }
 
-        // 퀘스트/거리 UI 숨기기 (이벤트 없을 때)
         HideQuestUI();
 
-        // ★ 이미 획득된 스킬 스캔 (시작 스킬 등)
-        // 약간의 딜레이를 두어 CommonSkillStartBinder2D 실행 후에 스캔
+        // 이미 획득된 스킬 스캔 (시작 스킬 등)
         Invoke(nameof(ScanExistingSkills), 0.5f);
     }
 
@@ -146,8 +144,6 @@ public sealed class HudConnector : MonoBehaviour
     {
         UpdateHP();
         UpdateTimer();
-
-        // 패시브 슬롯 갱신 (매 프레임 폴링)
         UpdatePassiveSlots();
     }
 
@@ -180,7 +176,7 @@ public sealed class HudConnector : MonoBehaviour
         hpText.text = $"{_lastCurrentHp}/{_lastMaxHp}";
     }
 
-    // ── 타이머 갱신 (경과 시간, 00:00부터 올라감) ──
+    // ── 타이머 갱신 ────────────────────────────
 
     private void UpdateTimer()
     {
@@ -190,14 +186,11 @@ public sealed class HudConnector : MonoBehaviour
         if (elapsed < 0f) elapsed = 0f;
 
         int totalSeconds = Mathf.FloorToInt(elapsed);
-
-        // 같은 초면 텍스트 갱신 안 함 (성능)
         if (totalSeconds == _lastTimerSeconds) return;
         _lastTimerSeconds = totalSeconds;
 
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;
-
         timerText.text = $"{minutes:00}:{seconds:00}";
     }
 
@@ -207,19 +200,14 @@ public sealed class HudConnector : MonoBehaviour
     {
         if (questPanelRoot != null)
             questPanelRoot.SetActive(false);
-
         if (distancePanelRoot != null)
             distancePanelRoot.SetActive(false);
     }
 
-    /// <summary>
-    /// 이벤트 시작 시 외부에서 호출하면 퀘스트 UI를 보여줍니다.
-    /// </summary>
     public void ShowQuestUI()
     {
         if (questPanelRoot != null)
             questPanelRoot.SetActive(true);
-
         if (distancePanelRoot != null)
             distancePanelRoot.SetActive(true);
     }
@@ -253,12 +241,12 @@ public sealed class HudConnector : MonoBehaviour
     }
 
     // ════════════════════════════════════════════
-    //  패시브 슬롯 갱신 (신규 추가)
+    //  패시브 슬롯 갱신 — 각 패시브를 개별 슬롯에 표시
     // ════════════════════════════════════════════
 
     /// <summary>
-    /// 패시브 슬롯 변경을 감지하여 HUD 슬롯 5번에 반영한다.
-    /// 가장 최근에 획득한 패시브의 아이콘 + "x{보유갯수}" 를 표시.
+    /// PlayerSkillLoadout의 패시브 슬롯[0~4]를 HUD 슬롯[5~9]에 1:1 매핑합니다.
+    /// 각 패시브는 자신의 아이콘 + "Lv.N"으로 개별 표시됩니다.
     /// </summary>
     private void UpdatePassiveSlots()
     {
@@ -267,42 +255,45 @@ public sealed class HudConnector : MonoBehaviour
         RuntimeSkillState[] passiveSlots = skillLoadout.GetPassiveSlots();
         if (passiveSlots == null) return;
 
-        int passiveCount = 0;
-        int totalLevel = 0;
-        Sprite latestIcon = null;
+        int maxSlots = Mathf.Min(passiveSlots.Length, passiveSlotCount);
 
-        for (int i = 0; i < passiveSlots.Length; i++)
+        for (int i = 0; i < maxSlots; i++)
         {
             RuntimeSkillState state = passiveSlots[i];
-            if (state == null) continue;
-            if (state.Definition == null) continue;
 
-            passiveCount++;
-            totalLevel += state.Level;
+            // 변경 감지용 해시: 스킬ID 해시 + 레벨
+            int hash;
+            if (state == null || state.Definition == null)
+            {
+                hash = 0;
+            }
+            else
+            {
+                hash = state.Definition.SkillId.GetHashCode() ^ (state.Level << 16);
+            }
 
-            // 가장 최근에 추가된 패시브의 아이콘을 사용 (마지막 슬롯)
-            if (state.Definition.Icon != null)
-                latestIcon = state.Definition.Icon;
+            // 변경 없으면 스킵 (성능)
+            if (i < _lastPassiveHash.Length && _lastPassiveHash[i] == hash)
+                continue;
+
+            if (i < _lastPassiveHash.Length)
+                _lastPassiveHash[i] = hash;
+
+            int hudSlotIndex = passiveSlotStartIndex + i;
+
+            if (state == null || state.Definition == null)
+            {
+                // 빈 슬롯 — HUD에서도 비움
+                hudUI.SetSkillSlot(hudSlotIndex, null, "", "");
+                continue;
+            }
+
+            // ★ 각 패시브를 개별 슬롯에 아이콘 + 레벨로 표시
+            Sprite icon = state.Definition.Icon;
+            string levelLabel = state.Level > 1 ? $"Lv.{state.Level}" : "";
+
+            hudUI.SetSkillSlot(hudSlotIndex, icon, "", levelLabel);
         }
-
-        // 변경 없으면 스킵 (성능)
-        if (passiveCount == _lastPassiveCount && totalLevel == _lastPassiveTotalLevel)
-            return;
-
-        _lastPassiveCount = passiveCount;
-        _lastPassiveTotalLevel = totalLevel;
-
-        // 패시브가 하나도 없으면 빈 슬롯
-        if (passiveCount == 0)
-        {
-            // 슬롯 5번을 비움
-            return;
-        }
-
-        // 5번 슬롯에 패시브 요약 표시
-        // 아이콘: 가장 최근 패시브 | 보조텍스트: "x{보유갯수}"
-        string subLabel = passiveCount > 1 ? $"x{passiveCount}" : "";
-        hudUI.SetSkillSlot(passiveSlotIndex, latestIcon, "", subLabel);
     }
 
     // ── 시작 시 이미 획득된 스킬 스캔 ──────────
@@ -330,11 +321,15 @@ public sealed class HudConnector : MonoBehaviour
             hudUI.SetSkillSlot(slotIndex, icon, "", levelLabel);
         }
 
-        // 패시브도 스캔
+        // 패시브도 즉시 스캔
+        // 해시를 리셋해서 강제 갱신
+        for (int i = 0; i < _lastPassiveHash.Length; i++)
+            _lastPassiveHash[i] = -1;
+
         UpdatePassiveSlots();
     }
 
-    // ── 슬롯 할당 로직 ────────────────────────
+    // ── 슬롯 할당 로직 (액티브 0~4번) ──────────
 
     private readonly int[] _kindToSlot = new int[32];
     private int _nextSlotIndex = 0;
@@ -357,11 +352,10 @@ public sealed class HudConnector : MonoBehaviour
         if (kindIdx < 0 || kindIdx >= _kindToSlot.Length)
             return -1;
 
-        // 이미 할당된 슬롯 반환
         if (_kindToSlot[kindIdx] >= 0)
             return _kindToSlot[kindIdx];
 
-        // 새 슬롯 할당 (0~4번, 최대 5개 액티브)
+        // 액티브 슬롯: 0~4번 (최대 5개)
         if (_nextSlotIndex >= 5)
             return -1;
 
