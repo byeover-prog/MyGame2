@@ -128,4 +128,4 @@ MonoBehaviour:
   pulseMinAlpha: 0.5
   pulseSpeed: 3
   orbSprite: {fileID: 0}
-  debugLog: 1
+  debugLog: 0
