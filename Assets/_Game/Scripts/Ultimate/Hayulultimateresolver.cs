@@ -1,4 +1,3 @@
-// UTF-8
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -103,7 +102,10 @@ public sealed class HayulUltimateResolver : UltimateResolverBase
             int targetId = col.gameObject.GetInstanceID();
 
             _chainCountMap.TryGetValue(targetId, out int currentCount);
-            if (currentCount >= maxChainCount) continue;
+
+            // ★ 하율 고유 패시브 "도사란 무엇인가?" — 전파 최대치 보너스 적용
+            int finalMaxChain = maxChainCount + HayulPassive_Dosa.ChainBonus;
+            if (currentCount >= finalMaxChain) continue;
 
             if (DamageUtil2D.TryApplyDamage(col.gameObject, chainDmg, data.DamageElement))
             {

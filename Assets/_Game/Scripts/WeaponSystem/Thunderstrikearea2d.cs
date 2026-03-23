@@ -137,13 +137,13 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
             var col = _hits[i];
             if (col == null) continue;
 
-            // TryApplyDamage 실패 시 root 쪽에도 한 번 더 시도
-            bool success = DamageUtil2D.TryApplyDamage(col, damage);
+            // ★ 낙뢰부는 전기 속성 — Electric 명시 (기존: Physical 기본값)
+            bool success = DamageUtil2D.TryApplyDamage(col, damage, DamageElement2D.Electric);
             if (!success)
             {
                 var rootCol = col.transform.root.GetComponent<Collider2D>();
                 if (rootCol != null)
-                    success = DamageUtil2D.TryApplyDamage(rootCol, damage);
+                    success = DamageUtil2D.TryApplyDamage(rootCol, damage, DamageElement2D.Electric);
             }
 
             if (debugLog)

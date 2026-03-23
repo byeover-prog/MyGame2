@@ -152,14 +152,19 @@ public sealed class PlayerHealth : MonoBehaviour
         TakeDamage(amount);
     }
 
-    /// <summary>받는 피해에 방어력 배율을 적용합니다.</summary>
+    /// <summary>받는 피해에 방어력 배율 + 캐릭터 고유 패시브(본국검법 등)를 적용합니다.</summary>
     private int ApplyIncomingDamageMultiplier(int rawDamage)
     {
         if (combatStats == null)
             return rawDamage;
 
         float finalDamage = rawDamage * combatStats.IncomingDamageMul;
-        return Mathf.Max(1, Mathf.RoundToInt(finalDamage));
+        int result = Mathf.Max(1, Mathf.RoundToInt(finalDamage));
+
+        // 하린 고유 패시브 "본국검법" — 확률 방어 판정
+        result = HarinPassive_Bongukkembeop.TryModifyIncomingDamage(result);
+
+        return result;
     }
 
     // ── 사망 ───────────────────────────────────
