@@ -43,25 +43,25 @@ public sealed class ElementAttachedVfxHost2D : MonoBehaviour
             // 이미 붙어있음 → 시간만 갱신
             entry.ExpireTime = Time.time + duration;
 
-            // VFX가 파괴됐으면 다시 생성
+            // VFX가 파괴됐으면 다시 생성 — ★ 적 위치에서 직접 생성
             if (entry.Instance == null)
             {
-                entry.Instance = Instantiate(prefab);
-                entry.Instance.transform.SetParent(transform, true);
+                Vector3 anchor = GetAnchorPosition();
+                entry.Instance = Instantiate(prefab, anchor, Quaternion.identity, transform);
             }
 
             entry.Instance.SetActive(true);
         }
         else
         {
-            // 처음 → 새로 생성
+            // 처음 → 새로 생성 — ★ 적 위치에서 직접 생성
+            Vector3 spawnPos = GetAnchorPosition();
             entry = new VfxEntry
             {
                 Element = element,
-                Instance = Instantiate(prefab),
+                Instance = Instantiate(prefab, spawnPos, Quaternion.identity, transform),
                 ExpireTime = Time.time + duration
             };
-            entry.Instance.transform.SetParent(transform, true);
             _entries.Add(element, entry);
         }
 
