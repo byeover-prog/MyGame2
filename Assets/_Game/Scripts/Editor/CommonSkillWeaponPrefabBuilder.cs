@@ -24,9 +24,9 @@ public static class CommonSkillWeaponPrefabBuilder
     private static readonly WeaponBuildSpec[] Specs =
     {
         new WeaponBuildSpec(
-            prefabName: "Weapon_Homing",
-            weaponType: typeof(HomingMissileWeapon2D),
-            projectileType: typeof(HomingMissileProjectile2D),
+            prefabName: "Weapon_PuriFicationOrb",
+            weaponType: typeof(PurificationOrbWeapon2D),
+            projectileType: typeof(PurificationOrbProjectile2D),
             extraSetup: null
         ),
         new WeaponBuildSpec(
@@ -44,7 +44,7 @@ public static class CommonSkillWeaponPrefabBuilder
         new WeaponBuildSpec(
             prefabName: "Weapon_DarkOrb",
             weaponType: typeof(DarkOrbWeapon2D),
-            projectileType: typeof(DarkOrbProjectile2D),
+            projectileType: null,
             extraSetup: null
         ),
         new WeaponBuildSpec(

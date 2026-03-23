@@ -50,6 +50,9 @@ public sealed class PlayerHealth : MonoBehaviour
     public bool IsDead => _isDead;
     public bool IsInvincible => Time.time < _invincibleUntil;
 
+    /// <summary>패시브 보너스 계산용 기본 최대 체력 (Awake 시 설정된 원본값)</summary>
+    public int BaseMaxHp => _baseMaxHp;
+
     private bool _isDead = false;
     private float _invincibleUntil = 0f;
     private int _baseMaxHp;

@@ -152,6 +152,10 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
                           $"dmgApplied={success}");
 
             if (success) damageApplied++;
+
+            // ★ 시작 스킬 시너지: 지원 캐릭터 속성 추가 데미지
+            if (success)
+                AttributeSynergyManager2D.TryApplySynergy(col, damage);
         }
 
         if (debugLog)

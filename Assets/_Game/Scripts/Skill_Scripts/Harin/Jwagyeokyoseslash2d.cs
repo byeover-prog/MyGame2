@@ -165,6 +165,10 @@ public sealed class JwagyeokYoseSlash2D : PooledObject2D
 
             bool applied = DamageUtil2D.TryApplyDamage(col, _damage, DamageElement2D.Dark);
             if (applied) hitCount++;
+
+            // ★ 시작 스킬 시너지: 지원 캐릭터 속성 추가 데미지
+            if (applied)
+                AttributeSynergyManager2D.TryApplySynergy(col, _damage);
         }
 
 #if UNITY_EDITOR

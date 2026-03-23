@@ -42,14 +42,15 @@ public static class DamageUtil2D
     public static int GetRootInstanceId(Collider2D col) => GetRootId(col);
 
     // --------------------------------------------
-    // Damage Apply (기본=물리)
+    // Damage Apply (속성 미지정 → 메인 캐릭터 속성 자동 적용)
+    // ★ 공통 스킬들이 이 버전을 사용 → 메인 캐릭터 속성으로 자동 변환
     // --------------------------------------------
 
     public static bool TryApplyDamage(Collider2D hit, int damage)
-        => TryApplyDamage(hit, damage, DamageElement2D.Physical);
+        => TryApplyDamage(hit, damage, MainElementProvider.Element);
 
     public static bool TryApplyDamage(GameObject hitGo, int damage)
-        => TryApplyDamage(hitGo, damage, DamageElement2D.Physical);
+        => TryApplyDamage(hitGo, damage, MainElementProvider.Element);
 
     // --------------------------------------------
     // Damage Apply (속성 포함)
@@ -144,14 +145,15 @@ public static class DamageUtil2D
     }
 
     // 레거시 별칭: ApplyDamage(리턴 없는 버전) 호환
+    // ★ 메인 캐릭터 속성 자동 적용
     public static void ApplyDamage(Collider2D hit, int damage)
     {
-        TryApplyDamage(hit, damage, DamageElement2D.Physical);
+        TryApplyDamage(hit, damage, MainElementProvider.Element);
     }
 
     public static void ApplyDamage(GameObject hitGo, int damage)
     {
-        TryApplyDamage(hitGo, damage, DamageElement2D.Physical);
+        TryApplyDamage(hitGo, damage, MainElementProvider.Element);
     }
 
     // 속성 포함 별칭(새로 쓰면 좋음)

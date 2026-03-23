@@ -145,11 +145,14 @@ public sealed class PassiveManager2D : MonoBehaviour
         stats.SetAreaMul(1f + Mathf.Clamp(areaBonus, 0f, 1.00f));
         stats.SetExpGainMul(1f + Mathf.Clamp(expBonus, 0f, 2.00f));
 
-        // 최대체력
-        int hpAdd = SumInt(PassiveStatType.MaxHpFlat);
+        // 최대체력 (설계 문서: 레벨당 10% 비율 증가)
+        float hpPercent = SumPercent(PassiveStatType.MaxHpFlat);
         var hp = owner != null ? owner.GetComponentInParent<PlayerHealth>() : null;
         if (hp != null)
-            hp.SetMaxHpBonus(hpAdd, healToFull: false);
+        {
+            int hpBonus = Mathf.RoundToInt(hp.BaseMaxHp * hpPercent);
+            hp.SetMaxHpBonus(hpBonus, healToFull: false);
+        }
     }
 
     // ── 수치 합산 (설계 문서 기준) ──────────────
@@ -173,12 +176,13 @@ public sealed class PassiveManager2D : MonoBehaviour
         return stat switch
         {
             PassiveStatType.AttackPowerPercent => 0.10f,  // 공격력 레벨당 10%
-            PassiveStatType.DefensePercent     => 0.10f,  // 방어력 레벨당 10%
+            PassiveStatType.DefensePercent     => 0.15f,  // 방어력 레벨당 15% (설계 문서 기준)
             PassiveStatType.PickupRangePercent => 0.20f,  // 픽업범위 레벨당 20%
             PassiveStatType.MoveSpeedPercent   => 0.05f,  // 이동속도 레벨당 5%
             PassiveStatType.SkillHastePercent  => 0.10f,  // 스킬 가속 레벨당 10%
             PassiveStatType.SkillAreaPercent   => 0.05f,  // 스킬 범위 레벨당 5%
-            PassiveStatType.ExpGainPercent     => 0.10f,  // 경험치 레벨당 10%
+            PassiveStatType.ExpGainPercent     => 0.15f,  // 경험치 레벨당 15% (설계 문서 기준)
+            PassiveStatType.MaxHpFlat          => 0.10f,  // 최대체력 레벨당 10% (설계 문서 기준)
             _ => 0f
         };
     }

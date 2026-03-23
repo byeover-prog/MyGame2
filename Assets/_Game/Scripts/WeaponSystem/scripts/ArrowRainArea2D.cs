@@ -46,6 +46,10 @@ public sealed class ArrowRainArea2D : MonoBehaviour
     private float aliveTimer;
     private bool _setupDone;
 
+    /// <summary>틱 데미지 판정용 사전 할당 버퍼 (GC 0)</summary>
+    private readonly Collider2D[] _hitBuffer = new Collider2D[64];
+    private ContactFilter2D _enemyFilter;
+
     private void Awake()
     {
         circleTrigger = GetComponent<CircleCollider2D>();
@@ -77,6 +81,12 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         damageTickInterval = Mathf.Max(0.05f, newDamageTickInterval);
         damagePerTick      = Mathf.Max(1, newDamagePerTick);
         enemyLayerMask     = newEnemyMask;
+
+        // ContactFilter2D 초기화 (NonAlloc 쿼리용)
+        _enemyFilter = new ContactFilter2D();
+        _enemyFilter.SetLayerMask(enemyLayerMask);
+        _enemyFilter.useLayerMask = true;
+        _enemyFilter.useTriggers = true;
 
         tickTimer  = 0f;
         aliveTimer = 0f;
@@ -147,20 +157,18 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         if (damagePerTick <= 0) return;
 
         Vector2 center = (Vector2)transform.position;
-        Collider2D[] hits = Physics2D.OverlapCircleAll(center, radius, enemyLayerMask);
 
-        if (hits.Length == 0) return;
+        // ★ NonAlloc: 사전 할당 버퍼 사용 → GC 0
+        int hitCount = Physics2D.OverlapCircle(center, radius, _enemyFilter, _hitBuffer);
+
+        if (hitCount == 0) return;
 
         int damaged = 0;
-        for (int i = 0; i < hits.Length; i++)
+        for (int i = 0; i < hitCount; i++)
         {
-            Collider2D col = hits[i];
+            Collider2D col = _hitBuffer[i];
             if (col == null || !col.gameObject.activeInHierarchy) continue;
 
-            // ★★★ DamageUtil2D.TryApplyDamage 사용 ★★★
-            // 이것이 HP 감소 + 데미지 팝업 + 속성 이벤트를 전부 처리함
-            // 이전: target.TakeDamage(damagePerTick) → 팝업 안 뜸
-            // 수정: DamageUtil2D.TryApplyDamage() → 팝업 + HP 감소 동시 처리
             bool applied = DamageUtil2D.TryApplyDamage(col, damagePerTick);
             if (applied) damaged++;
         }

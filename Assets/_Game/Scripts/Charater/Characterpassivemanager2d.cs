@@ -105,6 +105,9 @@ public sealed class CharacterPassiveManager2D : MonoBehaviour
         // 모든 패시브 비활성화
         if (_activePassive != null)
             _activePassive.Deactivate();
+
+        // 메인 속성 초기화
+        MainElementProvider.Reset();
     }
 
     // ═══════════════════════════════════════════════════════
@@ -126,6 +129,17 @@ public sealed class CharacterPassiveManager2D : MonoBehaviour
 
     private void ApplyPassiveForCharacter(string characterId)
     {
+        // ★ 메인 캐릭터 속성을 전역 제공자에 설정
+        if (loadout != null && loadout.Main != null &&
+            loadout.Main.Attribute != CharacterAttributeKind.None)
+        {
+            MainElementProvider.Set(loadout.Main.Attribute.ToDamageElement());
+        }
+        else
+        {
+            MainElementProvider.Reset();
+        }
+
         // 같은 캐릭터면 무시
         if (_activePassive != null &&
             _passiveMap.TryGetValue(characterId ?? "", out var same) &&
