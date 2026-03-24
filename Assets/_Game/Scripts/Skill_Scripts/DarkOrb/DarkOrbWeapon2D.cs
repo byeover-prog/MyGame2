@@ -71,13 +71,13 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
             if (_stats == null)
                 _stats = _owner.GetComponentInParent<PlayerCombatStats2D>();
         }
-        Debug.Log($"<color=green>[DarkOrbWeapon2D] ★★★ 설계도 기준 OnAttached ★★★ owner={owner?.name}</color>", this);
+        GameLogger.Log($"[DarkOrbWeapon2D] OnAttached owner={owner?.name}");
     }
 
     public void ApplyLevel(int level)
     {
         _level = Mathf.Clamp(level, 1, 8);
-        Debug.Log($"[DarkOrbWeapon2D] ApplyLevel → Lv.{_level}", this);
+        GameLogger.Log($"[DarkOrbWeapon2D] ApplyLevel → Lv.{_level}");
     }
 
     // ══════════════════════════════════════════════════════════════

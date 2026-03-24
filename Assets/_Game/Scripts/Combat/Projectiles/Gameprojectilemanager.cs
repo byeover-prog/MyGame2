@@ -80,7 +80,7 @@ public sealed class GameProjectileManager : MonoBehaviour
         // 싱글톤 설정
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("[GameProjectileManager] 중복 인스턴스 감지. 기존 것을 사용합니다.");
+            GameLogger.LogWarning("[GameProjectileManager] 중복 인스턴스 감지. 기존 것을 사용합니다.");
             Destroy(gameObject);
             return;
         }
@@ -96,7 +96,7 @@ public sealed class GameProjectileManager : MonoBehaviour
             Debug.LogError("[GameProjectileManager] viewPool이 비어있습니다! Inspector에서 같은 오브젝트의 GameProjectileViewPool을 연결하세요.");
         }
 
-        Debug.Log($"<color=green>[GameProjectileManager] ★★★ 설계도 기준 ★★★ maxOrbs={maxDarkOrbs}, viewPool={( viewPool != null ? "연결됨" : "❌ 미연결!")}</color>");
+        GameLogger.Log($"[GameProjectileManager] 초기화 완료. maxOrbs={maxDarkOrbs}, viewPool={(viewPool != null ? "연결됨" : "미연결")}");
     }
 
     private void Update()
@@ -137,7 +137,7 @@ public sealed class GameProjectileManager : MonoBehaviour
         int slot = FindFreeSlot();
         if (slot < 0)
         {
-            Debug.LogWarning("[GameProjectileManager] DarkOrb 슬롯 부족. maxDarkOrbs를 늘리세요.");
+            GameLogger.LogWarning("[GameProjectileManager] DarkOrb 슬롯 부족. maxDarkOrbs를 늘리세요.");
             return false;
         }
 
@@ -234,20 +234,14 @@ public sealed class GameProjectileManager : MonoBehaviour
             var col = _hitBuffer[i];
             if (col == null) continue;
 
-            var health = col.GetComponentInParent<EnemyHealth2D>();
-            if (health != null && !health.IsDead)
-            {
-                health.TakeDamage(dmg);
+            // ★ DamageUtil2D 사용 → HP 감소 + 데미지 팝업 + 속성 시너지 + 캐릭터 패시브 전부 적용
+            if (DamageUtil2D.TryApplyDamage(col, dmg, DamageElement2D.Dark))
                 damaged++;
-
-                // ★ 데미지 팝업
-                DamageEvents2D.RaiseDamagePopup(col.transform.position, dmg, DamageElement2D.Dark);
-            }
         }
 
         #if UNITY_EDITOR
         if (hitCount > 0 || damaged > 0)
-            Debug.Log($"[DarkOrb] 폭발 pos={s.Position:F1} radius={s.ExplosionRadius} hits={hitCount} damaged={damaged} dmg={dmg} mask={mask.value}");
+            GameLogger.Log($"[DarkOrb] 폭발 pos={s.Position:F1} radius={s.ExplosionRadius} hits={hitCount} damaged={damaged} dmg={dmg}");
         #endif
 
         // ── 2. 분열 (자식 2개 큐잉) ──
@@ -313,7 +307,7 @@ public sealed class GameProjectileManager : MonoBehaviour
         int slot = FindFreeSlot();
         if (slot < 0)
         {
-            Debug.LogWarning("[GameProjectileManager] 분열 슬롯 부족!");
+            GameLogger.LogWarning("[GameProjectileManager] 분열 슬롯 부족!");
             return;
         }
 
@@ -410,10 +404,10 @@ public sealed class GameProjectileManager : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Debug.LogWarning($"[DarkOrb] VFXPool.Get 실패: {e.Message}. Instantiate 폴백 사용.");
+            GameLogger.LogWarning($"[DarkOrb] VFXPool.Get 실패: {e.Message}. Instantiate 폴백 사용.");
         }
 
-        // 폴백: 직접 Instantiate (풀링은 안 되지만 VFX는 보임)
+        // 폴백: VFXPool 실패 시 직접 생성 (일시적 — VFXPool 연결 후 발생하지 않아야 함)
         var fallback = Instantiate(darkOrbExplosionVfxPrefab, pos3, Quaternion.identity);
         Destroy(fallback, 2f);
     }
@@ -448,7 +442,7 @@ public sealed class GameProjectileManager : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Debug.LogWarning($"[DarkOrb] Body VFXPool.Get 실패: {e.Message}. Instantiate 폴백.");
+            GameLogger.LogWarning($"[DarkOrb] Body VFXPool.Get 실패: {e.Message}. Instantiate 폴백.");
         }
 
         // 폴백

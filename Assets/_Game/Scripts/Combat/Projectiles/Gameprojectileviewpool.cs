@@ -63,7 +63,7 @@ public sealed class GameProjectileViewPool : MonoBehaviour
         // Prewarm
         Prewarm();
 
-        Debug.Log($"<color=green>[ViewPool] Prewarm 완료. count={darkOrbPrewarmCount}, capacity={_capacity}</color>");
+        GameLogger.Log($"[ViewPool] Prewarm 완료. count={darkOrbPrewarmCount}, capacity={_capacity}");
     }
 
     private void Prewarm()
@@ -199,6 +199,6 @@ public sealed class GameProjectileViewPool : MonoBehaviour
         _slots = newSlots;
         _capacity = newCapacity;
 
-        Debug.LogWarning($"[ViewPool] 풀 확장: {_capacity / 2} → {_capacity}. 너무 자주 발생하면 PrewarmCount를 늘리세요.");
+        GameLogger.LogWarning($"[ViewPool] 풀 확장: {_capacity / 2} → {_capacity}. 너무 자주 발생하면 PrewarmCount를 늘리세요.");
     }
 }

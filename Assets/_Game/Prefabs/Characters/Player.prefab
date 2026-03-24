@@ -47,7 +47,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1487555101690379736
 Transform:
   m_ObjectHideFlags: 0
@@ -77,7 +77,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HayulUltimatePresenter2D
   fullscreenVfxPrefab: {fileID: 1550705625387025901, guid: ab8fa77c002b5e24481a2e09a808ffda,
     type: 3}
-  vfxOriginalWorldSize: 10
+  vfxOriginalWorldSize: 20
   scaleMargin: 1.2
   mainCamera: {fileID: 0}
 --- !u!1 &2448833564552998235
@@ -110,10 +110,12 @@ GameObject:
   - component: {fileID: 476021461681456854}
   - component: {fileID: 1424634346308500864}
   - component: {fileID: 8240770092769723947}
-  - component: {fileID: 796904804376548588}
   - component: {fileID: -763766003085214251}
   - component: {fileID: 4029116142212849518}
   - component: {fileID: 4514775536085216928}
+  - component: {fileID: 4775850478941072706}
+  - component: {fileID: 4233318849896833877}
+  - component: {fileID: 7420226640106508848}
   m_Layer: 12
   m_Name: Player
   m_TagString: Player
@@ -129,7 +131,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2448833564552998235}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 1}
   m_ConstrainProportionsScale: 0
@@ -212,7 +214,7 @@ Animator:
   m_GameObject: {fileID: 2448833564552998235}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 68a240c0012e305499d6035702ff29e8, type: 2}
+  m_Controller: {fileID: 9100000, guid: d95c239ca35920741bd8007736940892, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -366,7 +368,7 @@ MonoBehaviour:
   combatStats: {fileID: 3643547768900288814}
   disableColliderOnDead: 1
   disableRigidbodyOnDead: 1
-  debugLog: 1
+  debugLog: 0
 --- !u!114 &1425800173421239617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -391,9 +393,9 @@ MonoBehaviour:
   manualBounds:
     serializedVersion: 2
     x: -46.5
-    y: -46.5
-    width: 94.1
-    height: 89.9
+    y: -44
+    width: 92.1
+    height: 88.9
   boundaryMargin: 0.5
   useBoundary: 1
   rb: {fileID: 7860177874705673016}
@@ -419,8 +421,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponShooterSystem2D
   firePoint: {fileID: 4443526053670800817}
   projectilePool: {fileID: 0}
-  defaultStartWeapons:
-  - {fileID: 0}
+  defaultStartWeapons: []
   slots: []
   overlapBufferSize: 64
   bossTag: Boss
@@ -516,7 +517,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRuntimeApplier2D
   baseStatProfile: {fileID: 11400000, guid: d9ff6d3783f7f634bb7d841bc0299ded, type: 2}
-  loadout: {fileID: 0}
+  loadout: {fileID: 2646400532535124396}
   combatStats: {fileID: 3643547768900288814}
   playerHealth: {fileID: 2567311258014471434}
   healToFullWhenMaxHpChanges: 1
@@ -545,7 +546,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad10c91bba6975488e8343075f4e4be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UltimateController2D
-  cooldownSeconds: 240
+  cooldownSeconds: 180
   ultimateKey: 114
   executor: {fileID: 1917345489163748299}
   animator: {fileID: 755554874796778754}
@@ -563,7 +564,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 723a4305d12fc1d4c85e8ef566496275, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UltimateExecutor2D
-  presenter: {fileID: 476021461681456854}
+  presenter: {fileID: 0}
   playerTransform: {fileID: 4190694949098890430}
   enemyMask:
     serializedVersion: 2
@@ -612,34 +613,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SquadApplier2D
   loadout: {fileID: 1424634346308500864}
   ultimateController: {fileID: 3876108120180533697}
-  playerSpriteRenderer: {fileID: 0}
-  playerAnimator: {fileID: 0}
-  debugLog: 1
---- !u!114 &796904804376548588
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2448833564552998235}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b02446ebf3055324f92bcd487290f5b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SupportUltimateController2D
-  cooldownSeconds: 240
-  supportKey: 116
-  sideDistance: 4
-  staggerDelay: 0.08
-  followSpeed: 12
-  exitLingerDuration: 1.5
-  loadout: {fileID: 0}
-  executor: {fileID: 0}
-  playerTransform: {fileID: 4190694949098890430}
-  playerSpriteRenderer: {fileID: 0}
-  landingPresenter: {fileID: 0}
-  buffController: {fileID: 0}
-  debugLog: 1
+  playerSpriteRenderer: {fileID: 1919909767591641912}
+  playerAnimator: {fileID: 755554874796778754}
+  debugLog: 0
 --- !u!114 &-763766003085214251
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -652,9 +628,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5dd66f0e50851d469d7c9100933b371, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleBuffController2D
-  combatStats: {fileID: 0}
-  statApplier: {fileID: 0}
-  debugLog: 1
+  combatStats: {fileID: 3643547768900288814}
+  statApplier: {fileID: 4633536343807085861}
+  debugLog: 0
 --- !u!114 &4029116142212849518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -670,7 +646,7 @@ MonoBehaviour:
   defaultShadowPrefab: {fileID: 0}
   idleStateName: Idle
   idleCrossFadeDuration: 0.1
-  debugLog: 1
+  debugLog: 0
 --- !u!114 &4514775536085216928
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -685,6 +661,61 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSpirit2D
   currentSpirit: 0
   debugLog: 0
+--- !u!114 &4775850478941072706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b02446ebf3055324f92bcd487290f5b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SupportUltimateController2D
+  cooldownSeconds: 240
+  supportKey: 116
+  sideDistance: 3.2
+  staggerDelay: 0.08
+  followSpeed: 12
+  exitLingerDuration: 1.5
+  loadout: {fileID: 1424634346308500864}
+  executor: {fileID: 1917345489163748299}
+  playerTransform: {fileID: 0}
+  playerSpriteRenderer: {fileID: 0}
+  landingPresenter: {fileID: 0}
+  buffController: {fileID: 0}
+  debugLog: 1
+--- !u!114 &4233318849896833877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39d65ca89e6dbc944a53e2c6a2cbafa0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterPassiveManager2D
+  loadout: {fileID: 1424634346308500864}
+  debugLog: 1
+--- !u!114 &7420226640106508848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2448833564552998235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d39acaf5227e6124da66b813eb2d334e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AttributeSynergyManager2D
+  loadout: {fileID: 1424634346308500864}
+  synergyDamageRate: 0.1
+  minSynergyDamage: 1
+  debugLog: 1
 --- !u!1 &2880635546030048868
 GameObject:
   m_ObjectHideFlags: 0
@@ -732,7 +763,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1924827254929805743
 Transform:
   m_ObjectHideFlags: 0
@@ -763,12 +794,13 @@ MonoBehaviour:
   baseDamage: 10
   chainDamageRate: 0.15
   hitRadius: 18
-  chainSearchRadius: 5
+  chainSearchRadius: 3
   maxChainCount: 5
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536
-  attachedSparkVfxPrefab: {fileID: 0}
+  attachedSparkVfxPrefab: {fileID: 1550705625387025901, guid: 4baf6f4d6daae5247b8d1bfec615b936,
+    type: 3}
   attachedSparkHoldTime: 0.25
   attachedSparkOffset: {x: 0, y: 0, z: 0}
   attachedSparkScale: {x: 1, y: 1, z: 1}
@@ -791,7 +823,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4635584435544448468
 Transform:
   m_ObjectHideFlags: 0
@@ -871,6 +903,8 @@ MonoBehaviour:
   manager: {fileID: 0}
   startSkills:
   - {fileID: 11400000, guid: dc37c8bf22f65f64ebe0a1e1ecc24c0f, type: 2}
+  - {fileID: 11400000, guid: 28185b87f409f214ebad0f4f930488bc, type: 2}
+  - {fileID: 11400000, guid: d6a80e13d98aedf46b798efdd24616f1, type: 2}
   applyOnStart: 1
   warnWhenEmpty: 1
   logOnStart: 1
