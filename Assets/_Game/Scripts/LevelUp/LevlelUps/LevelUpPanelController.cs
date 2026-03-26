@@ -92,7 +92,7 @@ public sealed class LevelUpPanelController : MonoBehaviour
     {
         if (_isOpen)
         {
-            Debug.LogWarning("[LevelUpPanelController] Already open, ignoring duplicate Open() call.", this);
+            GameLogger.LogWarning("[LevelUpPanelController] Already open, ignoring duplicate Open() call.", this);
             return;
         }
 

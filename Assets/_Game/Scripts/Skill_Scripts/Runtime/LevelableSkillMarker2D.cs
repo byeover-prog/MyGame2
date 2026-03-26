@@ -49,7 +49,7 @@ public sealed class LevelableSkillMarker2D : MonoBehaviour, ILevelableSkill
     public void OnAttached(Transform owner)
     {
         _owner = owner;
-        if (log) Debug.Log($"[LevelableSkillMarker2D] OnAttached: {debugSkillId}", this);
+        if (log) GameLogger.Log($"[LevelableSkillMarker2D] OnAttached: {debugSkillId}", this);
 
         // ★ 핵심 수정: 하위 컴포넌트에도 OnAttached 포워딩
         if (forwardLevelToChildren)
@@ -61,7 +61,7 @@ public sealed class LevelableSkillMarker2D : MonoBehaviour, ILevelableSkill
         int clamped = Mathf.Clamp(newLevel, 1, maxLevel);
         level = clamped;
 
-        if (log) Debug.Log($"[LevelableSkillMarker2D] ApplyLevel: {debugSkillId} => Lv.{level}", this);
+        if (log) GameLogger.Log($"[LevelableSkillMarker2D] ApplyLevel: {debugSkillId} => Lv.{level}", this);
 
         if (forwardLevelToChildren)
             ForwardLevel(level);
@@ -108,12 +108,12 @@ public sealed class LevelableSkillMarker2D : MonoBehaviour, ILevelableSkill
                     try
                     {
                         m.Invoke(mb, new object[] { owner });
-                        if (log) Debug.Log($"[LevelableSkillMarker2D] Forward => {t.Name}.{m.Name}(owner={owner?.name})", mb);
+                        if (log) GameLogger.Log($"[LevelableSkillMarker2D] Forward => {t.Name}.{m.Name}(owner={owner?.name})", mb);
                         break; // 한 컴포넌트당 1회만
                     }
                     catch (System.Exception e)
                     {
-                        Debug.LogWarning($"[LevelableSkillMarker2D] Forward 실패: {t.Name}.{m.Name} → {e.Message}", mb);
+                        GameLogger.LogWarning($"[LevelableSkillMarker2D] Forward 실패: {t.Name}.{m.Name} → {e.Message}", mb);
                     }
                 }
             }
@@ -149,7 +149,7 @@ public sealed class LevelableSkillMarker2D : MonoBehaviour, ILevelableSkill
                     try
                     {
                         m.Invoke(mb, new object[] { lv });
-                        if (log) Debug.Log($"[LevelableSkillMarker2D] Forward => {t.Name}.{m.Name}({lv})", mb);
+                        if (log) GameLogger.Log($"[LevelableSkillMarker2D] Forward => {t.Name}.{m.Name}({lv})", mb);
                         break;
                     }
                     catch

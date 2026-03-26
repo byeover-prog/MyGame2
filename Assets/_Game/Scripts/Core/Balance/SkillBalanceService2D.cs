@@ -19,7 +19,7 @@ public static class SkillBalanceService2D
 
         if (string.IsNullOrEmpty(json))
         {
-            Debug.LogWarning("[Balance] JSON이 비어있습니다.");
+            GameLogger.LogWarning("[Balance] JSON이 비어있습니다.");
             return;
         }
 
@@ -30,13 +30,13 @@ public static class SkillBalanceService2D
         }
         catch
         {
-            Debug.LogWarning("[Balance] JSON 파싱 실패(형식 확인 필요).");
+            GameLogger.LogWarning("[Balance] JSON 파싱 실패(형식 확인 필요).");
             return;
         }
 
         if (db == null || db.skills == null)
         {
-            Debug.LogWarning("[Balance] DB 구조가 비정상입니다.");
+            GameLogger.LogWarning("[Balance] DB 구조가 비정상입니다.");
             return;
         }
 
@@ -50,7 +50,7 @@ public static class SkillBalanceService2D
         }
 
         _loaded = true;
-        Debug.Log($"[Balance] 로드 완료: {_map.Count}개 스킬 오버라이드");
+        GameLogger.Log($"[Balance] 로드 완료: {_map.Count}개 스킬 오버라이드");
     }
 
     public static bool TryGet(string id, out SkillBalanceDB2D.SkillRow2D row)
@@ -76,7 +76,7 @@ public static class SkillBalanceService2D
 
         if (db == null || db.skills == null || db.skills.Length == 0)
         {
-            Debug.LogWarning("[Balance] LoadFromDB: DB가 비어있습니다.");
+            GameLogger.LogWarning("[Balance] LoadFromDB: DB가 비어있습니다.");
             return;
         }
 
@@ -88,6 +88,6 @@ public static class SkillBalanceService2D
         }
 
         _loaded = true;
-        Debug.Log($"[Balance] LoadFromDB 완료: {_map.Count}개 스킬 오버라이드");
+        GameLogger.Log($"[Balance] LoadFromDB 완료: {_map.Count}개 스킬 오버라이드");
     }
 }

@@ -80,7 +80,7 @@ public sealed class BattleBuffController2D : MonoBehaviour
         _activeBuffs[kind] = buff;
 
         if (debugLog)
-            Debug.Log($"[BattleBuffController] 버프 적용 — {kind} +{value} ({duration}초)");
+            GameLogger.Log($"[BattleBuffController] 버프 적용 — {kind} +{value} ({duration}초)");
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public sealed class BattleBuffController2D : MonoBehaviour
         _activeBuffs.Remove(kind);
 
         if (debugLog)
-            Debug.Log($"[BattleBuffController] 버프 해제 — {kind}");
+            GameLogger.Log($"[BattleBuffController] 버프 해제 — {kind}");
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public sealed class BattleBuffController2D : MonoBehaviour
         _activeBuffs.Clear();
 
         if (debugLog)
-            Debug.Log("[BattleBuffController] 모든 버프 해제");
+            GameLogger.Log("[BattleBuffController] 모든 버프 해제");
     }
 
     /// <summary>현재 활성화된 버프가 있는지 확인합니다.</summary>
@@ -222,7 +222,7 @@ public sealed class BattleBuffController2D : MonoBehaviour
             ReapplyRemainingBuffs();
 
             if (debugLog)
-                Debug.Log($"[BattleBuffController] 버프 만료 — {buff.kind} ({buff.value})");
+                GameLogger.Log($"[BattleBuffController] 버프 만료 — {buff.kind} ({buff.value})");
         }
     }
 

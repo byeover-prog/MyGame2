@@ -99,7 +99,7 @@ public sealed class HUDController : MonoBehaviour
 
     public void ShowPendingButton(bool show, System.Action onClicked)
     {
-        Debug.Log($"[HUD] ShowPendingButton | btnLevelUpPending={btnLevelUpPending}");
+        GameLogger.Log($"[HUD] ShowPendingButton | btnLevelUpPending={btnLevelUpPending}");
         if (btnLevelUpPending == null) return;
 
         btnLevelUpPending.style.display = show

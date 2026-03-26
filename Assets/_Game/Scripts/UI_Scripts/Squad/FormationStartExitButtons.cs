@@ -49,7 +49,7 @@ public sealed class FormationStartExitButtons : MonoBehaviour
         if (confirmExit)
         {
             // 프로토타입에서는 UI 확인창 구현 안 함(원하면 다음에 붙이자)
-            Debug.Log("[FormationStartExitButtons] confirmExit=true 이지만 확인창은 아직 미구현. 바로 종료합니다.");
+            GameLogger.Log("[FormationStartExitButtons] confirmExit=true 이지만 확인창은 아직 미구현. 바로 종료합니다.");
         }
 
 #if UNITY_EDITOR

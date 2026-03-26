@@ -20,6 +20,6 @@ public static class MetaAutoBootstrap2D
         // if (applier != null)
         //     applier.ReapplyFromLoadout(healToFull: false);
 
-        Debug.Log("[MetaAutoBootstrap2D] BattleSnapshot 재빌드 요청 — 아웃게임 변경 반영 대기");
+        GameLogger.Log("[MetaAutoBootstrap2D] BattleSnapshot 재빌드 요청 — 아웃게임 변경 반영 대기");
     }
 }

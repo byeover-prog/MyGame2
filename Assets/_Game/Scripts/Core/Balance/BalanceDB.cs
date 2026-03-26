@@ -37,7 +37,7 @@ public sealed class BalanceDB : MonoBehaviour
     {
         if (balanceJson == null)
         {
-            Debug.LogWarning("[BalanceDB] balanceJson이 비어있음", this);
+            GameLogger.LogWarning("[BalanceDB] balanceJson이 비어있음", this);
             _root = null;
             return;
         }
@@ -45,11 +45,11 @@ public sealed class BalanceDB : MonoBehaviour
         _root = JsonUtility.FromJson<BalanceRoot>(balanceJson.text);
         if (_root == null || _root.skills == null)
         {
-            Debug.LogWarning("[BalanceDB] JSON 파싱 실패(형식 확인 필요)", this);
+            GameLogger.LogWarning("[BalanceDB] JSON 파싱 실패(형식 확인 필요)", this);
             return;
         }
 
-        Debug.Log($"[BalanceDB] 로드 완료 skills={_root.skills.Length}", this);
+        GameLogger.Log($"[BalanceDB] 로드 완료 skills={_root.skills.Length}", this);
     }
 
     public bool TryGetSkillLevel(string skillId, int level, out SkillLevelStat stat)

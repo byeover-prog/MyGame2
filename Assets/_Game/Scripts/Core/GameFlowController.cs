@@ -74,10 +74,10 @@ public sealed class GameFlowController : MonoBehaviour
             "LevelUpOffersReady");
 
         if (_evtOpen == null)
-            Debug.LogWarning("[GameFlowController] 레벨업 오픈 이벤트를 GameSignals에서 찾지 못했습니다. (이름이 더 다를 수 있음)", this);
+            GameLogger.LogWarning("[GameFlowController] 레벨업 오픈 이벤트를 GameSignals에서 찾지 못했습니다. (이름이 더 다를 수 있음)", this);
 
         if (_evtOffersReady == null)
-            Debug.LogWarning("[GameFlowController] 오퍼 준비 이벤트를 GameSignals에서 찾지 못했습니다. (이름이 더 다를 수 있음)", this);
+            GameLogger.LogWarning("[GameFlowController] 오퍼 준비 이벤트를 GameSignals에서 찾지 못했습니다. (이름이 더 다를 수 있음)", this);
     }
 
     // --------------------
@@ -124,7 +124,7 @@ public sealed class GameFlowController : MonoBehaviour
             if (_subOpen != null)
             {
                 _evtOpen.AddEventHandler(null, _subOpen);
-                Debug.Log("[GameFlowController] 레벨업 오픈 이벤트 구독 성공", this);
+                GameLogger.Log("[GameFlowController] 레벨업 오픈 이벤트 구독 성공", this);
             }
         }
 
@@ -135,7 +135,7 @@ public sealed class GameFlowController : MonoBehaviour
             if (_subOffers != null)
             {
                 _evtOffersReady.AddEventHandler(null, _subOffers);
-                Debug.Log("[GameFlowController] 오퍼 준비 이벤트 구독 성공", this);
+                GameLogger.Log("[GameFlowController] 오퍼 준비 이벤트 구독 성공", this);
             }
         }
     }

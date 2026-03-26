@@ -29,7 +29,7 @@ public sealed class PlayerSpirit2D : MonoBehaviour
         OnSpiritChanged?.Invoke(currentSpirit, amount);
 
         if (debugLog)
-            Debug.Log($"[PlayerSpirit2D] Spirit +{amount} => {currentSpirit}", this);
+            GameLogger.Log($"[PlayerSpirit2D] Spirit +{amount} => {currentSpirit}", this);
     }
 
     // ── 소비 (스킬트리) ───────────────────────────
@@ -43,7 +43,7 @@ public sealed class PlayerSpirit2D : MonoBehaviour
         if (currentSpirit < amount)
         {
             if (debugLog)
-                Debug.Log($"[PlayerSpirit2D] 혼령 부족 — 필요 {amount}, 보유 {currentSpirit}", this);
+                GameLogger.Log($"[PlayerSpirit2D] 혼령 부족 — 필요 {amount}, 보유 {currentSpirit}", this);
             return false;
         }
 
@@ -51,7 +51,7 @@ public sealed class PlayerSpirit2D : MonoBehaviour
         OnSpiritChanged?.Invoke(currentSpirit, -amount);
 
         if (debugLog)
-            Debug.Log($"[PlayerSpirit2D] Spirit -{amount} => {currentSpirit}", this);
+            GameLogger.Log($"[PlayerSpirit2D] Spirit -{amount} => {currentSpirit}", this);
 
         return true;
     }

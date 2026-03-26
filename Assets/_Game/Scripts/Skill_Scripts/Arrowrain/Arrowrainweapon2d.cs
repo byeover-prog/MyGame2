@@ -76,7 +76,7 @@ public sealed class ArrowRainWeapon2D : CommonSkillWeapon2D
         int   areaCount = isAwakened ? awakenedAreaCount : 1;
 
         if (debugLog)
-            Debug.Log($"[ArrowRainWeapon2D] Fire: {areaCount}개 | dmg={tickDmg} | r={areaRadius:F1}", this);
+            GameLogger.Log($"[ArrowRainWeapon2D] Fire: {areaCount}개 | dmg={tickDmg} | r={areaRadius:F1}", this);
 
         Vector2 basePos = (Vector2)targetEnemy.transform.position;
 

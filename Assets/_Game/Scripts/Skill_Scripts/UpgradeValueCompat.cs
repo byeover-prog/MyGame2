@@ -87,7 +87,7 @@ public static class UpgradeValueCompat
         if (!_warned && (_getAddInt == null || _getAddFloat == null || _getMulFloat == null || _getBool == null))
         {
             _warned = true;
-            Debug.LogWarning(
+            GameLogger.LogWarning(
                 "[UpgradeValueCompat] UpgradeValue에서 일부 필드/프로퍼티를 찾지 못했습니다. " +
                 "해당 값은 0/false로 처리될 수 있습니다. UpgradeValue 정의 파일의 멤버명을 확인하세요."
             );

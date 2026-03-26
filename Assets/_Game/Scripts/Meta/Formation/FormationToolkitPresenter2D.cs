@@ -84,7 +84,7 @@ public sealed class FormationToolkitPresenter2D : MonoBehaviour
 
         if (catalog == null)
         {
-            Debug.LogWarning("[FormationToolkitPresenter2D] CharacterCatalogSO가 없습니다.", this);
+            GameLogger.LogWarning("[FormationToolkitPresenter2D] CharacterCatalogSO가 없습니다.", this);
             return;
         }
 
@@ -270,7 +270,7 @@ public sealed class FormationToolkitPresenter2D : MonoBehaviour
             return;
         }
 
-        if (debugLog) Debug.Log($"[FormationToolkitPresenter2D] LoadScene => {nextSceneName}", this);
+        if (debugLog) GameLogger.Log($"[FormationToolkitPresenter2D] LoadScene => {nextSceneName}", this);
         SceneManager.LoadScene(nextSceneName);
     }
 

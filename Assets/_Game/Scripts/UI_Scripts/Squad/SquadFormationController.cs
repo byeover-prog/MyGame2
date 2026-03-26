@@ -54,17 +54,17 @@ public sealed class SquadFormationController : MonoBehaviour
         if (btnStart != null)
         {
             btnStart.onClick.AddListener(OnClickStart);
-            if (debugLog) Debug.Log("[SquadFormation] btnStart listener attached.");
+            if (debugLog) GameLogger.Log("[SquadFormation] btnStart listener attached.");
         }
         else
         {
-            if (debugLog) Debug.LogWarning("[SquadFormation] btnStart is NULL. Start won't work.");
+            if (debugLog) GameLogger.LogWarning("[SquadFormation] btnStart is NULL. Start won't work.");
         }
 
         if (btnClear != null)
         {
             btnClear.onClick.AddListener(OnClickClear);
-            if (debugLog) Debug.Log("[SquadFormation] btnClear listener attached.");
+            if (debugLog) GameLogger.Log("[SquadFormation] btnClear listener attached.");
         }
 
         SquadLoadoutRuntime.OnChanged += OnLoadoutChanged;
@@ -120,7 +120,7 @@ public sealed class SquadFormationController : MonoBehaviour
 
         if (debugLog)
         {
-            Debug.Log($"[SquadFormation] AutoBind => start={(btnStart != null)}, clear={(btnClear != null)}, grid={(grid != null)}, catalog={(catalog != null)}");
+            GameLogger.Log($"[SquadFormation] AutoBind => start={(btnStart != null)}, clear={(btnClear != null)}, grid={(grid != null)}, catalog={(catalog != null)}");
         }
     }
 
@@ -247,12 +247,12 @@ public sealed class SquadFormationController : MonoBehaviour
 
     private void OnClickStart()
     {
-        if (debugLog) Debug.Log("[SquadFormation] OnClickStart fired.");
+        if (debugLog) GameLogger.Log("[SquadFormation] OnClickStart fired.");
 
         if (requireMainToStart && !SquadLoadoutRuntime.Current.HasMain)
         {
             if (hintText != null) hintText.text = "메인 캐릭터를 먼저 선택하세요.";
-            if (debugLog) Debug.LogWarning("[SquadFormation] Blocked: HasMain=false");
+            if (debugLog) GameLogger.LogWarning("[SquadFormation] Blocked: HasMain=false");
             return;
         }
 
@@ -263,13 +263,13 @@ public sealed class SquadFormationController : MonoBehaviour
             return;
         }
 
-        if (debugLog) Debug.Log($"[SquadFormation] LoadScene => {nextSceneName}");
+        if (debugLog) GameLogger.Log($"[SquadFormation] LoadScene => {nextSceneName}");
         SceneManager.LoadScene(nextSceneName);
     }
 
     private void OnClickClear()
     {
-        if (debugLog) Debug.Log("[SquadFormation] OnClickClear fired.");
+        if (debugLog) GameLogger.Log("[SquadFormation] OnClickClear fired.");
         SquadLoadoutRuntime.ClearAll();
         SetArmedSlot(SquadSlotView.SlotKind.Main);
         RefreshStartButton();

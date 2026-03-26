@@ -13,7 +13,7 @@ public sealed class BootEntry : MonoBehaviour
 
     private void Awake()
     {
-        if (log) Debug.Log("[BootEntry] Awake");
+        if (log) GameLogger.Log("[BootEntry] Awake");
 
         // timeScale 제어는 게임 루프(예: LevelUpOrchestrator)에서만.
         // 부트에서 강제 복구를 걸면, 원인 추적이 더 어려워질 수 있음.

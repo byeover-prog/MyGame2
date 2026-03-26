@@ -86,7 +86,7 @@ public sealed class SupportLandingPresenter2D : MonoBehaviour
             anim.SetTrigger("Trigger_Land");
 
             if (debugLog)
-                Debug.Log("[LandingPresenter] Trigger_Land 발동 — 낙하 시작");
+                GameLogger.Log("[LandingPresenter] Trigger_Land 발동 — 낙하 시작");
         }
 
         SetAlpha(sr, 1f);
@@ -95,7 +95,7 @@ public sealed class SupportLandingPresenter2D : MonoBehaviour
         Vector3 originalScale = vt.localScale;
 
         if (debugLog)
-            Debug.Log($"[LandingPresenter] 낙하 시작 — height={cfg.dropHeight} duration={cfg.dropDuration}");
+            GameLogger.Log($"[LandingPresenter] 낙하 시작 — height={cfg.dropHeight} duration={cfg.dropDuration}");
 
         while (elapsed < cfg.dropDuration)
         {
@@ -148,7 +148,7 @@ public sealed class SupportLandingPresenter2D : MonoBehaviour
             yield return new WaitForSeconds(cfg.impactPauseDuration);
 
         if (debugLog)
-            Debug.Log("[LandingPresenter] 착지 임팩트 완료");
+            GameLogger.Log("[LandingPresenter] 착지 임팩트 완료");
 
         // Squash → 원래 크기 복귀
         elapsed = 0f;
@@ -174,7 +174,7 @@ public sealed class SupportLandingPresenter2D : MonoBehaviour
             yield return new WaitForSeconds(cfg.settleDuration);
 
         if (debugLog)
-            Debug.Log("[LandingPresenter] 등장 완료 — Idle 상태에서 궁극기 대기");
+            GameLogger.Log("[LandingPresenter] 등장 완료 — Idle 상태에서 궁극기 대기");
 
         onComplete?.Invoke();
     }
@@ -211,7 +211,7 @@ public sealed class SupportLandingPresenter2D : MonoBehaviour
         }
 
         if (debugLog)
-            Debug.Log($"[LandingPresenter] 퇴장 시작 — rise={cfg.exitRiseHeight} duration={cfg.exitDuration}");
+            GameLogger.Log($"[LandingPresenter] 퇴장 시작 — rise={cfg.exitRiseHeight} duration={cfg.exitDuration}");
 
         float elapsed = 0f;
         while (elapsed < cfg.exitDuration)
@@ -229,7 +229,7 @@ public sealed class SupportLandingPresenter2D : MonoBehaviour
         }
 
         if (debugLog)
-            Debug.Log("[LandingPresenter] 퇴장 완료");
+            GameLogger.Log("[LandingPresenter] 퇴장 완료");
 
         onComplete?.Invoke();
     }
@@ -252,7 +252,7 @@ public sealed class SupportLandingPresenter2D : MonoBehaviour
             anim.Play(idleStateName, 0, 0f);
 
         if (debugLog)
-            Debug.Log($"[LandingPresenter] Idle 전환");
+            GameLogger.Log($"[LandingPresenter] Idle 전환");
     }
 
     // ═══════════════════════════════════════════════════

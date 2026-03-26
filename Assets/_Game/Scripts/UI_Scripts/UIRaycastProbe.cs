@@ -18,7 +18,7 @@ public sealed class UIRaycastProbe : MonoBehaviour
     {
         if (EventSystem.current == null)
         {
-            Debug.LogWarning("[UIRaycastProbe] EventSystem이 없습니다. UI 입력이 동작하지 않습니다.");
+            GameLogger.LogWarning("[UIRaycastProbe] EventSystem이 없습니다. UI 입력이 동작하지 않습니다.");
             enabled = false;
             return;
         }
@@ -46,7 +46,7 @@ public sealed class UIRaycastProbe : MonoBehaviour
             sb.AppendLine($"  {i:00}. {goPath}  (module:{r.module}, depth:{r.depth}, sortOrder:{r.sortingOrder}, distance:{r.distance:0.00})");
         }
 
-        Debug.Log(sb.ToString());
+        GameLogger.Log(sb.ToString());
     }
 
     private static string GetPath(Transform t)

@@ -47,7 +47,7 @@ public sealed class LevelUpOpenOnPlayerExp : MonoBehaviour
     private void HandleLevelUp(int newLevel)
     {
         if (enableLogs)
-            Debug.Log($"[LevelUp] PlayerExp LevelUp => {newLevel}", this);
+            GameLogger.Log($"[LevelUp] PlayerExp LevelUp => {newLevel}", this);
 
         // 새 시스템 분기 ───────────────────────
         if (useNewLevelUpFlow && newFlowCoordinator != null)

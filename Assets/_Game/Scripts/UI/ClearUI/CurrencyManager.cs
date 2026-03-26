@@ -95,7 +95,7 @@ public class CurrencyManager : MonoBehaviour
         // 스테이지 획득량은 ClearUI 표시용으로 유지 (ResetStageRewards 호출 전까지)
         OnCurrencyChanged?.Invoke();
 
-        Debug.Log($"[CurrencyManager] 저장 완료 - 냥: {BaseNyang}, 혼령: {BaseSpirit}");
+        GameLogger.Log($"[CurrencyManager] 저장 완료 - 냥: {BaseNyang}, 혼령: {BaseSpirit}");
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ public class CurrencyManager : MonoBehaviour
     {
         if (BaseNyang < amount)
         {
-            Debug.LogWarning("[CurrencyManager] 냥 부족");
+            GameLogger.LogWarning("[CurrencyManager] 냥 부족");
             return false;
         }
         BaseNyang -= amount;
@@ -122,7 +122,7 @@ public class CurrencyManager : MonoBehaviour
     {
         if (BaseSpirit < amount)
         {
-            Debug.LogWarning("[CurrencyManager] 혼령 부족");
+            GameLogger.LogWarning("[CurrencyManager] 혼령 부족");
             return false;
         }
         BaseSpirit -= amount;
@@ -146,7 +146,7 @@ public class CurrencyManager : MonoBehaviour
         PlayerPrefs.DeleteKey(KEY_SPIRIT);
         LoadCurrency();
         OnCurrencyChanged?.Invoke();
-        Debug.Log("[CurrencyManager] 재화 초기화 완료");
+        GameLogger.Log("[CurrencyManager] 재화 초기화 완료");
     }
 #endif
 }

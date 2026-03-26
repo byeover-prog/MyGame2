@@ -47,12 +47,12 @@ public class HayulUltimatePresenter2D : MonoBehaviour
 
         if (fullscreenVfxPrefab == null)
         {
-            Debug.LogWarning("[하율 궁극기] Fullscreen Vfx Prefab이 비어있습니다!");
+            GameLogger.LogWarning("[하율 궁극기] Fullscreen Vfx Prefab이 비어있습니다!");
             return;
         }
         if (mainCamera == null)
         {
-            Debug.LogWarning("[하율 궁극기] 카메라를 찾을 수 없습니다!");
+            GameLogger.LogWarning("[하율 궁극기] 카메라를 찾을 수 없습니다!");
             return;
         }
 
@@ -79,7 +79,7 @@ public class HayulUltimatePresenter2D : MonoBehaviour
 
         Destroy(_currentVfx, duration + 1f);
 
-        Debug.Log($"[하율 궁극기] 풀스크린 VFX 생성 | " +
+        GameLogger.Log($"[하율 궁극기] 풀스크린 VFX 생성 | " +
                   $"viewSize=({viewWidth:F1}×{viewHeight:F1}) " +
                   $"scale={scaleFactor:F2} duration={duration}s");
     }
@@ -95,7 +95,7 @@ public class HayulUltimatePresenter2D : MonoBehaviour
             Destroy(_currentVfx);
             _currentVfx = null;
         }
-        Debug.Log("[하율 궁극기] Presenter 종료");
+        GameLogger.Log("[하율 궁극기] Presenter 종료");
     }
 
     private void Awake() => EnsureCameraRef();

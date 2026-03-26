@@ -134,12 +134,12 @@ namespace _Game.LevelUp.UI
         {
             if (cards == null || cards.Count == 0)
             {
-                Debug.LogWarning("[CardPanel] 표시할 카드가 없습니다.");
+                GameLogger.LogWarning("[CardPanel] 표시할 카드가 없습니다.");
                 return;
             }
             if (isOpen)
             {
-                Debug.LogWarning("[CardPanel] 이미 열려있습니다.");
+                GameLogger.LogWarning("[CardPanel] 이미 열려있습니다.");
                 return;
             }
 
@@ -236,11 +236,11 @@ namespace _Game.LevelUp.UI
             var data    = currentCards[index];
             bool applied = rewardApplier != null && rewardApplier.Apply(data);
 
-            Debug.Log($"[CardPanel] 선택 | {data.Title} | applied={applied}");
+            GameLogger.Log($"[CardPanel] 선택 | {data.Title} | applied={applied}");
 
             if (!applied)
             {
-                Debug.LogWarning($"[CardPanel] 보상 적용 실패 → 패널 유지: {data.Title}");
+                GameLogger.LogWarning($"[CardPanel] 보상 적용 실패 → 패널 유지: {data.Title}");
                 SetCardInteractable(true);
                 return;
             }
@@ -254,7 +254,7 @@ namespace _Game.LevelUp.UI
             if (!isOpen || rerollsLeft <= 0) return;
             if (cardGenerator == null || loadout == null)
             {
-                Debug.LogWarning("[CardPanel] 리롤 불가 — 참조 누락");
+                GameLogger.LogWarning("[CardPanel] 리롤 불가 — 참조 누락");
                 return;
             }
 
@@ -263,7 +263,7 @@ namespace _Game.LevelUp.UI
             var newCards = cardGenerator.Generate(loadout);
             if (newCards == null || newCards.Count == 0)
             {
-                Debug.LogWarning("[CardPanel] 리롤 실패 — 카드 없음");
+                GameLogger.LogWarning("[CardPanel] 리롤 실패 — 카드 없음");
                 UpdateRerollUI();
                 return;
             }
@@ -274,7 +274,7 @@ namespace _Game.LevelUp.UI
             SetCardInteractable(true);
             UpdateRerollUI();
 
-            Debug.Log($"[CardPanel] 리롤 완료 | {newCards.Count}장 | 남은 {rerollsLeft}");
+            GameLogger.Log($"[CardPanel] 리롤 완료 | {newCards.Count}장 | 남은 {rerollsLeft}");
         }
 
         private void UpdateRerollUI()

@@ -46,37 +46,37 @@ namespace _Game.LevelUp
         {
             if (cardGenerator == null)
             {
-                Debug.LogWarning("[FlowTester] cardGenerator 미할당", this);
+                GameLogger.LogWarning("[FlowTester] cardGenerator 미할당", this);
                 return;
             }
 
             if (panelController == null)
             {
-                Debug.LogWarning("[FlowTester] panelController 미할당", this);
+                GameLogger.LogWarning("[FlowTester] panelController 미할당", this);
                 return;
             }
 
             if (loadout == null)
             {
-                Debug.LogWarning("[FlowTester] loadout 미할당", this);
+                GameLogger.LogWarning("[FlowTester] loadout 미할당", this);
                 return;
             }
 
             // 이미 열려있으면 무시
             if (panelController.IsOpen)
             {
-                Debug.LogWarning("[FlowTester] 패널이 이미 열려있습니다.", this);
+                GameLogger.LogWarning("[FlowTester] 패널이 이미 열려있습니다.", this);
                 return;
             }
 
             // 카드 4장 생성
             List<LevelUpCardData> cards = cardGenerator.Generate(loadout);
 
-            Debug.Log($"[FlowTester] 카드 {cards.Count}장 생성 → 패널 열기", this);
+            GameLogger.Log($"[FlowTester] 카드 {cards.Count}장 생성 → 패널 열기", this);
 
             for (int i = 0; i < cards.Count; i++)
             {
-                Debug.Log(
+                GameLogger.Log(
                     $"[FlowTester]   [{i}] type={cards[i].RewardType} | " +
                     $"title={cards[i].Title} | " +
                     $"desc={cards[i].Description}",

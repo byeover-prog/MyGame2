@@ -219,7 +219,7 @@ public sealed class PurificationOrbProjectile2D : PooledObject2D
         SpawnBodyVfx();
 
         if (debugLog)
-            Debug.Log($"[정화구] 초기화 완료 — 틱 데미지:{tickDamage}, 틱 횟수:{tickCount}, 타겟:{(target != null ? target.name : "없음")}");
+            GameLogger.Log($"[정화구] 초기화 완료 — 틱 데미지:{tickDamage}, 틱 횟수:{tickCount}, 타겟:{(target != null ? target.name : "없음")}");
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -448,7 +448,7 @@ public sealed class PurificationOrbProjectile2D : PooledObject2D
 
         if (_chaseTimer >= maxChaseTime)
         {
-            if (debugLog) Debug.Log("[정화구] 추적 시간 초과 → 소멸");
+            if (debugLog) GameLogger.Log("[정화구] 추적 시간 초과 → 소멸");
             Die();
             return;
         }
@@ -458,11 +458,11 @@ public sealed class PurificationOrbProjectile2D : PooledObject2D
             _target = FindPriorityTarget();
             if (_target == null)
             {
-                if (debugLog) Debug.Log("[정화구] 재탐색 실패 → 소멸");
+                if (debugLog) GameLogger.Log("[정화구] 재탐색 실패 → 소멸");
                 Die();
                 return;
             }
-            if (debugLog) Debug.Log($"[정화구] 재탐색 성공 → {_target.name}");
+            if (debugLog) GameLogger.Log($"[정화구] 재탐색 성공 → {_target.name}");
         }
 
         if (!PurificationOrbAttachTracker.CanAttachTo(_target.gameObject))
@@ -471,7 +471,7 @@ public sealed class PurificationOrbProjectile2D : PooledObject2D
             if (alt != null)
             {
                 _target = alt;
-                if (debugLog) Debug.Log($"[정화구] 부착 불가 대상 → 대체 타겟: {alt.name}");
+                if (debugLog) GameLogger.Log($"[정화구] 부착 불가 대상 → 대체 타겟: {alt.name}");
             }
         }
 
@@ -516,7 +516,7 @@ public sealed class PurificationOrbProjectile2D : PooledObject2D
 
         if (!PurificationOrbAttachTracker.CanAttachTo(enemyGo))
         {
-            if (debugLog) Debug.Log($"[정화구] 부착 거부됨 (최대 초과) → {enemyGo.name}");
+            if (debugLog) GameLogger.Log($"[정화구] 부착 거부됨 (최대 초과) → {enemyGo.name}");
             _target = FindPriorityTarget(enemyGo);
             if (_target == null)
             {
@@ -543,7 +543,7 @@ public sealed class PurificationOrbProjectile2D : PooledObject2D
             _enemyOriginalColor = _enemySpriteRenderer.color;
 
         if (debugLog)
-            Debug.Log($"[정화구] 부착 성공 → {enemyGo.name} (순서:{_attachOrder}, 배율:{_damageMultiplier:F1})");
+            GameLogger.Log($"[정화구] 부착 성공 → {enemyGo.name} (순서:{_attachOrder}, 배율:{_damageMultiplier:F1})");
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -554,7 +554,7 @@ public sealed class PurificationOrbProjectile2D : PooledObject2D
     {
         if (_target == null || !_target.gameObject.activeInHierarchy)
         {
-            if (debugLog) Debug.Log("[정화구] 부착 대상 사망 → 재탐색");
+            if (debugLog) GameLogger.Log("[정화구] 부착 대상 사망 → 재탐색");
             RestoreEnemyTint();
             DetachAndReSearch();
             return;
@@ -585,11 +585,11 @@ public sealed class PurificationOrbProjectile2D : PooledObject2D
             _remainingTicks--;
 
             if (debugLog)
-                Debug.Log($"[정화구] 틱 피해 적용 → 남은 틱:{_remainingTicks}");
+                GameLogger.Log($"[정화구] 틱 피해 적용 → 남은 틱:{_remainingTicks}");
 
             if (_remainingTicks <= 0)
             {
-                if (debugLog) Debug.Log("[정화구] 틱 소진 → 소멸");
+                if (debugLog) GameLogger.Log("[정화구] 틱 소진 → 소멸");
                 RestoreEnemyTint();
                 Die();
             }
@@ -640,7 +640,7 @@ public sealed class PurificationOrbProjectile2D : PooledObject2D
                 _collider.enabled = true;
                 _chaseTimer = 0f;
                 _enemySpriteRenderer = null; // 새 타겟에서 다시 캐싱
-                if (debugLog) Debug.Log($"[정화구] 재탐색 성공 → {_target.name}");
+                if (debugLog) GameLogger.Log($"[정화구] 재탐색 성공 → {_target.name}");
                 return;
             }
         }

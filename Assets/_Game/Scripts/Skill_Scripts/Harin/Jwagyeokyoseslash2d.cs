@@ -173,7 +173,7 @@ public sealed class JwagyeokYoseSlash2D : PooledObject2D
 
 #if UNITY_EDITOR
         if (hitCount > 0)
-            Debug.Log($"[좌격요세] 전방 베기 적중! {hitCount}명 피해량={_damage}");
+            GameLogger.Log($"[좌격요세] 전방 베기 적중! {hitCount}명 피해량={_damage}");
 #endif
     }
 

@@ -121,7 +121,7 @@ public static class SquadLoadoutRuntime
             _current.support2Id = data.support2Id;
         }
 
-        Debug.Log($"[SquadLoadoutRuntime] 편성 동기화 완료 — 메인:{_current.mainId ?? "없음"}, " +
+        GameLogger.Log($"[SquadLoadoutRuntime] 편성 동기화 완료 — 메인:{_current.mainId ?? "없음"}, " +
                   $"지원1:{_current.support1Id ?? "없음"}, 지원2:{_current.support2Id ?? "없음"}");
 
         OnChanged?.Invoke(_current);

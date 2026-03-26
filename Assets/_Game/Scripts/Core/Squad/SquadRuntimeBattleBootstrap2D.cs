@@ -65,7 +65,7 @@ public sealed class SquadRuntimeBattleBootstrap2D : MonoBehaviour
 
         if (main == null)
         {
-            Debug.LogWarning("[SquadRuntimeBattleBootstrap2D] 저장된 메인 캐릭터가 없어 기본 편성을 유지합니다.", this);
+            GameLogger.LogWarning("[SquadRuntimeBattleBootstrap2D] 저장된 메인 캐릭터가 없어 기본 편성을 유지합니다.", this);
             return;
         }
 
@@ -79,7 +79,7 @@ public sealed class SquadRuntimeBattleBootstrap2D : MonoBehaviour
 
         if (debugLog)
         {
-            Debug.Log(
+            GameLogger.Log(
                 $"[SquadRuntimeBattleBootstrap2D] 전투 편성 적용 | 메인={NameOf(main)} | 지원1={NameOf(support1)} | 지원2={NameOf(support2)}",
                 this);
         }

@@ -69,7 +69,7 @@ public sealed class LifestealHandler2D : MonoBehaviour
         playerHealth.Heal(healAmount);
 
         if (debugLog)
-            Debug.Log($"[흡혈] 피해={info.Amount} × {lifestealPercent}% → 회복 +{healAmount} " +
+            GameLogger.Log($"[흡혈] 피해={info.Amount} × {lifestealPercent}% → 회복 +{healAmount} " +
                       $"(현재 HP={playerHealth.CurrentHp}/{playerHealth.MaxHp})");
     }
 }

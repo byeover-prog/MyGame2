@@ -356,7 +356,7 @@ public sealed class PlayerMover2D : MonoBehaviour
     {
         if (debugLog)
         {
-            Debug.Log($"[{name}] 궁극기 애니메이션 재생", this);
+            GameLogger.Log($"[{name}] 궁극기 애니메이션 재생", this);
         }
 
         BeginActionLock();
@@ -368,7 +368,7 @@ public sealed class PlayerMover2D : MonoBehaviour
     {
         if (debugLog)
         {
-            Debug.Log($"[{name}] 착지 애니메이션 재생", this);
+            GameLogger.Log($"[{name}] 착지 애니메이션 재생", this);
         }
 
         BeginActionLock();
@@ -380,7 +380,7 @@ public sealed class PlayerMover2D : MonoBehaviour
     {
         if (debugLog)
         {
-            Debug.Log($"[{name}] 퇴장 애니메이션 재생", this);
+            GameLogger.Log($"[{name}] 퇴장 애니메이션 재생", this);
         }
 
         BeginActionLock();
@@ -417,7 +417,7 @@ public sealed class PlayerMover2D : MonoBehaviour
 
         if (debugLog)
         {
-            Debug.Log($"[{name}] 연출 잠금 해제", this);
+            GameLogger.Log($"[{name}] 연출 잠금 해제", this);
         }
     }
 

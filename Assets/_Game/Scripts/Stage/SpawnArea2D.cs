@@ -76,7 +76,7 @@ namespace _Game.Scripts.Stage.Spawn
             }
 
             // 실패 시: 그냥 중심 반환(디버그로 쉽게 티나게)
-            Debug.LogWarning("[SpawnArea2D] 내부 랜덤 포인트 추출 실패. 콜라이더가 너무 얇거나 마진/시도 횟수를 확인하세요.", this);
+            GameLogger.LogWarning("[SpawnArea2D] 내부 랜덤 포인트 추출 실패. 콜라이더가 너무 얇거나 마진/시도 횟수를 확인하세요.", this);
             return areaCollider.bounds.center;
         }
 

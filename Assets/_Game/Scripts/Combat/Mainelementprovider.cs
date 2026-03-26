@@ -27,7 +27,7 @@ public static class MainElementProvider
     public static void Set(DamageElement2D element)
     {
         Element = element;
-        UnityEngine.Debug.Log($"[MainElementProvider] 메인 속성 설정 → {element}");
+        GameLogger.Log($"[MainElementProvider] 메인 속성 설정 → {element}");
     }
 
     /// <summary>

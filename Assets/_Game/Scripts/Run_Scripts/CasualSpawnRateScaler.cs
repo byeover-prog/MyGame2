@@ -65,7 +65,7 @@ public sealed class CasualSpawnRateScaler : MonoBehaviour
         stage_started = true;
 
         if (verbose_log)
-            Debug.Log("[CasualSpawnRateScaler] StageStarted");
+            GameLogger.Log("[CasualSpawnRateScaler] StageStarted");
     }
 
     private void OnPlayerDead()
@@ -117,6 +117,6 @@ public sealed class CasualSpawnRateScaler : MonoBehaviour
         spawner.SetSpawnRateMultiplier(mul);
 
         if (verbose_log)
-            Debug.Log($"[CasualSpawnRateScaler] elapsed={elapsed:0.0}s mul={mul:0.###}");
+            GameLogger.Log($"[CasualSpawnRateScaler] elapsed={elapsed:0.0}s mul={mul:0.###}");
     }
 }

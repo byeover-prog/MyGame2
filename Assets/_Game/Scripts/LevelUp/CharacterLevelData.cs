@@ -53,7 +53,7 @@ public class CharacterLevelData : MonoBehaviour
     {
         foreach (var key in new List<string>(_cache.Keys))
             SetLevel(key, 1);
-        Debug.Log("[CharacterLevelData] 전체 레벨 초기화");
+        GameLogger.Log("[CharacterLevelData] 전체 레벨 초기화");
     }
 #endif
 }

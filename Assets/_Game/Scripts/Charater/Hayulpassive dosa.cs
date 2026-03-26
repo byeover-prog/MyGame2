@@ -42,7 +42,7 @@ public sealed class HayulPassive_Dosa : CharacterPassiveBase
         ElectricBonusRate = electricBonusDamageRate;
         DamageEvents2D.OnEnemyDamageApplied += HandleDamageApplied;
 
-        Debug.Log($"[하율 패시브] 전파 보너스 +{chainBonusCount}, " +
+        GameLogger.Log($"[하율 패시브] 전파 보너스 +{chainBonusCount}, " +
                   $"전기 추가 데미지 {electricBonusDamageRate * 100f}%");
     }
 

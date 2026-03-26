@@ -76,7 +76,7 @@ public sealed class AttributeSynergyManager2D : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[속성 시너지] SquadLoadout2D를 찾을 수 없습니다!", this);
+            GameLogger.LogWarning("[속성 시너지] SquadLoadout2D를 찾을 수 없습니다!", this);
         }
         // ★ v3: 이벤트 구독 없음 — 시작 스킬이 직접 호출
     }
@@ -192,7 +192,7 @@ public sealed class AttributeSynergyManager2D : MonoBehaviour
             string mainName = loadout.Main != null ? loadout.Main.DisplayName : "(없음)";
             string s1 = _synergyCount >= 1 ? _support1Element.ToString() : "없음";
             string s2 = _synergyCount >= 2 ? _support2Element.ToString() : "없음";
-            Debug.Log($"[속성 시너지] 구성 완료 | 메인={mainName}({mainElement}) " +
+            GameLogger.Log($"[속성 시너지] 구성 완료 | 메인={mainName}({mainElement}) " +
                       $"시너지1={s1} 시너지2={s2} 비율={synergyDamageRate * 100f}% " +
                       $"★ 시작 스킬에만 적용");
         }
