@@ -86,7 +86,7 @@ public sealed class ElementVFXObserver2D : MonoBehaviour
         if (darkVfxPrefab != null) count++;
         if (physicalVfxPrefab != null) count++;
 
-        Debug.Log($"[속성 VFX 옵저버] 초기화 완료 | 연결된 프리팹={count}개 effectDuration={effectDuration}s");
+        GameLogger.Log($"[속성 VFX 옵저버] 초기화 완료 | 연결된 프리팹={count}개 effectDuration={effectDuration}s");
     }
 
     // ═══════════════════════════════════════════════════════

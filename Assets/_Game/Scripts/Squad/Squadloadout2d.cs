@@ -70,7 +70,7 @@ public sealed class SquadLoadout2D : MonoBehaviour
         _support1 = support1;
         _support2 = support2;
 
-        Debug.Log($"[스쿼드 편성] 변경 | 메인={GetName(_main)} " +
+        GameLogger.Log($"[스쿼드 편성] 변경 | 메인={GetName(_main)} " +
                   $"지원1={GetName(_support1)} 지원2={GetName(_support2)}");
 
         OnLoadoutChanged?.Invoke();

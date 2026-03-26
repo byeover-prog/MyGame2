@@ -69,7 +69,7 @@ public sealed class MetaWalletService2D
         if (meta == null) return;
         meta.nyang = Mathf.Max(0, value);
         Save();
-        Debug.Log($"[MetaWalletService2D] 디버그: 냥을 {meta.nyang}으로 설정했습니다.");
+        GameLogger.Log($"[MetaWalletService2D] 디버그: 냥을 {meta.nyang}으로 설정했습니다.");
     }
 
     private MetaProfileSaveData2D EnsureMeta()

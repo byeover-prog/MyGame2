@@ -150,7 +150,7 @@ public sealed class WeaponUpgradeCardData2D : ILevelUpCardData
         string weaponId = ResolveWeaponId();
         if (string.IsNullOrWhiteSpace(weaponId))
         {
-            Debug.LogWarning("[WeaponUpgradeCardData2D] weaponId를 찾지 못해 ApplyLevel을 호출할 수 없습니다. (WeaponDefinitionSO/WeaponUpgradeCardSO에 id가 있어야 합니다)");
+            GameLogger.LogWarning("[WeaponUpgradeCardData2D] weaponId를 찾지 못해 ApplyLevel을 호출할 수 없습니다. (WeaponDefinitionSO/WeaponUpgradeCardSO에 id가 있어야 합니다)");
             return;
         }
 
@@ -158,7 +158,7 @@ public sealed class WeaponUpgradeCardData2D : ILevelUpCardData
         SkillRunner runner = UnityEngine.Object.FindFirstObjectByType<SkillRunner>();
         if (runner == null)
         {
-            Debug.LogWarning("[WeaponUpgradeCardData2D] SkillRunner를 찾지 못해 ApplyLevel을 호출할 수 없습니다.");
+            GameLogger.LogWarning("[WeaponUpgradeCardData2D] SkillRunner를 찾지 못해 ApplyLevel을 호출할 수 없습니다.");
             return;
         }
 

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using UnityEngine;
 
 /// <summary>
@@ -15,7 +15,7 @@ public sealed class WeaponSaveSystem : MonoBehaviour
     {
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(SavePath, json);
-        Debug.Log($"[WeaponSaveSystem] Saved: {SavePath}");
+        GameLogger.Log($"[WeaponSaveSystem] Saved: {SavePath}");
     }
 
     public static WeaponSaveData Load()

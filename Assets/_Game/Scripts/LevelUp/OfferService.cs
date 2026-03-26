@@ -206,7 +206,7 @@ public sealed class OfferService : MonoBehaviour
         if (_candidateIndices.Count <= 0)
         {
             if (enableLogs)
-                Debug.Log("[OfferService] 후보가 없습니다(모두 maxLevel or 슬롯 full or 입력실수).", this);
+                GameLogger.Log("[OfferService] 후보가 없습니다(모두 maxLevel or 슬롯 full or 입력실수).", this);
 
             return Array.Empty<Offer>();
         }
@@ -239,7 +239,7 @@ public sealed class OfferService : MonoBehaviour
             };
 
             if (enableLogs)
-                Debug.Log($"[OfferService] PICK id={def.id} kind={def.kind} nextLv={next}", this);
+                GameLogger.Log($"[OfferService] PICK id={def.id} kind={def.kind} nextLv={next}", this);
         }
 
         return result;
@@ -249,7 +249,7 @@ public sealed class OfferService : MonoBehaviour
     {
         if (_state == null)
         {
-            Debug.LogWarning("[OfferService] RequestOffers 무시 — Bind(state) 미호출.", this);
+            GameLogger.LogWarning("[OfferService] RequestOffers 무시 — Bind(state) 미호출.", this);
             return;
         }
 
@@ -257,7 +257,7 @@ public sealed class OfferService : MonoBehaviour
 
         var offers = BuildOffers(count);
         if (enableLogs)
-            Debug.Log($"[OfferService] OffersReady => {offers.Length}장", this);
+            GameLogger.Log($"[OfferService] OffersReady => {offers.Length}장", this);
 
         GameSignals.RaiseOffersReady(offers);
     }
@@ -266,7 +266,7 @@ public sealed class OfferService : MonoBehaviour
     {
         if (_state == null)
         {
-            Debug.LogWarning("[OfferService] Reroll 무시 — 아직 Bind(state)가 호출되지 않았습니다.", this);
+            GameLogger.LogWarning("[OfferService] Reroll 무시 — 아직 Bind(state)가 호출되지 않았습니다.", this);
             return;
         }
 
@@ -278,7 +278,7 @@ public sealed class OfferService : MonoBehaviour
         if (!enableLogs) return;
 
         string id = string.IsNullOrWhiteSpace(item.id) ? "(empty)" : item.id;
-        Debug.Log($"[OfferService] SKIP id={id} kind={item.kind} reason={reason}", this);
+        GameLogger.Log($"[OfferService] SKIP id={id} kind={item.kind} reason={reason}", this);
     }
 
     private void LogPass(OfferCatalogItem item, string note)
@@ -286,7 +286,7 @@ public sealed class OfferService : MonoBehaviour
         if (!enableLogs) return;
 
         string id = string.IsNullOrWhiteSpace(item.id) ? "(empty)" : item.id;
-        Debug.Log($"[OfferService] PASS id={id} kind={item.kind} note={note}", this);
+        GameLogger.Log($"[OfferService] PASS id={id} kind={item.kind} note={note}", this);
     }
 
 #if UNITY_EDITOR

@@ -70,7 +70,7 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
         offerService.RequestOffers(offerCount);
 
         if (enableLogs)
-            Debug.Log($"[LevelUp] OpenRequested => {offerCount}장 요청", this);
+            GameLogger.Log($"[LevelUp] OpenRequested => {offerCount}장 요청", this);
     }
 
     private void HandleOffersReady(Offer[] offers)
@@ -81,14 +81,14 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
         if (offers == null || offers.Length <= 0)
         {
             if (enableLogs)
-                Debug.Log("[LevelUp] 후보가 없어 즉시 닫습니다.", this);
+                GameLogger.Log("[LevelUp] 후보가 없어 즉시 닫습니다.", this);
 
             Close();
             return;
         }
 
         if (enableLogs)
-            Debug.Log($"[LevelUp] OffersReady => {offers.Length}장", this);
+            GameLogger.Log($"[LevelUp] OffersReady => {offers.Length}장", this);
     }
 
     private void HandleOfferPicked(Offer picked)
@@ -105,7 +105,7 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
         {
             if (string.IsNullOrWhiteSpace(picked.id))
             {
-                Debug.LogWarning("[LevelUp] 선택된 카드 id가 비어 있습니다.", this);
+                GameLogger.LogWarning("[LevelUp] 선택된 카드 id가 비어 있습니다.", this);
                 return;
             }
 
@@ -115,7 +115,7 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
 
             if (newLevel <= 0)
             {
-                Debug.LogWarning($"[LevelUp] 카드 적용 실패 => {picked.id}", this);
+                GameLogger.LogWarning($"[LevelUp] 카드 적용 실패 => {picked.id}", this);
                 return;
             }
 
@@ -128,7 +128,7 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
                 skillRunner.ApplyLevel(picked.id, newLevel);
 
             if (enableLogs)
-                Debug.Log($"[LevelUp] Picked '{picked.id}' => Lv.{newLevel}", this);
+                GameLogger.Log($"[LevelUp] Picked '{picked.id}' => Lv.{newLevel}", this);
         }
         catch (System.Exception e)
         {
@@ -151,7 +151,7 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
         GameSignals.RaiseLevelUpClosed();
 
         if (enableLogs)
-            Debug.Log("[LevelUp] Closed", this);
+            GameLogger.Log("[LevelUp] Closed", this);
     }
 
     private void AcquirePause()

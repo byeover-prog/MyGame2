@@ -28,7 +28,7 @@ public sealed class LobbyMenuController : MonoBehaviour
 
     private void OnClickStart()
     {
-        if (log) Debug.Log($"[Lobby] Start -> LoadScene: {gameSceneName}");
+        if (log) GameLogger.Log($"[Lobby] Start -> LoadScene: {gameSceneName}");
 
         if (string.IsNullOrWhiteSpace(gameSceneName))
         {
@@ -42,7 +42,7 @@ public sealed class LobbyMenuController : MonoBehaviour
 
     private void OnClickQuit()
     {
-        if (log) Debug.Log("[Lobby] Quit");
+        if (log) GameLogger.Log("[Lobby] Quit");
 
         // 에디터에서는 게임이 종료되지 않는 게 정상입니다.
 #if UNITY_EDITOR

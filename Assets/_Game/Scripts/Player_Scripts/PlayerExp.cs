@@ -50,7 +50,7 @@ public sealed class PlayerExp : MonoBehaviour
         _requiredExp = CalcRequiredExp(_level);
 
         if (verboseLog)
-            Debug.Log($"[PlayerExp] Init => Lv.{_level}, exp 0/{_requiredExp}");
+            GameLogger.Log($"[PlayerExp] Init => Lv.{_level}, exp 0/{_requiredExp}");
     }
 
     public void AddExp(int amount)
@@ -62,7 +62,7 @@ public sealed class PlayerExp : MonoBehaviour
         _currentExp += finalAmount;
 
         if (verboseLog)
-            Debug.Log($"[PlayerExp] EXP +{finalAmount} (raw={amount}) => {_currentExp}/{_requiredExp}");
+            GameLogger.Log($"[PlayerExp] EXP +{finalAmount} (raw={amount}) => {_currentExp}/{_requiredExp}");
 
         while (_currentExp >= _requiredExp)
         {
@@ -72,7 +72,7 @@ public sealed class PlayerExp : MonoBehaviour
             _requiredExp = CalcRequiredExp(_level);
 
             if (verboseLog)
-                Debug.Log($"[PlayerExp] LevelUp => Lv.{_level}");
+                GameLogger.Log($"[PlayerExp] LevelUp => Lv.{_level}");
 
             if (fireLegacyEvent)
                 OnLevelup?.Invoke();

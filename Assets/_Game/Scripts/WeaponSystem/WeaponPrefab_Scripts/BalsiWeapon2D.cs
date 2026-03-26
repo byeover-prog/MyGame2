@@ -76,6 +76,6 @@ public sealed class BalsiWeapon2D : CommonSkillWeapon2D
         );
 
         if (debugLog)
-            Debug.Log($"[발시] 발사 | dmg={StatDamage} spd={StatProjectileSpeed} cd={P.cooldown:F2}");
+            GameLogger.Log($"[발시] 발사 | dmg={StatDamage} spd={StatProjectileSpeed} cd={P.cooldown:F2}");
     }
 }

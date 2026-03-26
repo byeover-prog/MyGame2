@@ -95,7 +95,7 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         ApplyVisuals();
 
         if (debugLog)
-            Debug.Log($"[ArrowRainArea2D] Setup: r={radius:F1}, dmg={damagePerTick}, " +
+            GameLogger.Log($"[ArrowRainArea2D] Setup: r={radius:F1}, dmg={damagePerTick}, " +
                       $"tick={damageTickInterval:F2}s, dur={durationSeconds:F1}s", this);
     }
 
@@ -174,7 +174,7 @@ public sealed class ArrowRainArea2D : MonoBehaviour
         }
 
         if (debugLog && damaged > 0)
-            Debug.Log($"[ArrowRainArea2D] 적중: {damagePerTick} x {damaged}명", this);
+            GameLogger.Log($"[ArrowRainArea2D] 적중: {damagePerTick} x {damaged}명", this);
     }
 
     // ════════════════════════════════════════════

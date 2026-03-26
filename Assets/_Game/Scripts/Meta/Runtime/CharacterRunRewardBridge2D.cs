@@ -83,14 +83,14 @@ public sealed class CharacterRunRewardBridge2D : MonoBehaviour
         if (_granted) return;
         if (catalog == null)
         {
-            if (debugLog) Debug.LogWarning("[CharacterRunRewardBridge2D] catalog가 없어 보상을 지급하지 못했습니다.", this);
+            if (debugLog) GameLogger.LogWarning("[CharacterRunRewardBridge2D] catalog가 없어 보상을 지급하지 못했습니다.", this);
             return;
         }
 
         SaveManager2D saveManager = SaveManager2D.Instance;
         if (saveManager == null || saveManager.Data == null)
         {
-            if (debugLog) Debug.LogWarning("[CharacterRunRewardBridge2D] SaveManager2D가 없어 보상을 지급하지 못했습니다.", this);
+            if (debugLog) GameLogger.LogWarning("[CharacterRunRewardBridge2D] SaveManager2D가 없어 보상을 지급하지 못했습니다.", this);
             return;
         }
 
@@ -141,7 +141,7 @@ public sealed class CharacterRunRewardBridge2D : MonoBehaviour
         MetaAutoBootstrap2D.RebuildBattleSnapshotIfPossible();
 
         if (debugLog)
-            Debug.Log($"[CharacterRunRewardBridge2D] result={result} mode={runMode} nyang=+{nyangReward} awarded={awardedCharacters.Count}", this);
+            GameLogger.Log($"[CharacterRunRewardBridge2D] result={result} mode={runMode} nyang=+{nyangReward} awarded={awardedCharacters.Count}", this);
     }
 
     private static void AwardCharacter(

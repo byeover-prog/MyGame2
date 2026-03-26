@@ -100,7 +100,7 @@ public sealed class UIManager2D : MonoBehaviour
 
         if (defeatUI == null)
         {
-            Debug.LogWarning($"[UIManager2D] DefeatUIController2D를 찾지 못함 name='{defeatPanelName}' reason='{reason}'", this);
+            GameLogger.LogWarning($"[UIManager2D] DefeatUIController2D를 찾지 못함 name='{defeatPanelName}' reason='{reason}'", this);
             return;
         }
 
@@ -109,7 +109,7 @@ public sealed class UIManager2D : MonoBehaviour
 
         defeatUI.Open(reason, pauseOnGameOver);
 
-        Debug.Log($"[UIManager2D] GameOver Open reason='{reason}' ui='{defeatUI.name}'", this);
+        GameLogger.Log($"[UIManager2D] GameOver Open reason='{reason}' ui='{defeatUI.name}'", this);
     }
 
     public void HideGameOver()

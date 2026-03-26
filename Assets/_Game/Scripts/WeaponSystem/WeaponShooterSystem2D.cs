@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -242,7 +242,7 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
             }
 
             // 위 조건에 모두 해당하지 않으면 플레이어 몸에 박혀있게 됨. (명확한 경고 출력)
-            Debug.LogWarning($"[경고] '{go.name}' 프리팹에 발사 로직(IProjectile2D)이나 Rigidbody2D가 없습니다! 프리팹 인스펙터를 확인하세요.", go);
+            GameLogger.LogWarning($"[경고] '{go.name}' 프리팹에 발사 로직(IProjectile2D)이나 Rigidbody2D가 없습니다! 프리팹 인스펙터를 확인하세요.", go);
         }
     }
 

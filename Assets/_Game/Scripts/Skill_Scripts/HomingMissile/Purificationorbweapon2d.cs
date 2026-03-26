@@ -120,7 +120,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
         _cooldownTimer = 0f;
 
         if (debugLog)
-            Debug.Log($"[정화구 무기] 장착 완료 — 소유자:{owner.name}");
+            GameLogger.Log($"[정화구 무기] 장착 완료 — 소유자:{owner.name}");
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
     {
         _level = Mathf.Clamp(level, 1, 8);
         if (debugLog)
-            Debug.Log($"[정화구 무기] 레벨 적용 → Lv{_level} (틱 데미지:{GetTickDamage()}, 틱 횟수:{GetTickCount()})");
+            GameLogger.Log($"[정화구 무기] 레벨 적용 → Lv{_level} (틱 데미지:{GetTickDamage()}, 틱 횟수:{GetTickCount()})");
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -169,7 +169,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
 
         if (orb == null)
         {
-            if (debugLog) Debug.LogWarning("[정화구 무기] 풀에서 투사체를 꺼낼 수 없습니다.");
+            if (debugLog) GameLogger.LogWarning("[정화구 무기] 풀에서 투사체를 꺼낼 수 없습니다.");
             return;
         }
 
@@ -180,7 +180,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
         orb.gameObject.SetActive(true);
 
         if (debugLog)
-            Debug.Log($"[정화구 무기] 발사 → {target.name} (Lv{_level}, 틱:{tickDmg}×{tickCnt})");
+            GameLogger.Log($"[정화구 무기] 발사 → {target.name} (Lv{_level}, 틱:{tickDmg}×{tickCnt})");
     }
 
     // ══════════════════════════════════════════════════════════════

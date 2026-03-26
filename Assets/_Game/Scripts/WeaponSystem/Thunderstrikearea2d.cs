@@ -57,7 +57,7 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
         _lastRadius = radius;
 
         if (debugLog)
-            Debug.Log($"[ThunderStrike] Strike pos={transform.position} radius={radius} " +
+            GameLogger.Log($"[ThunderStrike] Strike pos={transform.position} radius={radius} " +
                       $"dmg={damage} mask={mask.value}");
 
         // ── 1. VFX 파티클 생성 ──
@@ -82,7 +82,7 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
         if (thunderVFXPrefab == null)
         {
             if (debugLog)
-                Debug.LogWarning("[ThunderStrike] thunderVFXPrefab이 null! " +
+                GameLogger.LogWarning("[ThunderStrike] thunderVFXPrefab이 null! " +
                                  "Inspector에서 VFX 프리팹을 연결하세요.");
             return;
         }
@@ -96,7 +96,7 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
         if (vfx == null)
         {
             if (debugLog)
-                Debug.LogWarning("[ThunderStrike] VFXSpawner.Spawn()이 null 반환!");
+                GameLogger.LogWarning("[ThunderStrike] VFXSpawner.Spawn()이 null 반환!");
             return;
         }
 
@@ -107,7 +107,7 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
         }
 
         if (debugLog)
-            Debug.Log($"[ThunderStrike] VFX 생성 완료 scale={vfxScaleMultiplier}");
+            GameLogger.Log($"[ThunderStrike] VFX 생성 완료 scale={vfxScaleMultiplier}");
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
         );
 
         if (debugLog)
-            Debug.Log($"[ThunderStrike] OverlapCircle hitCount={hitCount}");
+            GameLogger.Log($"[ThunderStrike] OverlapCircle hitCount={hitCount}");
 
         int damageApplied = 0;
 
@@ -147,7 +147,7 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
             }
 
             if (debugLog)
-                Debug.Log($"[ThunderStrike]   hit[{i}]={col.name} " +
+                GameLogger.Log($"[ThunderStrike]   hit[{i}]={col.name} " +
                           $"layer={LayerMask.LayerToName(col.gameObject.layer)} " +
                           $"dmgApplied={success}");
 
@@ -159,7 +159,7 @@ public sealed class ThunderStrikeArea2D : MonoBehaviour
         }
 
         if (debugLog)
-            Debug.Log($"[ThunderStrike] 총 데미지 적용={damageApplied}/{hitCount}");
+            GameLogger.Log($"[ThunderStrike] 총 데미지 적용={damageApplied}/{hitCount}");
     }
 
     /* ───────────── 라이프사이클 ───────────── */

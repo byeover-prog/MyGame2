@@ -39,7 +39,7 @@ public sealed class UltimatePresenter2D : MonoBehaviour
 
         if (data == null)
         {
-            Debug.LogWarning("[궁극기 연출] UltimateDataSO가 null입니다!");
+            GameLogger.LogWarning("[궁극기 연출] UltimateDataSO가 null입니다!");
             return;
         }
 
@@ -73,7 +73,7 @@ public sealed class UltimatePresenter2D : MonoBehaviour
             Destroy(_currentAuraVfx, duration + 1f);
         }
 
-        Debug.Log($"[궁극기 연출] 시작 | {data.DisplayName} duration={duration}s");
+        GameLogger.Log($"[궁극기 연출] 시작 | {data.DisplayName} duration={duration}s");
     }
 
     /// <summary>

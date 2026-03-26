@@ -50,7 +50,7 @@ public sealed class JsonManager2D : MonoBehaviour
 
         if (log)
         {
-            Debug.Log($"[JsonManager2D] Awake => name={gameObject.name}, scene={gameObject.scene.name}, " +
+            GameLogger.Log($"[JsonManager2D] Awake => name={gameObject.name}, scene={gameObject.scene.name}, " +
                       $"defaultNull={(defaultSkillBalanceJson == null)}, len={(defaultSkillBalanceJson ? defaultSkillBalanceJson.text.Length : -1)}", this);
         }
     }
@@ -99,7 +99,7 @@ public sealed class JsonManager2D : MonoBehaviour
                 string raw = File.ReadAllText(path, Encoding.UTF8);
                 raw = NormalizeJsonText(raw);
 
-                if (log) Debug.Log($"[JsonManager2D] persistent head: {Head(raw)}", this);
+                if (log) GameLogger.Log($"[JsonManager2D] persistent head: {Head(raw)}", this);
 
                 try
                 {
@@ -107,22 +107,22 @@ public sealed class JsonManager2D : MonoBehaviour
                     if (data != null)
                     {
                         source = BalanceSource.PersistentOverride;
-                        if (log) Debug.Log($"[JsonManager2D] SkillBalance 로드: persistent override => {path}", this);
+                        if (log) GameLogger.Log($"[JsonManager2D] SkillBalance 로드: persistent override => {path}", this);
                         return true;
                     }
 
                     error = "persistent JSON 파싱 결과가 null입니다.";
-                    if (log) Debug.LogWarning($"[JsonManager2D] persistent 파싱 null(폴백): {error}", this);
+                    if (log) GameLogger.LogWarning($"[JsonManager2D] persistent 파싱 null(폴백): {error}", this);
                 }
                 catch (Exception ex)
                 {
                     error = $"JSON parse error(persistent): {ex.Message} | head={Head(raw)}";
-                    if (log) Debug.LogWarning($"[JsonManager2D] persistent 파싱 실패(폴백): {error}", this);
+                    if (log) GameLogger.LogWarning($"[JsonManager2D] persistent 파싱 실패(폴백): {error}", this);
                 }
             }
             else
             {
-                if (log) Debug.LogWarning($"[JsonManager2D] persistent override 파일이 없습니다(폴백): {path}", this);
+                if (log) GameLogger.LogWarning($"[JsonManager2D] persistent override 파일이 없습니다(폴백): {path}", this);
             }
         }
 
@@ -134,7 +134,7 @@ public sealed class JsonManager2D : MonoBehaviour
         }
 
         string textRaw = NormalizeJsonText(defaultSkillBalanceJson.text);
-        if (log) Debug.Log($"[JsonManager2D] textasset head: {Head(textRaw)}", this);
+        if (log) GameLogger.Log($"[JsonManager2D] textasset head: {Head(textRaw)}", this);
 
         try
         {
@@ -146,7 +146,7 @@ public sealed class JsonManager2D : MonoBehaviour
             }
 
             source = BalanceSource.DefaultTextAsset;
-            if (log) Debug.Log("[JsonManager2D] SkillBalance 로드: TextAsset", this);
+            if (log) GameLogger.Log("[JsonManager2D] SkillBalance 로드: TextAsset", this);
             return true;
         }
         catch (Exception ex)
@@ -164,7 +164,7 @@ public sealed class JsonManager2D : MonoBehaviour
     {
         if (defaultSkillBalanceJson == null)
         {
-            Debug.LogWarning("[JsonManager2D] Default Skill Balance Json이 비어있습니다.", this);
+            GameLogger.LogWarning("[JsonManager2D] Default Skill Balance Json이 비어있습니다.", this);
             return;
         }
 
@@ -173,17 +173,17 @@ public sealed class JsonManager2D : MonoBehaviour
         // 이미 있으면 건드리지 않음(실수 방지)
         if (File.Exists(path))
         {
-            Debug.Log($"[JsonManager2D] 이미 override 파일이 존재합니다: {path}", this);
+            GameLogger.Log($"[JsonManager2D] 이미 override 파일이 존재합니다: {path}", this);
             return;
         }
 
         if (!JsonIO2D.TrySaveTextToPersistent(skillBalanceOverrideFileName, defaultSkillBalanceJson.text, out string err))
         {
-            Debug.LogWarning($"[JsonManager2D] override 내보내기 실패: {err}", this);
+            GameLogger.LogWarning($"[JsonManager2D] override 내보내기 실패: {err}", this);
             return;
         }
 
-        Debug.Log($"[JsonManager2D] override 파일 생성 완료: {path}", this);
+        GameLogger.Log($"[JsonManager2D] override 파일 생성 완료: {path}", this);
     }
 
     // ----------------------------

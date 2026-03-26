@@ -95,7 +95,7 @@ public sealed class SquadApplier2D : MonoBehaviour
 
         if (loadout == null)
         {
-            Debug.LogWarning("[스쿼드 적용] SquadLoadout2D가 연결되지 않았습니다.", this);
+            GameLogger.LogWarning("[스쿼드 적용] SquadLoadout2D가 연결되지 않았습니다.", this);
             yield break;
         }
 
@@ -108,7 +108,7 @@ public sealed class SquadApplier2D : MonoBehaviour
 
         if (main == null)
         {
-            Debug.LogWarning("[스쿼드 적용] 메인 캐릭터가 설정되지 않았습니다.", this);
+            GameLogger.LogWarning("[스쿼드 적용] 메인 캐릭터가 설정되지 않았습니다.", this);
             return;
         }
 
@@ -128,7 +128,7 @@ public sealed class SquadApplier2D : MonoBehaviour
             string startingWeaponName = main.StartingSkill != null ? main.StartingSkill.name : "없음";
             string ultimateName = main.UltimateData != null ? main.UltimateData.DisplayName : "없음";
 
-            Debug.Log(
+            GameLogger.Log(
                 $"[스쿼드 적용] 완료 (from={source}) | " +
                 $"메인={main.DisplayName} | " +
                 $"기본무기={startingWeaponName} | " +
@@ -154,7 +154,7 @@ public sealed class SquadApplier2D : MonoBehaviour
             playerAnimator.runtimeAnimatorController = main.AnimatorController;
 
             if (debugLog)
-                Debug.Log($"[스쿼드 적용] Animator Controller 교체: {main.AnimatorController.name}", this);
+                GameLogger.Log($"[스쿼드 적용] Animator Controller 교체: {main.AnimatorController.name}", this);
         }
 
         // Idle 스프라이트 교체
@@ -163,7 +163,7 @@ public sealed class SquadApplier2D : MonoBehaviour
             playerSpriteRenderer.sprite = main.PlayerIdleSprite;
 
             if (debugLog)
-                Debug.Log($"[스쿼드 적용] Idle 스프라이트 교체: {main.PlayerIdleSprite.name}", this);
+                GameLogger.Log($"[스쿼드 적용] Idle 스프라이트 교체: {main.PlayerIdleSprite.name}", this);
         }
     }
 
@@ -174,7 +174,7 @@ public sealed class SquadApplier2D : MonoBehaviour
     {
         if (ultimateController == null)
         {
-            Debug.LogWarning("[스쿼드 적용] UltimateController2D가 연결되지 않았습니다.", this);
+            GameLogger.LogWarning("[스쿼드 적용] UltimateController2D가 연결되지 않았습니다.", this);
             return;
         }
 
@@ -183,7 +183,7 @@ public sealed class SquadApplier2D : MonoBehaviour
         if (debugLog)
         {
             string ultimateName = main.UltimateData != null ? main.UltimateData.DisplayName : "없음";
-            Debug.Log($"[스쿼드 적용] 궁극기 설정: {ultimateName}", this);
+            GameLogger.Log($"[스쿼드 적용] 궁극기 설정: {ultimateName}", this);
         }
     }
 
@@ -209,6 +209,6 @@ public sealed class SquadApplier2D : MonoBehaviour
             text += attributes[i].ToKorean();
         }
 
-        Debug.Log($"[스쿼드 적용] 활성 속성: {text}", this);
+        GameLogger.Log($"[스쿼드 적용] 활성 속성: {text}", this);
     }
 }

@@ -69,7 +69,7 @@ namespace _Game.LevelUp
 
             if (runtimeLoadout != null)
             {
-                Debug.Log(
+                GameLogger.Log(
                     $"[RewardApplier] runtimeLoadout 설정 | instanceId={runtimeLoadout.GetInstanceID()} | name={runtimeLoadout.name}",
                     runtimeLoadout);
             }
@@ -88,31 +88,31 @@ namespace _Game.LevelUp
                     return ApplySkillCard(cardData);
 
                 case LevelUpRewardType.Heal:
-                    if (playerHealth == null) { Debug.LogWarning("[RewardApplier] playerHealth 미할당", this); return false; }
+                    if (playerHealth == null) { GameLogger.LogWarning("[RewardApplier] playerHealth 미할당", this); return false; }
                     playerHealth.Heal(cardData.HealAmount);
-                    Debug.Log($"[RewardApplier] 체력 회복: +{cardData.HealAmount}", this);
+                    GameLogger.Log($"[RewardApplier] 체력 회복: +{cardData.HealAmount}", this);
                     return true;
 
                 case LevelUpRewardType.Gold:
-                    if (playerCurrency == null) { Debug.LogWarning("[RewardApplier] playerCurrency 미할당", this); return false; }
+                    if (playerCurrency == null) { GameLogger.LogWarning("[RewardApplier] playerCurrency 미할당", this); return false; }
                     playerCurrency.AddGold(cardData.GoldAmount);
-                    Debug.Log($"[RewardApplier] 재화 획득: +{cardData.GoldAmount}", this);
+                    GameLogger.Log($"[RewardApplier] 재화 획득: +{cardData.GoldAmount}", this);
                     return true;
 
                 case LevelUpRewardType.Invincible:
-                    if (playerHealth == null) { Debug.LogWarning("[RewardApplier] playerHealth 미할당", this); return false; }
+                    if (playerHealth == null) { GameLogger.LogWarning("[RewardApplier] playerHealth 미할당", this); return false; }
                     playerHealth.ActivateTemporaryInvincibility(cardData.InvincibleDuration);
-                    Debug.Log($"[RewardApplier] 무적: {cardData.InvincibleDuration:0.#}초", this);
+                    GameLogger.Log($"[RewardApplier] 무적: {cardData.InvincibleDuration:0.#}초", this);
                     return true;
 
                 case LevelUpRewardType.BonusExp:
-                    if (playerExp == null) { Debug.LogWarning("[RewardApplier] playerExp 미할당", this); return false; }
+                    if (playerExp == null) { GameLogger.LogWarning("[RewardApplier] playerExp 미할당", this); return false; }
                     playerExp.AddExp(cardData.BonusExpAmount);
-                    Debug.Log($"[RewardApplier] 즉시 경험치: +{cardData.BonusExpAmount}", this);
+                    GameLogger.Log($"[RewardApplier] 즉시 경험치: +{cardData.BonusExpAmount}", this);
                     return true;
 
                 default:
-                    Debug.LogWarning($"[RewardApplier] 알 수 없는 보상: {cardData.RewardType}", this);
+                    GameLogger.LogWarning($"[RewardApplier] 알 수 없는 보상: {cardData.RewardType}", this);
                     return false;
             }
         }
@@ -126,7 +126,7 @@ namespace _Game.LevelUp
 
             if (targetLoadout == null || cardData.SkillDefinition == null)
             {
-                Debug.LogWarning("[RewardApplier] loadout 또는 SkillDefinition 누락", this);
+                GameLogger.LogWarning("[RewardApplier] loadout 또는 SkillDefinition 누락", this);
                 return false;
             }
 
@@ -139,13 +139,13 @@ namespace _Game.LevelUp
             {
                 if (commonSkillManager == null)
                 {
-                    Debug.LogWarning("[RewardApplier] commonSkillManager 미할당", this);
+                    GameLogger.LogWarning("[RewardApplier] commonSkillManager 미할당", this);
                     return false;
                 }
 
                 if (!TryResolveCommonSkill(definition, out runtimeSkillConfig))
                 {
-                    Debug.LogWarning($"[RewardApplier] 액티브 매핑 실패: {skillId} ({definition.DisplayName})", this);
+                    GameLogger.LogWarning($"[RewardApplier] 액티브 매핑 실패: {skillId} ({definition.DisplayName})", this);
                     return false;
                 }
             }
@@ -153,7 +153,7 @@ namespace _Game.LevelUp
             {
                 if (statRuntimeApplier == null)
                 {
-                    Debug.LogWarning("[RewardApplier] statRuntimeApplier 미할당", this);
+                    GameLogger.LogWarning("[RewardApplier] statRuntimeApplier 미할당", this);
                     return false;
                 }
             }
@@ -161,7 +161,7 @@ namespace _Game.LevelUp
             bool alreadyOwned = targetLoadout.HasSkill(skillId);
             bool changed;
 
-            Debug.Log(
+            GameLogger.Log(
                 $"[RewardApplier] 적용 시작 | title={cardData.Title} | skillId={skillId} | alreadyOwned={alreadyOwned} | loadoutInstanceId={targetLoadout.GetInstanceID()}",
                 targetLoadout);
 
@@ -170,7 +170,7 @@ namespace _Game.LevelUp
                 changed = targetLoadout.TryUpgradeSkill(skillId);
                 if (!changed)
                 {
-                    Debug.Log($"[RewardApplier] 강화 실패(최대레벨): {cardData.Title}", this);
+                    GameLogger.Log($"[RewardApplier] 강화 실패(최대레벨): {cardData.Title}", this);
                     return false;
                 }
             }
@@ -179,7 +179,7 @@ namespace _Game.LevelUp
                 changed = targetLoadout.TryAddSkill(definition);
                 if (!changed)
                 {
-                    Debug.Log($"[RewardApplier] 획득 실패(슬롯 가득): {cardData.Title}", this);
+                    GameLogger.Log($"[RewardApplier] 획득 실패(슬롯 가득): {cardData.Title}", this);
                     return false;
                 }
             }
@@ -187,12 +187,12 @@ namespace _Game.LevelUp
             if (definition.SkillType == SkillType.Active)
             {
                 commonSkillManager.Upgrade(runtimeSkillConfig);
-                Debug.Log($"[RewardApplier] 액티브 반영: {cardData.Title} ({(alreadyOwned ? "강화" : "획득")})", this);
+                GameLogger.Log($"[RewardApplier] 액티브 반영: {cardData.Title} ({(alreadyOwned ? "강화" : "획득")})", this);
             }
             else if (definition.SkillType == SkillType.Passive)
             {
                 statRuntimeApplier.ReapplyFromLoadout();
-                Debug.Log($"[RewardApplier] 패시브 반영: {cardData.Title} ({(alreadyOwned ? "강화" : "획득")})", this);
+                GameLogger.Log($"[RewardApplier] 패시브 반영: {cardData.Title} ({(alreadyOwned ? "강화" : "획득")})", this);
             }
 
             return true;
@@ -215,7 +215,7 @@ namespace _Game.LevelUp
 
             if (config.weaponPrefab == null)
             {
-                Debug.LogWarning($"[RewardApplier] weaponPrefab 비어있음: {config.name}", this);
+                GameLogger.LogWarning($"[RewardApplier] weaponPrefab 비어있음: {config.name}", this);
                 return false;
             }
 

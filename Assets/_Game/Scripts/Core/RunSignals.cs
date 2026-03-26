@@ -1,4 +1,4 @@
-﻿// UTF-8
+// UTF-8
 using System;
 
 /// <summary>
@@ -30,9 +30,9 @@ public static class RunSignals
         StageStarted?.Invoke();
 #if UNITY_EDITOR
         if (StageStarted == null)
-            UnityEngine.Debug.LogWarning("[RunSignals] StageStarted 발행됨(구독자 없음)");
+            GameLogger.LogWarning("[RunSignals] StageStarted 발행됨(구독자 없음)");
         else
-            UnityEngine.Debug.Log("[RunSignals] StageStarted 발행");
+            GameLogger.Log("[RunSignals] StageStarted 발행");
 #endif
     }
 
@@ -41,23 +41,23 @@ public static class RunSignals
         RunConfigChanged?.Invoke();
 #if UNITY_EDITOR
         if (RunConfigChanged == null)
-            UnityEngine.Debug.LogWarning("[RunSignals] RunConfigChanged 발행됨(구독자 없음)");
+            GameLogger.LogWarning("[RunSignals] RunConfigChanged 발행됨(구독자 없음)");
         else
-            UnityEngine.Debug.Log("[RunSignals] RunConfigChanged 발행");
+            GameLogger.Log("[RunSignals] RunConfigChanged 발행");
 #endif
     }
 
     public static void RaisePlayerDead()
     {
 #if UNITY_EDITOR
-        UnityEngine.Debug.Log("[RunSignals] PlayerDead 발행");
+        GameLogger.Log("[RunSignals] PlayerDead 발행");
 #endif
 
         PlayerDead?.Invoke();
 
 #if UNITY_EDITOR
         if (PlayerDead == null)
-            UnityEngine.Debug.LogWarning("[RunSignals] PlayerDead 구독자가 없습니다.");
+            GameLogger.LogWarning("[RunSignals] PlayerDead 구독자가 없습니다.");
 #endif
     }
 
@@ -71,7 +71,7 @@ public static class RunSignals
         PlayerDead = null;
 
 #if UNITY_EDITOR
-        UnityEngine.Debug.Log("[RunSignals] 모든 구독자 제거됨");
+        GameLogger.Log("[RunSignals] 모든 구독자 제거됨");
 #endif
     }
 }

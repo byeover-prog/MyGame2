@@ -110,7 +110,7 @@ public sealed class CommonSkillManager2D : MonoBehaviour
     {
         if (skill.weaponPrefab == null)
         {
-            Debug.LogWarning($"[CommonSkillManager2D] weaponPrefab 누락: {skill.name}", this);
+            GameLogger.LogWarning($"[CommonSkillManager2D] weaponPrefab 누락: {skill.name}", this);
             return false;
         }
 
@@ -131,7 +131,7 @@ public sealed class CommonSkillManager2D : MonoBehaviour
         MonoBehaviour[] runtimeComponents = CollectRuntimeComponents(root);
         if (runtimeComponents.Length == 0)
         {
-            Debug.LogWarning(
+            GameLogger.LogWarning(
                 $"[CommonSkillManager2D] 런타임 스킬 컴포넌트를 찾지 못했습니다: {skill.weaponPrefab.name}\n" +
                 "프리팹 루트/자식 중 하나에 CommonSkillWeapon2D 또는 ILevelableSkill 구현 스크립트가 필요합니다.",
                 this);
@@ -148,7 +148,7 @@ public sealed class CommonSkillManager2D : MonoBehaviour
 
         InitializeRuntimeComponents(skill, runtimeComponents);
 
-        Debug.Log(
+        GameLogger.Log(
             $"[CommonSkillManager2D] 스킬 획득: {skill.kind} " +
             $"(weaponObj={root.name}, components={runtimeComponents.Length})",
             this);
@@ -224,6 +224,6 @@ public sealed class CommonSkillManager2D : MonoBehaviour
             }
         }
 
-        Debug.Log($"[CommonSkillManager2D] 레벨 반영: {skill.kind} -> Lv.{level}", this);
+        GameLogger.Log($"[CommonSkillManager2D] 레벨 반영: {skill.kind} -> Lv.{level}", this);
     }
 }

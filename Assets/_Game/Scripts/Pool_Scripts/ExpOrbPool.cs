@@ -37,7 +37,7 @@ public sealed class ExpOrbPool : MonoBehaviour
         }
 
         if (debugLog)
-            Debug.Log($"[ExpOrbPool] Prewarm {prefab.name} x{count}", this);
+            GameLogger.Log($"[ExpOrbPool] Prewarm {prefab.name} x{count}", this);
     }
 
     public GameObject Get(GameObject prefab, Vector3 pos, Quaternion rot)
@@ -89,7 +89,7 @@ public sealed class ExpOrbPool : MonoBehaviour
         }
 
         if (debugLog)
-            Debug.Log($"[ExpOrbPool] CreateNew {prefab.name}", this);
+            GameLogger.Log($"[ExpOrbPool] CreateNew {prefab.name}", this);
 
         return go;
     }

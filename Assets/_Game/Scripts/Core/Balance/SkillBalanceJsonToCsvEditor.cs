@@ -181,7 +181,7 @@ public static class SkillBalanceJsonToCsvEditor
         File.WriteAllText(DefaultCsvPath, sb.ToString(), Encoding.UTF8);
         AssetDatabase.Refresh();
 
-        Debug.Log($"[Balance] JSON → CSV 생성 완료\nJSON(에셋): {AssetDatabase.GetAssetPath(jsonAsset)}\nCSV: {DefaultCsvPath}");
+        GameLogger.Log($"[Balance] JSON → CSV 생성 완료\nJSON(에셋): {AssetDatabase.GetAssetPath(jsonAsset)}\nCSV: {DefaultCsvPath}");
         EditorUtility.DisplayDialog("완료", $"CSV 생성 완료:\n{DefaultCsvPath}", "확인");
     }
 

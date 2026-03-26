@@ -139,8 +139,8 @@ public class ClearUIController : MonoBehaviour
     void ApplySquadToUI()
     {
         var loadout = SquadLoadoutRuntime.Current;
-        Debug.Log($"[Squad] mainId={loadout.mainId}, sup1={loadout.support1Id}, sup2={loadout.support2Id}");
-        Debug.Log($"[Squad] LevelData={CharacterLevelData.Instance != null}");
+        GameLogger.Log($"[Squad] mainId={loadout.mainId}, sup1={loadout.support1Id}, sup2={loadout.support2Id}");
+        GameLogger.Log($"[Squad] LevelData={CharacterLevelData.Instance != null}");
 
         // ID → DefSO 조회
         catalog.TryFindById(loadout.mainId,     out var main);
@@ -255,21 +255,21 @@ public class ClearUIController : MonoBehaviour
     void OnNextStage()
     {
         CurrencyManager.Instance?.SaveStageClearRewards();
-        FadeOutAndDo(() => Debug.Log("다음 관문으로 이동"));
+        FadeOutAndDo(() => GameLogger.Log("다음 관문으로 이동"));
         // SceneManager.LoadScene("NextStage");
     }
 
     void OnRetry()
     {
         CurrencyManager.Instance?.SaveStageClearRewards();
-        FadeOutAndDo(() => Debug.Log("재도전"));
+        FadeOutAndDo(() => GameLogger.Log("재도전"));
         // SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     void OnGoToBase()
     {
         CurrencyManager.Instance?.SaveStageClearRewards();
-        FadeOutAndDo(() => Debug.Log("본거지로 귀환"));
+        FadeOutAndDo(() => GameLogger.Log("본거지로 귀환"));
         // SceneManager.LoadScene("Base");
     }
 

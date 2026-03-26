@@ -173,7 +173,7 @@ public sealed class ExpOrb2D : MonoBehaviour
             if (_playerExp != null)
             {
                 _playerExp.AddExp(Mathf.Max(1, Mathf.RoundToInt(expValue * (_playerStats != null ? _playerStats.ExpGainMul : 1f))));
-                if (debugLog) Debug.Log($"[ExpOrb2D] Collect exp={expValue} x{(_playerStats != null ? _playerStats.ExpGainMul : 1f):F2} (AddExp 호출 성공)", this);
+                if (debugLog) GameLogger.Log($"[ExpOrb2D] Collect exp={expValue} x{(_playerStats != null ? _playerStats.ExpGainMul : 1f):F2} (AddExp 호출 성공)", this);
             }
             else
             {

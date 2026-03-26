@@ -82,7 +82,7 @@ namespace _Game.Scripts.Object_Scripts.WeaponSystem.Projectiles_Ghost
                 if (!_loggedInitError)
                 {
                     _loggedInitError = true;
-                    Debug.LogWarning("[GhostPiercingOnceProjectile2D] Initialize()가 호출되지 않았습니다. (enemyMask/데미지/속도 누락 가능)", this);
+                    GameLogger.LogWarning("[GhostPiercingOnceProjectile2D] Initialize()가 호출되지 않았습니다. (enemyMask/데미지/속도 누락 가능)", this);
                 }
 
                 // 미초기화 상태로 날아다니면 디버깅이 더 어려우니 바로 반납

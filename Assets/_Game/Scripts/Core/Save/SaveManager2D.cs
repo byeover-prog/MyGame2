@@ -75,13 +75,13 @@ public sealed class SaveManager2D : MonoBehaviour
 
             Data.EnsureDefaults();
 
-            if (log) Debug.Log("[SaveManager2D] 세이브 로드 성공");
+            if (log) GameLogger.Log("[SaveManager2D] 세이브 로드 성공");
             return;
         }
 
         Data = PlayerSaveData2D.CreateDefault();
         Data.EnsureDefaults();
-        if (log) Debug.LogWarning($"[SaveManager2D] 세이브 로드 실패 → 기본값 생성: {error}");
+        if (log) GameLogger.LogWarning($"[SaveManager2D] 세이브 로드 실패 → 기본값 생성: {error}");
 
         Save(); // 기본값이라도 파일을 만들어서 안정화
     }
@@ -95,18 +95,18 @@ public sealed class SaveManager2D : MonoBehaviour
 
         if (!JsonIO2D.TrySaveToPersistent(SaveKeys2D.PlayerSaveFile, Data, prettyPrint: true, out string error))
         {
-            Debug.LogWarning($"[SaveManager2D] 저장 실패: {error}");
+            GameLogger.LogWarning($"[SaveManager2D] 저장 실패: {error}");
             return;
         }
 
-        if (log) Debug.Log("[SaveManager2D] 저장 완료");
+        if (log) GameLogger.Log("[SaveManager2D] 저장 완료");
     }
 
     public void ResetSave()
     {
         if (!JsonIO2D.TryDeletePersistent(SaveKeys2D.PlayerSaveFile, out string error))
         {
-            Debug.LogWarning($"[SaveManager2D] 삭제 실패: {error}");
+            GameLogger.LogWarning($"[SaveManager2D] 삭제 실패: {error}");
         }
 
         Data = PlayerSaveData2D.CreateDefault();

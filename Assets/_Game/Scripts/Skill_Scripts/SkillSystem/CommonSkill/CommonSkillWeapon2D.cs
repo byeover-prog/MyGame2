@@ -373,7 +373,7 @@ public abstract class CommonSkillWeapon2D : MonoBehaviour, ILevelableSkill
     public void OnAttached(Transform newOwner)
     {
         if (config == null)
-            Debug.LogWarning($"[CommonSkillWeapon2D] config가 비어있습니다: {name}", this);
+            GameLogger.LogWarning($"[CommonSkillWeapon2D] config가 비어있습니다: {name}", this);
 
         Initialize(config, newOwner, 1);
     }
