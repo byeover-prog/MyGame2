@@ -137,7 +137,7 @@ public sealed class LevelUpOfferPanelView : MonoBehaviour
         UpdateRerollUI();
 
         if (enableLogs)
-            Debug.Log($"[LevelUpUI] Show => {currentOffers.Length}장", this);
+            GameLogger.Log($"[LevelUpUI] Show => {currentOffers.Length}장", this);
     }
 
     private void HandleClosed()
@@ -202,7 +202,7 @@ public sealed class LevelUpOfferPanelView : MonoBehaviour
         GameSignals.RaiseRerollRequested();
 
         if (enableLogs)
-            Debug.Log($"[LevelUpUI] Reroll => left {rerollsLeft}", this);
+            GameLogger.Log($"[LevelUpUI] Reroll => left {rerollsLeft}", this);
     }
 
     private void SetCardInteractable(bool value)

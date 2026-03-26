@@ -57,14 +57,14 @@ public sealed class JwagyeokYoseWeapon2D : MonoBehaviour, ILevelableSkill
                 { pool = p; break; }
             }
 #if UNITY_EDITOR
-            if (pool != null) Debug.Log($"[좌격요세] 전용 풀 탐색 성공 — {pool.name}");
+            if (pool != null) GameLogger.Log($"[좌격요세] 전용 풀 탐색 성공 — {pool.name}");
             else Debug.LogError("[좌격요세] 'JwagyeokYose' 풀을 찾을 수 없습니다!");
 #endif
         }
 
         _cooldownTimer = 0f;
         _initialized = true;
-        Debug.Log($"[좌격요세] 무기 장착 완료 — owner={owner.name}");
+        GameLogger.Log($"[좌격요세] 무기 장착 완료 — owner={owner.name}");
     }
 
     public void SetConfig(CommonSkillConfigSO config) => _config = config;
@@ -80,7 +80,7 @@ public sealed class JwagyeokYoseWeapon2D : MonoBehaviour, ILevelableSkill
             slashRadius   = p.explosionRadius > 0f ? p.explosionRadius : slashRadius;
             slashLifetime = p.lifeSeconds > 0f ? p.lifeSeconds : slashLifetime;
         }
-        Debug.Log($"[좌격요세] Lv.{level} — 피해량={damage}, 쿨타임={cooldown:F2}초, 범위={slashRadius:F1}");
+        GameLogger.Log($"[좌격요세] Lv.{level} — 피해량={damage}, 쿨타임={cooldown:F2}초, 범위={slashRadius:F1}");
     }
 
     private void Update()
@@ -112,7 +112,7 @@ public sealed class JwagyeokYoseWeapon2D : MonoBehaviour, ILevelableSkill
                          enemyMask, _owner, aimDir, angleDeg);
 
 #if UNITY_EDITOR
-        Debug.Log($"[좌격요세] 횡베기! 각도={angleDeg:F0}° 피해량={finalDamage} 범위={slashRadius:F1}");
+        GameLogger.Log($"[좌격요세] 횡베기! 각도={angleDeg:F0}° 피해량={finalDamage} 범위={slashRadius:F1}");
 #endif
     }
 

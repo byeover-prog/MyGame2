@@ -148,7 +148,7 @@ public sealed class ElectricChainSystem2D : MonoBehaviour
 
         if (debugLog && propagated > 0)
         {
-            Debug.Log($"[전기 전파] 전파={chainDmg}×{propagated} " +
+            GameLogger.Log($"[전기 전파] 전파={chainDmg}×{propagated} " +
                       $"(프레임 합계={_chainsThisFrame}/{maxChainsPerFrame})");
         }
     }

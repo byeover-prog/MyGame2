@@ -51,7 +51,7 @@ namespace _Game.Player
             passiveSlots = new RuntimeSkillState[PASSIVE_SLOT_COUNT];
 
             if (balanceTable == null)
-                Debug.LogWarning("[PlayerSkillLoadout] balanceTable이 할당되지 않았습니다!");
+                GameLogger.LogWarning("[PlayerSkillLoadout] balanceTable이 할당되지 않았습니다!");
         }
 
         // ════════════════════════════════════════════
@@ -192,7 +192,7 @@ namespace _Game.Player
 
             if (balanceTable == null)
             {
-                Debug.LogWarning("[PlayerSkillLoadout] balanceTable 미할당 → 스냅샷 0 반환");
+                GameLogger.LogWarning("[PlayerSkillLoadout] balanceTable 미할당 → 스냅샷 0 반환");
                 return snapshot;
             }
 

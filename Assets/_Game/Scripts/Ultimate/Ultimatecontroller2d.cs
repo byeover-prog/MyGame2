@@ -57,7 +57,7 @@ public sealed class UltimateController2D : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F9))
         {
             _cooldownTimer = 0f;
-            Debug.Log("[궁극기] F9 키 — 쿨다운 초기화");
+            GameLogger.Log("[궁극기] F9 키 — 쿨다운 초기화");
         }
 
         if (Input.GetKeyDown(ultimateKey))
@@ -78,13 +78,13 @@ public sealed class UltimateController2D : MonoBehaviour
     {
         if (_isExecuting)
         {
-            Debug.Log("[궁극기] 이미 시전 중");
+            GameLogger.Log("[궁극기] 이미 시전 중");
             return;
         }
 
         if (_cooldownTimer > 0f)
         {
-            Debug.Log($"[궁극기] 쿨다운 중 — 남은 시간:{_cooldownTimer:F1}초");
+            GameLogger.Log($"[궁극기] 쿨다운 중 — 남은 시간:{_cooldownTimer:F1}초");
             return;
         }
 
@@ -96,7 +96,7 @@ public sealed class UltimateController2D : MonoBehaviour
 
         if (!executor.IsExecuting && executor.CurrentCharacterId == null)
         {
-            Debug.LogWarning("[궁극기] 캐릭터가 설정되지 않았습니다! SetCharacter()를 먼저 호출하세요.");
+            GameLogger.LogWarning("[궁극기] 캐릭터가 설정되지 않았습니다! SetCharacter()를 먼저 호출하세요.");
             return;
         }
 
@@ -105,7 +105,7 @@ public sealed class UltimateController2D : MonoBehaviour
 
         _isExecuting = true;
         string charId = executor.CurrentCharacterId ?? "unknown";
-        Debug.Log($"[궁극기] R키 발동 — {charId}");
+        GameLogger.Log($"[궁극기] R키 발동 — {charId}");
         executor.Execute(OnUltimateFinished);
     }
 
@@ -117,7 +117,7 @@ public sealed class UltimateController2D : MonoBehaviour
         // ★ 궁극기 끝 → Idle 복귀
         ForceIdleAnimation();
 
-        Debug.Log($"[궁극기] 종료 — 쿨다운 {cooldownSeconds}초 시작");
+        GameLogger.Log($"[궁극기] 종료 — 쿨다운 {cooldownSeconds}초 시작");
     }
 
     // ═══════════════════════════════════════════════════════
@@ -142,7 +142,7 @@ public sealed class UltimateController2D : MonoBehaviour
         // ★ CrossFade로 ULT 상태 강제 진입 — 1프레임 문제 해결
         animator.CrossFade(ultStateName, 0.05f, 0);
 
-        Debug.Log("[궁극기] ULT 모션 강제 시작");
+        GameLogger.Log("[궁극기] ULT 모션 강제 시작");
     }
 
     /// <summary>
@@ -157,13 +157,13 @@ public sealed class UltimateController2D : MonoBehaviour
 
         animator.CrossFade(idleStateName, 0.1f, 0);
 
-        Debug.Log("[궁극기] Idle 모션 복귀");
+        GameLogger.Log("[궁극기] Idle 모션 복귀");
     }
 
     [ContextMenu("디버그: 쿨다운 리셋")]
     public void DebugResetCooldown()
     {
         _cooldownTimer = 0f;
-        Debug.Log("[궁극기] 디버그 — 쿨다운 리셋");
+        GameLogger.Log("[궁극기] 디버그 — 쿨다운 리셋");
     }
 }

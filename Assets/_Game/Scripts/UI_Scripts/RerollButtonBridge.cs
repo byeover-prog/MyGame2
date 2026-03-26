@@ -10,7 +10,7 @@ public sealed class RerollButtonBridge : MonoBehaviour
     {
         if (panel == null)
         {
-            Debug.LogWarning("[RerollButtonBridge] panel이 비어있음", this);
+            GameLogger.LogWarning("[RerollButtonBridge] panel이 비어있음", this);
             return;
         }
 

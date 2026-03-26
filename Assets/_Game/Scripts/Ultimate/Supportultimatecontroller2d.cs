@@ -79,7 +79,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F10))
         {
             _cooldownTimer = 0f;
-            Debug.Log("[지원 궁극기] F10 키 — 쿨다운 초기화");
+            GameLogger.Log("[지원 궁극기] F10 키 — 쿨다운 초기화");
         }
 
         if (Input.GetKeyDown(supportKey))
@@ -90,19 +90,19 @@ public sealed class SupportUltimateController2D : MonoBehaviour
     {
         if (_isExecuting)
         {
-            Debug.Log("[지원 궁극기] 이미 시전 중");
+            GameLogger.Log("[지원 궁극기] 이미 시전 중");
             return;
         }
 
         if (_cooldownTimer > 0f)
         {
-            Debug.Log($"[지원 궁극기] 쿨다운 중 — 남은 시간:{_cooldownTimer:F1}초");
+            GameLogger.Log($"[지원 궁극기] 쿨다운 중 — 남은 시간:{_cooldownTimer:F1}초");
             return;
         }
 
         if (loadout == null || (loadout.Support1 == null && loadout.Support2 == null))
         {
-            Debug.LogWarning("[지원 궁극기] 지원 캐릭터가 편성되지 않았습니다!");
+            GameLogger.LogWarning("[지원 궁극기] 지원 캐릭터가 편성되지 않았습니다!");
             return;
         }
 
@@ -137,7 +137,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         SupportLandingConfigSO cfg2 = GetLandingConfig(sup2);
 
         if (debugLog)
-            Debug.Log($"[지원 궁극기] 등장 시작 | 지원1={GetName(sup1)} 지원2={GetName(sup2)}");
+            GameLogger.Log($"[지원 궁극기] 등장 시작 | 지원1={GetName(sup1)} 지원2={GetName(sup2)}");
 
         // ═══════════════════════════════════════════════════
         //  2. 등장 (★ playerTransform + offset 전달 → 실시간 추적 낙하)
@@ -179,7 +179,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         SupportFollower2D follower2 = AttachFollower(visual2, offset2);
 
         if (debugLog)
-            Debug.Log("[지원 궁극기] 따라다니기 시작");
+            GameLogger.Log("[지원 궁극기] 따라다니기 시작");
 
         // ═══════════════════════════════════════════════════
         //  4. 지원1 궁극기
@@ -191,7 +191,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
             FireUltTriggerOnce(anim1);
 
             if (debugLog)
-                Debug.Log($"[지원 궁극기] 지원1 시전 | {sup1.DisplayName}");
+                GameLogger.Log($"[지원 궁극기] 지원1 시전 | {sup1.DisplayName}");
 
             ApplySupportBuff(sup1);
             executor.SetCharacter(sup1);
@@ -209,7 +209,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
             ForceIdleOnVisual(anim1);
 
             if (debugLog)
-                Debug.Log($"[지원 궁극기] 지원1 완료 → Idle | {sup1.DisplayName}");
+                GameLogger.Log($"[지원 궁극기] 지원1 완료 → Idle | {sup1.DisplayName}");
         }
 
         // ═══════════════════════════════════════════════════
@@ -222,7 +222,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
             FireUltTriggerOnce(anim2);
 
             if (debugLog)
-                Debug.Log($"[지원 궁극기] 지원2 시전 | {sup2.DisplayName}");
+                GameLogger.Log($"[지원 궁극기] 지원2 시전 | {sup2.DisplayName}");
 
             ApplySupportBuff(sup2);
             executor.SetCharacter(sup2);
@@ -240,7 +240,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
             ForceIdleOnVisual(anim2);
 
             if (debugLog)
-                Debug.Log($"[지원 궁극기] 지원2 완료 → Idle | {sup2.DisplayName}");
+                GameLogger.Log($"[지원 궁극기] 지원2 완료 → Idle | {sup2.DisplayName}");
         }
 
         // ═══════════════════════════════════════════════════
@@ -250,7 +250,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         if (exitLingerDuration > 0f)
         {
             if (debugLog)
-                Debug.Log($"[지원 궁극기] 퇴장 대기 {exitLingerDuration}초...");
+                GameLogger.Log($"[지원 궁극기] 퇴장 대기 {exitLingerDuration}초...");
 
             yield return new WaitForSeconds(exitLingerDuration);
         }
@@ -287,7 +287,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         }
 
         if (debugLog)
-            Debug.Log("[지원 궁극기] 퇴장 완료");
+            GameLogger.Log("[지원 궁극기] 퇴장 완료");
 
         // ═══════════════════════════════════════════════════
         //  8. 파괴 + 정리
@@ -304,7 +304,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         _routine = null;
 
         if (debugLog)
-            Debug.Log($"[지원 궁극기] 종료 — 쿨다운 {cooldownSeconds}초 시작");
+            GameLogger.Log($"[지원 궁극기] 종료 — 쿨다운 {cooldownSeconds}초 시작");
     }
 
     // ═══════════════════════════════════════════════════════
@@ -368,14 +368,14 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         if (!buff.IsValid)
         {
             if (debugLog)
-                Debug.Log($"[지원 궁극기] {supportChar.DisplayName}에 설정된 지원 버프가 없습니다.");
+                GameLogger.Log($"[지원 궁극기] {supportChar.DisplayName}에 설정된 지원 버프가 없습니다.");
             return;
         }
 
         buffController.ApplyBuff(buff.kind, buff.value, buff.duration);
 
         if (debugLog)
-            Debug.Log($"[지원 궁극기] 버프 적용 — {supportChar.DisplayName} → {buff.kind} +{buff.value} ({buff.duration}초)");
+            GameLogger.Log($"[지원 궁극기] 버프 적용 — {supportChar.DisplayName} → {buff.kind} +{buff.value} ({buff.duration}초)");
     }
 
     // ═══════════════════════════════════════════════════════
@@ -428,6 +428,6 @@ public sealed class SupportUltimateController2D : MonoBehaviour
     public void DebugResetCooldown()
     {
         _cooldownTimer = 0f;
-        Debug.Log("[지원 궁극기] 디버그 — 쿨다운 리셋");
+        GameLogger.Log("[지원 궁극기] 디버그 — 쿨다운 리셋");
     }
 }

@@ -79,7 +79,7 @@ public sealed class HarinPassive_Bongukkembeop : CharacterPassiveBase
             int reducedDamage = Mathf.Max(1, Mathf.RoundToInt(damage * (1f - _instance.damageReduction)));
             TotalBlockCount++;
 
-            Debug.Log($"[본국검법] 방어 성공! 피해 {damage} → {reducedDamage} " +
+            GameLogger.Log($"[본국검법] 방어 성공! 피해 {damage} → {reducedDamage} " +
                       $"(확률 {roll:F2} < {_instance.blockChance:F2}), " +
                       $"총 방어 횟수: {TotalBlockCount}");
 

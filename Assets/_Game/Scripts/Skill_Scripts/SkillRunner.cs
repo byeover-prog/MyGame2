@@ -64,7 +64,7 @@ public sealed class SkillRunner : MonoBehaviour
         mount = go.transform;
 
         if (enableLogs)
-            Debug.Log("[SkillRunner] SkillMount 자동 생성", this);
+            GameLogger.Log("[SkillRunner] SkillMount 자동 생성", this);
     }
 
     public void AttachSkillPrefab(string id, GameObject prefab)
@@ -75,7 +75,7 @@ public sealed class SkillRunner : MonoBehaviour
         if (_instances.ContainsKey(id))
         {
             if (enableLogs)
-                Debug.Log($"[SkillRunner] Attach 무시(이미 장착): '{id}'", this);
+                GameLogger.Log($"[SkillRunner] Attach 무시(이미 장착): '{id}'", this);
             return;
         }
 
@@ -146,12 +146,12 @@ public sealed class SkillRunner : MonoBehaviour
             }
 
             if (enableLogs)
-                Debug.Log($"[SkillRunner] Attach '{id}' 후 캐시 레벨 적용: Lv{cachedLv} (components={list.Count})", this);
+                GameLogger.Log($"[SkillRunner] Attach '{id}' 후 캐시 레벨 적용: Lv{cachedLv} (components={list.Count})", this);
         }
         else
         {
             if (enableLogs)
-                Debug.Log($"[SkillRunner] Attach '{id}' (components={list.Count})", this);
+                GameLogger.Log($"[SkillRunner] Attach '{id}' (components={list.Count})", this);
         }
     }
 
@@ -166,7 +166,7 @@ public sealed class SkillRunner : MonoBehaviour
         if (!_instances.TryGetValue(id, out var list) || list == null || list.Count <= 0)
         {
             if (enableLogs)
-                Debug.LogWarning($"[SkillRunner] ApplyLevel 캐시만 수행(미장착): '{id}' -> Lv{level}", this);
+                GameLogger.LogWarning($"[SkillRunner] ApplyLevel 캐시만 수행(미장착): '{id}' -> Lv{level}", this);
             return;
         }
 
@@ -177,7 +177,7 @@ public sealed class SkillRunner : MonoBehaviour
         }
 
         if (enableLogs)
-            Debug.Log($"[SkillRunner] ApplyLevel 적용: '{id}' -> Lv{level} (components={list.Count})", this);
+            GameLogger.Log($"[SkillRunner] ApplyLevel 적용: '{id}' -> Lv{level} (components={list.Count})", this);
     }
 
     public bool IsAttached(string id) => !string.IsNullOrWhiteSpace(id) && _instances.ContainsKey(id);

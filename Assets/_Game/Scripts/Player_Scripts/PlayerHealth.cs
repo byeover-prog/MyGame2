@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// [구현 원리 요약]
@@ -98,7 +98,7 @@ public sealed class PlayerHealth : MonoBehaviour
         currentHp = Mathf.Clamp(currentHp + amount, 0, maxHp);
 
         if (debugLog)
-            Debug.Log($"[PlayerHealth] 회복 {amount} | HP {prev} -> {currentHp}/{maxHp}", this);
+            GameLogger.Log($"[PlayerHealth] 회복 {amount} | HP {prev} -> {currentHp}/{maxHp}", this);
     }
 
     // ── 임시 무적 (A4 대체 카드용) ────────────
@@ -112,7 +112,7 @@ public sealed class PlayerHealth : MonoBehaviour
         _invincibleUntil = Mathf.Max(_invincibleUntil, Time.time + duration);
 
         if (debugLog)
-            Debug.Log($"[PlayerHealth] 임시 무적 {duration:0.##}초", this);
+            GameLogger.Log($"[PlayerHealth] 임시 무적 {duration:0.##}초", this);
     }
 
     // ── 피격 ───────────────────────────────────
@@ -132,7 +132,7 @@ public sealed class PlayerHealth : MonoBehaviour
             hitFlash.Play();
 
         if (debugLog)
-            Debug.Log($"[PlayerHealth] 피해 {finalDamage} | HP {currentHp}/{maxHp}", this);
+            GameLogger.Log($"[PlayerHealth] 피해 {finalDamage} | HP {currentHp}/{maxHp}", this);
 
         if (currentHp <= 0)
             Die();
@@ -177,7 +177,7 @@ public sealed class PlayerHealth : MonoBehaviour
         if (_isDead) return;
         _isDead = true;
 
-        Debug.Log("[PlayerHealth] 사망", this);
+        GameLogger.Log("[PlayerHealth] 사망", this);
 
         if (disableColliderOnDead && _col != null)
             _col.enabled = false;

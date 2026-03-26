@@ -93,7 +93,7 @@ public sealed class CharacterPassiveManager2D : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[CharacterPassiveManager2D] SquadLoadout2D를 찾을 수 없습니다!", this);
+            GameLogger.LogWarning("[CharacterPassiveManager2D] SquadLoadout2D를 찾을 수 없습니다!", this);
         }
     }
 
@@ -165,13 +165,13 @@ public sealed class CharacterPassiveManager2D : MonoBehaviour
             _activePassive = passive;
 
             if (debugLog)
-                Debug.Log($"[CharacterPassiveManager2D] 고유 패시브 전환 → " +
+                GameLogger.Log($"[CharacterPassiveManager2D] 고유 패시브 전환 → " +
                           $"'{passive.PassiveName}' (캐릭터: {characterId})");
         }
         else
         {
             if (debugLog)
-                Debug.Log($"[CharacterPassiveManager2D] 캐릭터 '{characterId}'에 " +
+                GameLogger.Log($"[CharacterPassiveManager2D] 캐릭터 '{characterId}'에 " +
                           $"대응하는 고유 패시브 없음");
         }
     }

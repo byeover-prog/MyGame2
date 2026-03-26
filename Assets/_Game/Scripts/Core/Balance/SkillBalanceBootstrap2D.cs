@@ -41,7 +41,7 @@ namespace _Game.Scripts.Core.Balance
 
         private void Awake()
         {
-            Debug.Log($"[SkillBalanceBootstrap2D] JsonManager Instance={(JsonManager2D.Instance ? JsonManager2D.Instance.name : "null")}", this);
+            GameLogger.Log($"[SkillBalanceBootstrap2D] JsonManager Instance={(JsonManager2D.Instance ? JsonManager2D.Instance.name : "null")}", this);
 
             if (Instance != null && Instance != this)
             {
@@ -93,7 +93,7 @@ namespace _Game.Scripts.Core.Balance
 
                 // JsonManager2D 내부에서 TextAsset을 읽었다면, error에 parse 에러가 먼저 담기는 경우가 많다.
                 // 그래도 최소한 "어떤 source를 읽었는지"는 남겨둔다.
-                Debug.Log($"[SkillBalanceBootstrap2D] Load source={srcName}", this);
+                GameLogger.Log($"[SkillBalanceBootstrap2D] Load source={srcName}", this);
 
                 // db가 null이면 파싱이 실패했거나 구조가 안 맞는 상태일 가능성이 높다.
                 if (db == null)
@@ -118,7 +118,7 @@ namespace _Game.Scripts.Core.Balance
 
                 if (_map.ContainsKey(row.id))
                 {
-                    Debug.LogWarning($"[SkillBalanceBootstrap2D] 중복 id 감지: {row.id}");
+                    GameLogger.LogWarning($"[SkillBalanceBootstrap2D] 중복 id 감지: {row.id}");
                     continue;
                 }
 
@@ -131,7 +131,7 @@ namespace _Game.Scripts.Core.Balance
             SkillBalanceService2D.LoadFromDB(db);
 
             if (log)
-                Debug.Log($"[SkillBalanceBootstrap2D] 인덱싱 완료: {_map.Count} skills (source={GetSourceNameSafe(source)})");
+                GameLogger.Log($"[SkillBalanceBootstrap2D] 인덱싱 완료: {_map.Count} skills (source={GetSourceNameSafe(source)})");
         }
 
         private static string GetSourceNameSafe(object source)

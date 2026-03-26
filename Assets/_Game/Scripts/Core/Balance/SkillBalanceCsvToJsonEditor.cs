@@ -189,7 +189,7 @@ namespace _Game.Scripts.Core.Balance
             File.WriteAllText(DefaultJsonPath, json, Encoding.UTF8);
 
             AssetDatabase.Refresh();
-            Debug.Log($"[Balance] CSV → JSON 생성 완료\nCSV: {DefaultCsvPath}\nJSON: {DefaultJsonPath}");
+            GameLogger.Log($"[Balance] CSV → JSON 생성 완료\nCSV: {DefaultCsvPath}\nJSON: {DefaultJsonPath}");
             EditorUtility.DisplayDialog("완료", $"JSON 생성 완료:\n{DefaultJsonPath}", "확인");
         }
 

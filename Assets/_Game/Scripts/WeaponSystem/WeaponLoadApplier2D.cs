@@ -52,7 +52,7 @@ public sealed class WeaponLoadApplier2D : MonoBehaviour
             );
         }
 
-        Debug.Log("[WeaponLoadApplier2D] JSON 로드 적용 완료");
+        GameLogger.Log("[WeaponLoadApplier2D] JSON 로드 적용 완료");
     }
 
     public void SaveCurrent()

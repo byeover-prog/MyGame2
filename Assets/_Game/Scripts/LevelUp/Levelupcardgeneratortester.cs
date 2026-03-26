@@ -32,24 +32,24 @@ namespace _Game.LevelUp
         {
             if (generator == null || loadout == null)
             {
-                Debug.LogWarning("[CardGenTest] generator 또는 loadout 참조가 비어 있습니다.", this);
+                GameLogger.LogWarning("[CardGenTest] generator 또는 loadout 참조가 비어 있습니다.", this);
                 return;
             }
 
             List<LevelUpCardData> cards = generator.Generate(loadout);
 
-            Debug.Log($"[CardGenTest] ────── 카드 {cards.Count}장 생성됨 ──────", this);
+            GameLogger.Log($"[CardGenTest] ────── 카드 {cards.Count}장 생성됨 ──────", this);
 
             for (int i = 0; i < cards.Count; i++)
             {
                 LevelUpCardData card = cards[i];
-                Debug.Log(
+                GameLogger.Log(
                     $"[CardGenTest] [{i}] type={card.RewardType} | " +
                     $"title={card.Title} | desc={card.Description}",
                     this);
             }
 
-            Debug.Log("[CardGenTest] ────── 테스트 완료 ──────", this);
+            GameLogger.Log("[CardGenTest] ────── 테스트 완료 ──────", this);
         }
     }
 }

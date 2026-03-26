@@ -118,7 +118,7 @@ public sealed class StageManager2D : MonoBehaviour
         _stageActive = true;
         SetPhase(StagePhase.Early);
 
-        if (log) Debug.Log("[StageManager2D] 스테이지 시작", this);
+        if (log) GameLogger.Log("[StageManager2D] 스테이지 시작", this);
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ public sealed class StageManager2D : MonoBehaviour
         _stageActive = false;
         SetPhase(StagePhase.Idle);
 
-        if (log) Debug.Log("[StageManager2D] 스테이지 종료", this);
+        if (log) GameLogger.Log("[StageManager2D] 스테이지 종료", this);
     }
 
     /// <summary>
@@ -142,7 +142,7 @@ public sealed class StageManager2D : MonoBehaviour
         SetPhase(StagePhase.Cleared);
         OnStageCleared?.Invoke();
 
-        if (log) Debug.Log("[StageManager2D] 보스 처치 → 스테이지 클리어!", this);
+        if (log) GameLogger.Log("[StageManager2D] 보스 처치 → 스테이지 클리어!", this);
     }
 
     // ───────── 내부 로직 ─────────
@@ -177,10 +177,10 @@ public sealed class StageManager2D : MonoBehaviour
         if (next == StagePhase.Boss)
         {
             OnBossPhaseEntered?.Invoke();
-            if (log) Debug.Log("[StageManager2D] 보스 페이즈 진입!", this);
+            if (log) GameLogger.Log("[StageManager2D] 보스 페이즈 진입!", this);
         }
 
         if (log && next != StagePhase.Boss)
-            Debug.Log($"[StageManager2D] 페이즈 전환: {prev} → {next} (경과 {ElapsedTime:F1}초)", this);
+            GameLogger.Log($"[StageManager2D] 페이즈 전환: {prev} → {next} (경과 {ElapsedTime:F1}초)", this);
     }
 }

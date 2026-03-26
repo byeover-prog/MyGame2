@@ -67,21 +67,21 @@ public sealed class CommonSkillStartBinder2D : MonoBehaviour
         if (manager == null)
         {
             if (warnWhenEmpty)
-                Debug.LogWarning($"[CommonSkillStartBinder2D] Manager가 비어있음(from={from})", this);
+                GameLogger.LogWarning($"[CommonSkillStartBinder2D] Manager가 비어있음(from={from})", this);
             yield break;
         }
 
         if (startSkills == null || startSkills.Length == 0)
         {
             if (warnWhenEmpty)
-                Debug.LogWarning($"[CommonSkillStartBinder2D] StartSkills가 비어있음(from={from})", this);
+                GameLogger.LogWarning($"[CommonSkillStartBinder2D] StartSkills가 비어있음(from={from})", this);
             yield break;
         }
 
         _appliedThisRun = true;
 
         if (logOnStart)
-            Debug.Log($"[CommonSkillStartBinder2D] 시작 스킬 적용(from={from}) count={startSkills.Length}", this);
+            GameLogger.Log($"[CommonSkillStartBinder2D] 시작 스킬 적용(from={from}) count={startSkills.Length}", this);
 
         for (int i = 0; i < startSkills.Length; i++)
         {

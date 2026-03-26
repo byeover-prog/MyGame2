@@ -100,7 +100,7 @@ public sealed class GameManager2D : MonoBehaviour
     {
         if (_gameStarted)
         {
-            if (log) Debug.LogWarning("[GameManager2D] 이미 게임이 시작된 상태입니다.", this);
+            if (log) GameLogger.LogWarning("[GameManager2D] 이미 게임이 시작된 상태입니다.", this);
             return;
         }
 
@@ -121,7 +121,7 @@ public sealed class GameManager2D : MonoBehaviour
         // 4) 전역 신호 발행 (스포너 등이 구독)
         RunSignals.RaiseStageStarted();
 
-        if (log) Debug.Log("[GameManager2D] 게임 시작", this);
+        if (log) GameLogger.Log("[GameManager2D] 게임 시작", this);
     }
 
     /// <summary>
@@ -139,7 +139,7 @@ public sealed class GameManager2D : MonoBehaviour
 
         _gameStarted = false;
 
-        if (log) Debug.Log($"[GameManager2D] 게임 종료 (패배) — 킬 수: {KillCount}", this);
+        if (log) GameLogger.Log($"[GameManager2D] 게임 종료 (패배) — 킬 수: {KillCount}", this);
     }
 
     /// <summary>
@@ -157,7 +157,7 @@ public sealed class GameManager2D : MonoBehaviour
 
         _gameStarted = false;
 
-        if (log) Debug.Log($"[GameManager2D] 게임 종료 (승리) — 킬 수: {KillCount}", this);
+        if (log) GameLogger.Log($"[GameManager2D] 게임 종료 (승리) — 킬 수: {KillCount}", this);
     }
 
     /// <summary>
@@ -178,7 +178,7 @@ public sealed class GameManager2D : MonoBehaviour
 
     private void OnPlayerDead()
     {
-        if (log) Debug.Log("[GameManager2D] PlayerDead 신호 수신 → 패배 처리", this);
+        if (log) GameLogger.Log("[GameManager2D] PlayerDead 신호 수신 → 패배 처리", this);
         EndGame_Defeat();
     }
 }

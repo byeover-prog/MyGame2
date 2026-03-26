@@ -54,7 +54,7 @@ public sealed class DefeatUIController2D : MonoBehaviour
         if (pauseTimeScale)
             Time.timeScale = 0f;
 
-        Debug.Log($"[DefeatUIController2D] Open reason='{reason}'", this);
+        GameLogger.Log($"[DefeatUIController2D] Open reason='{reason}'", this);
     }
 
     public void Close()

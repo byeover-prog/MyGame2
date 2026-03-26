@@ -105,7 +105,7 @@ public sealed class LevelUpSystem2D : MonoBehaviour
             var psus = FindFirstObjectByType<PlayerSkillUpgradeSystem>();
             if (psus != null && psus.enabled)
             {
-                Debug.Log(
+                GameLogger.Log(
                     "[LevelUpSystem2D] PlayerSkillUpgradeSystem 발견 → 이 컴포넌트를 비활성화합니다. " +
                     "(씬에서 하나만 활성화하도록 설계 변경을 권장합니다.)", this);
                 enabled = false;
@@ -431,8 +431,8 @@ public sealed class LevelUpSystem2D : MonoBehaviour
 
         // 최종 체크(경고만)
         if (picker == null)
-            Debug.LogWarning("[LevelUpSystem2D] LevelUpCardPicker가 없습니다. 레벨업 UI가 열리지 않습니다.", this);
+            GameLogger.LogWarning("[LevelUpSystem2D] LevelUpCardPicker가 없습니다. 레벨업 UI가 열리지 않습니다.", this);
         if (playerExp == null)
-            Debug.LogWarning("[LevelUpSystem2D] PlayerExp가 없습니다. 레벨업 이벤트를 받지 못합니다.", this);
+            GameLogger.LogWarning("[LevelUpSystem2D] PlayerExp가 없습니다. 레벨업 이벤트를 받지 못합니다.", this);
     }
 }

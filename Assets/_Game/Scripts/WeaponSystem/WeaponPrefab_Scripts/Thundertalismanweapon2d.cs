@@ -61,7 +61,7 @@ public sealed class ThunderTalismanWeapon2D : CommonSkillWeapon2D
         if (thunderPrefab == null)
         {
             if (debugLog)
-                Debug.LogWarning("[ThunderWeapon] thunderPrefab이 null! " +
+                GameLogger.LogWarning("[ThunderWeapon] thunderPrefab이 null! " +
                                  "Inspector에서 ThunderStrike 프리팹을 연결하세요.");
             return;
         }
@@ -76,7 +76,7 @@ public sealed class ThunderTalismanWeapon2D : CommonSkillWeapon2D
         _thunderIndex = 0;
 
         if (debugLog)
-            Debug.Log($"[ThunderWeapon] 번개 풀 초기화 완료 (크기={maxThunders})");
+            GameLogger.Log($"[ThunderWeapon] 번개 풀 초기화 완료 (크기={maxThunders})");
     }
 
     /* ───────────── 발사 로직 ───────────── */
@@ -129,7 +129,7 @@ public sealed class ThunderTalismanWeapon2D : CommonSkillWeapon2D
             );
 
             if (debugLog)
-                Debug.Log($"[ThunderWeapon] 부적 발사 dir={dir} " +
+                GameLogger.Log($"[ThunderWeapon] 부적 발사 dir={dir} " +
                           $"dmg={StatDamage} baseRadius={P.explosionRadius}");
         }
     }
@@ -144,14 +144,14 @@ public sealed class ThunderTalismanWeapon2D : CommonSkillWeapon2D
     {
         if (thunderPrefab == null)
         {
-            if (debugLog) Debug.LogWarning("[ThunderWeapon] thunderPrefab이 null!");
+            if (debugLog) GameLogger.LogWarning("[ThunderWeapon] thunderPrefab이 null!");
             return;
         }
 
         var thunder = GetThunderFromPool();
         if (thunder == null)
         {
-            if (debugLog) Debug.LogWarning("[ThunderWeapon] 번개 풀 모두 사용 중!");
+            if (debugLog) GameLogger.LogWarning("[ThunderWeapon] 번개 풀 모두 사용 중!");
             return;
         }
 
@@ -163,7 +163,7 @@ public sealed class ThunderTalismanWeapon2D : CommonSkillWeapon2D
         float radius = Mathf.Max(thunderMinRadius, baseRadius * thunderRadiusMultiplier);
 
         if (debugLog)
-            Debug.Log($"[ThunderWeapon] 번개 생성 at {enemyPosition} " +
+            GameLogger.Log($"[ThunderWeapon] 번개 생성 at {enemyPosition} " +
                       $"radius={radius} (base={baseRadius} × mul={thunderRadiusMultiplier}) " +
                       $"dmg={StatDamage} mask={enemyMask.value}");
 

@@ -23,7 +23,7 @@ public abstract class CharacterPassiveBase : MonoBehaviour
         if (IsActive) return;
         IsActive = true;
         OnActivate();
-        Debug.Log($"[캐릭터 패시브] '{PassiveName}' 활성화");
+        GameLogger.Log($"[캐릭터 패시브] '{PassiveName}' 활성화");
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public abstract class CharacterPassiveBase : MonoBehaviour
         if (!IsActive) return;
         IsActive = false;
         OnDeactivate();
-        Debug.Log($"[캐릭터 패시브] '{PassiveName}' 비활성화");
+        GameLogger.Log($"[캐릭터 패시브] '{PassiveName}' 비활성화");
     }
 
     /// <summary>하위 클래스에서 활성화 로직을 구현합니다.</summary>

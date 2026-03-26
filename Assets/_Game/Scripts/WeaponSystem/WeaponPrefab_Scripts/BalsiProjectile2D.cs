@@ -102,7 +102,7 @@ public sealed class BalsiProjectile2D : PooledObject2D
         }
 
         if (debugLog && !applied)
-            Debug.LogWarning($"[발시] 트리거 발생했으나 데미지 실패: {other.name}", this);
+            GameLogger.LogWarning($"[발시] 트리거 발생했으나 데미지 실패: {other.name}", this);
 
         // ★ 시작 스킬 시너지: 지원 캐릭터 속성 추가 데미지
         if (applied)

@@ -70,7 +70,7 @@ public sealed class UltimateExecutor2D : MonoBehaviour
     {
         if (charDef == null)
         {
-            Debug.LogWarning("[궁극기 실행기] CharacterDefinitionSO가 null입니다!");
+            GameLogger.LogWarning("[궁극기 실행기] CharacterDefinitionSO가 null입니다!");
             return;
         }
 
@@ -104,12 +104,12 @@ public sealed class UltimateExecutor2D : MonoBehaviour
 
             _currentResolver.Init(_currentData, playerTransform, enemyMask);
 
-            Debug.Log($"[궁극기 실행기] 캐릭터 설정 완료 | {charDef.DisplayName} " +
+            GameLogger.Log($"[궁극기 실행기] 캐릭터 설정 완료 | {charDef.DisplayName} " +
                       $"궁극기={_currentData?.DisplayName}");
         }
         else
         {
-            Debug.LogWarning($"[궁극기 실행기] {charDef.DisplayName}의 Resolver 프리팹이 비어있습니다.", this);
+            GameLogger.LogWarning($"[궁극기 실행기] {charDef.DisplayName}의 Resolver 프리팹이 비어있습니다.", this);
         }
     }
 
@@ -175,7 +175,7 @@ public sealed class UltimateExecutor2D : MonoBehaviour
         // 1. 연출 시작
         presenter?.BeginPresentation(_currentData, duration);
 
-        Debug.Log($"[궁극기] 시전 시작 | {_currentData.DisplayName} " +
+        GameLogger.Log($"[궁극기] 시전 시작 | {_currentData.DisplayName} " +
                   $"지원={isSupport} 배율={damageMultiplier:F2} duration={duration}s");
 
         // 2. 첫 피해 대기
@@ -203,7 +203,7 @@ public sealed class UltimateExecutor2D : MonoBehaviour
         _currentResolver.OnCastEnd();
         _currentResolver.SetDamageMultiplier(1f);
 
-        Debug.Log($"[궁극기] 시전 종료 | {_currentData.DisplayName}");
+        GameLogger.Log($"[궁극기] 시전 종료 | {_currentData.DisplayName}");
 
         _routine = null;
         _onFinished?.Invoke();

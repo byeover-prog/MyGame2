@@ -121,7 +121,7 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
         DoSetup();
         _selfInitialized = true;
 
-        Debug.Log($"<color=#FFD700>[OrbitingBlade] Initialize</color>" +
+        GameLogger.Log($"<color=#FFD700>[OrbitingBlade] Initialize</color>" +
                   $" owner={ownerTr?.name} blades={_currentCycleCount}" +
                   $" radius={_radius:F2} angSpd={_angSpeed:F0}" +
                   $" vfx={(vfxPrefab != null ? vfxPrefab.name : "없음")}", this);
@@ -147,7 +147,7 @@ public sealed class OrbitingBladeWeapon2D : CommonSkillWeapon2D
 
         if (found == null) return false;
 
-        Debug.Log($"<color=orange>[OrbitingBlade] 자체 초기화: owner={found.name}</color>", this);
+        GameLogger.Log($"<color=orange>[OrbitingBlade] 자체 초기화: owner={found.name}</color>", this);
         Initialize(config, found, Mathf.Max(1, level));
         return true;
     }

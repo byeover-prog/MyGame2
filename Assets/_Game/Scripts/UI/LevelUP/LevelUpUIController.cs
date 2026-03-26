@@ -142,7 +142,7 @@ public sealed class LevelUpUIController : MonoBehaviour
         else
             skillLoadout.TryAddSkill(skill);
 
-        Debug.Log($"[LevelUpUI] 선택: {skill.DisplayName}");
+        GameLogger.Log($"[LevelUpUI] 선택: {skill.DisplayName}");
         Hide();
     }
 
@@ -151,6 +151,6 @@ public sealed class LevelUpUIController : MonoBehaviour
     {
         // TODO: 새로고침 비용 차감 후 후보 재추첨
         // 지금은 카드만 셔플
-        Debug.Log("[LevelUpUI] 새로고침");
+        GameLogger.Log("[LevelUpUI] 새로고침");
     }
 }

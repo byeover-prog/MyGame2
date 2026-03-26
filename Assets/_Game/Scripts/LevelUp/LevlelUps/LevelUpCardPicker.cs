@@ -361,6 +361,6 @@ public sealed class LevelUpCardPicker : MonoBehaviour
     private void Log(string msg)
     {
         if (!enableLogs) return;
-        Debug.Log($"[LevelUpCardPicker] {msg}", this);
+        GameLogger.Log($"[LevelUpCardPicker] {msg}", this);
     }
 }

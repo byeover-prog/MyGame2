@@ -86,7 +86,7 @@ public static class JwagyeokYoseLevelAutoFill
         EditorUtility.SetDirty(selected);
         AssetDatabase.SaveAssets();
 
-        Debug.Log($"[좌격요세 AutoFill] {selected.name} SO에 8레벨 데이터 채우기 완료!\n" +
+        GameLogger.Log($"[좌격요세 AutoFill] {selected.name} SO에 8레벨 데이터 채우기 완료!\n" +
                   $"Lv1: 피해량={Damages[0]}, 쿨타임={Cooldowns[0]:F2}초, 범위={Radii[0]:F1}\n" +
                   $"Lv8: 피해량={Damages[7]}, 쿨타임={Cooldowns[7]:F2}초, 범위={Radii[7]:F1}");
 

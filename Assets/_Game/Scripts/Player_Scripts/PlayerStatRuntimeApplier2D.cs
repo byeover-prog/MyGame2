@@ -123,13 +123,13 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
                 playerHealth.Heal(hpGain);
 
                 if (debugLog)
-                    Debug.Log($"[StatApplier] MaxHP 증가: {oldMaxHp} → {newMaxHp} | 회복량: +{hpGain}", this);
+                    GameLogger.Log($"[StatApplier] MaxHP 증가: {oldMaxHp} → {newMaxHp} | 회복량: +{hpGain}", this);
             }
         }
 
         if (debugLog)
         {
-            Debug.Log(
+            GameLogger.Log(
                 $"[StatApplier] ATKx{attackMul:0.00} | MOVEx{moveMul:0.00} | PICKUPx{pickupMul:0.00} | " +
                 $"DEF%={totalDefense:0.##} | HP+{baseSnapshot.MaxHpFlat + passiveSnapshot.MaxHpFlat} | " +
                 $"HASTEx{cooldownMul:0.00}(가속합={totalHaste:0.#}) | AREAx{areaMul:0.00} | EXPx{expMul:0.00}",

@@ -38,7 +38,7 @@ public sealed class PlayerCurrency2D : MonoBehaviour
         OnGoldChanged?.Invoke(currentGold, finalAmount);
 
         if (debugLog)
-            Debug.Log($"[PlayerCurrency2D] Gold +{finalAmount} (raw={amount}) => {currentGold}", this);
+            GameLogger.Log($"[PlayerCurrency2D] Gold +{finalAmount} (raw={amount}) => {currentGold}", this);
     }
 
     public bool SpendGold(int amount)
@@ -50,7 +50,7 @@ public sealed class PlayerCurrency2D : MonoBehaviour
         OnGoldChanged?.Invoke(currentGold, -amount);
 
         if (debugLog)
-            Debug.Log($"[PlayerCurrency2D] Gold -{amount} => {currentGold}", this);
+            GameLogger.Log($"[PlayerCurrency2D] Gold -{amount} => {currentGold}", this);
 
         return true;
     }

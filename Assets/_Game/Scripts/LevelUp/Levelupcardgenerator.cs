@@ -53,19 +53,19 @@ namespace _Game.LevelUp
 
             if (skillCatalog == null || loadout == null)
             {
-                Debug.LogWarning("[CardGen] skillCatalog 또는 loadout이 없어 대체 카드로 채웁니다.", this);
+                GameLogger.LogWarning("[CardGen] skillCatalog 또는 loadout이 없어 대체 카드로 채웁니다.", this);
                 FillWithFallbackCards(result);
                 return result;
             }
 
-            Debug.Log(
+            GameLogger.Log(
                 $"[CardGen] Generate 시작 | loadoutInstanceId={loadout.GetInstanceID()} | loadoutName={loadout.name}",
                 loadout);
 
             List<SkillDefinitionSO> activeCandidates = BuildCandidates(skillCatalog.GetByType(SkillType.Active), loadout);
             List<SkillDefinitionSO> passiveCandidates = BuildCandidates(skillCatalog.GetByType(SkillType.Passive), loadout);
 
-            Debug.Log($"[CardGen] 후보: 액티브={activeCandidates.Count} 패시브={passiveCandidates.Count} 합계={activeCandidates.Count + passiveCandidates.Count}", this);
+            GameLogger.Log($"[CardGen] 후보: 액티브={activeCandidates.Count} 패시브={passiveCandidates.Count} 합계={activeCandidates.Count + passiveCandidates.Count}", this);
 
             if (activeCandidates.Count == 0 && passiveCandidates.Count == 0)
             {
@@ -111,7 +111,7 @@ namespace _Game.LevelUp
 
                 if (skill.SkillType == SkillType.Passive && skill.PassiveStatType == PassiveStatType.None)
                 {
-                    Debug.Log($"[CardGen] [패시브] 제외(PassiveStatType=None): {skill.DisplayName}", this);
+                    GameLogger.Log($"[CardGen] [패시브] 제외(PassiveStatType=None): {skill.DisplayName}", this);
                     continue;
                 }
 
@@ -119,13 +119,13 @@ namespace _Game.LevelUp
                 {
                     if (!commonSkillCatalog.TryResolve(skill, out CommonSkillConfigSO config))
                     {
-                        Debug.Log($"[CardGen] [액티브] 제외(런타임 매핑 실패): {skill.DisplayName}", this);
+                        GameLogger.Log($"[CardGen] [액티브] 제외(런타임 매핑 실패): {skill.DisplayName}", this);
                         continue;
                     }
 
                     if (config == null || config.weaponPrefab == null)
                     {
-                        Debug.Log($"[CardGen] [액티브] 제외(weaponPrefab 누락): {skill.DisplayName}", this);
+                        GameLogger.Log($"[CardGen] [액티브] 제외(weaponPrefab 누락): {skill.DisplayName}", this);
                         continue;
                     }
                 }
@@ -134,11 +134,11 @@ namespace _Game.LevelUp
 
                 if (!canAppear)
                 {
-                    Debug.Log($"[CardGen] [{(skill.SkillType == SkillType.Active ? "액티브" : "패시브")}] 제외(CanAppearAsCard=false): {skill.DisplayName}", this);
+                    GameLogger.Log($"[CardGen] [{(skill.SkillType == SkillType.Active ? "액티브" : "패시브")}] 제외(CanAppearAsCard=false): {skill.DisplayName}", this);
                     continue;
                 }
 
-                Debug.Log($"[CardGen] [{(skill.SkillType == SkillType.Active ? "액티브" : "패시브")}] 후보 통과: {skill.DisplayName}", this);
+                GameLogger.Log($"[CardGen] [{(skill.SkillType == SkillType.Active ? "액티브" : "패시브")}] 후보 통과: {skill.DisplayName}", this);
                 result.Add(skill);
             }
 

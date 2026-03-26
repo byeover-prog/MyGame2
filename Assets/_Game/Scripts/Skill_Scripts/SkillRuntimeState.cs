@@ -98,7 +98,7 @@ public sealed class SkillRuntimeState : MonoBehaviour
         if (map == null)
         {
             if (enableLogs)
-                Debug.LogWarning($"[SkillRuntimeState] 알 수 없는 kind: {kind} (id={id})", this);
+                GameLogger.LogWarning($"[SkillRuntimeState] 알 수 없는 kind: {kind} (id={id})", this);
             return 0;
         }
 
@@ -114,7 +114,7 @@ public sealed class SkillRuntimeState : MonoBehaviour
         if (!CanAcquire(kind))
         {
             if (enableLogs)
-                Debug.LogWarning($"[SkillRuntimeState] 슬롯이 가득 차서 '{id}'({kind}) 획득 불가", this);
+                GameLogger.LogWarning($"[SkillRuntimeState] 슬롯이 가득 차서 '{id}'({kind}) 획득 불가", this);
             return 0;
         }
 

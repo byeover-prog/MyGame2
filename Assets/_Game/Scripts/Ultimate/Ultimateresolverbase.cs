@@ -6,15 +6,10 @@ using UnityEngine;
 /// 궁극기 타격 처리 추상 클래스.
 /// 캐릭터별 Resolver는 이 클래스를 상속하고 ResolveHit()을 구현한다.
 ///
-/// [캐릭터 추가 시]
-/// 1. NewCharacterResolver : UltimateResolverBase 작성
-/// 2. ResolveHit() 구현
-/// 3. 프리팹 만들어서 CharacterDefinitionSO.ultimateResolverPrefab에 연결
-///
-/// [공용 기능]
-/// - UltimateDataSO 참조 (데미지, 반경, 속성 등)
-/// - 적 탐색 헬퍼: FindEnemiesInRadius(), FindHighestMaxHpEnemy()
-/// - 지원 모드 데미지 배율 적용
+/// [v2 최적화]
+/// - GetComponent 캐싱: EnemyHealth2D, EnemyGradeTag를 Dictionary로 캐싱
+/// - FindPriorityTarget 공용 헬퍼 추가 (윤설/하린 코드 중복 제거)
+/// - OnCastBegin/OnCastEnd에서 캐시 자동 정리
 /// </summary>
 public abstract class UltimateResolverBase : MonoBehaviour
 {
@@ -29,9 +24,7 @@ public abstract class UltimateResolverBase : MonoBehaviour
 
     /// <summary>
     /// VFX 발사/발도 기준 위치.
-    /// 메인 모드: playerTransform (본인 몸)
-    /// 지원 모드: 지원 비주얼 Transform (지원 캐릭터 몸)
-    /// 기본값은 playerTransform. SetCasterTransform()으로 오버라이드.
+    /// 메인 모드: playerTransform / 지원 모드: 지원 비주얼 Transform
     /// </summary>
     protected Transform casterTransform;
 
@@ -40,17 +33,116 @@ public abstract class UltimateResolverBase : MonoBehaviour
     protected ContactFilter2D enemyFilter;
 
     // ═══════════════════════════════════════════════════════
-    //  초기화 (Executor가 호출)
+    //  v2: GetComponent 캐싱 (매 틱 수십 회 호출 방지)
+    // ═══════════════════════════════════════════════════════
+
+    private readonly Dictionary<int, EnemyHealth2D> _healthCache = new Dictionary<int, EnemyHealth2D>(64);
+    private readonly Dictionary<int, EnemyGradeTag> _gradeCache = new Dictionary<int, EnemyGradeTag>(64);
+
+    /// <summary>
+    /// 캐시된 EnemyHealth2D를 반환합니다. 없으면 GetComponentInChildren 1회 호출 후 캐싱.
+    /// </summary>
+    protected EnemyHealth2D GetCachedHealth(GameObject root)
+    {
+        if (root == null) return null;
+        int id = root.GetInstanceID();
+
+        if (_healthCache.TryGetValue(id, out var cached))
+            return cached;
+
+        var hp = root.GetComponentInChildren<EnemyHealth2D>();
+        _healthCache[id] = hp;
+        return hp;
+    }
+
+    /// <summary>
+    /// 캐시된 EnemyGradeTag를 반환합니다. 없으면 GetComponent 1회 호출 후 캐싱.
+    /// </summary>
+    protected EnemyGradeTag GetCachedGrade(GameObject root)
+    {
+        if (root == null) return null;
+        int id = root.GetInstanceID();
+
+        if (_gradeCache.TryGetValue(id, out var cached))
+            return cached;
+
+        var grade = root.GetComponent<EnemyGradeTag>();
+        _gradeCache[id] = grade;
+        return grade;
+    }
+
+    /// <summary>캐시된 Health로 죽음 판정. GetComponent 반복 호출 방지.</summary>
+    protected bool IsTargetDeadCached(GameObject target)
+    {
+        if (target == null) return true;
+        var hp = GetCachedHealth(target);
+        return hp == null || hp.IsDead;
+    }
+
+    /// <summary>컴포넌트 캐시를 비웁니다. OnCastBegin/OnCastEnd에서 자동 호출됩니다.</summary>
+    protected void ClearComponentCache()
+    {
+        _healthCache.Clear();
+        _gradeCache.Clear();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  v2: 공용 우선순위 탐색 (보스 > 엘리트 > 노말)
     // ═══════════════════════════════════════════════════════
 
     /// <summary>
-    /// Executor가 런타임에 호출하여 데이터를 주입한다.
+    /// hitBuffer 내에서 보스 > 엘리트 > 노말 우선순위로 가장 가까운 적을 반환합니다.
+    /// GetComponent 캐싱 적용.
     /// </summary>
+    protected GameObject FindPriorityTargetCached()
+    {
+        if (hitBuffer.Count == 0) return null;
+
+        GameObject best = null;
+        EnemyGrade bestGrade = (EnemyGrade)999;
+        float bestDist = float.MaxValue;
+        Vector2 playerPos = playerTransform.position;
+
+        for (int i = 0; i < hitBuffer.Count; i++)
+        {
+            Collider2D col = hitBuffer[i];
+            if (col == null) continue;
+
+            GameObject root = col.attachedRigidbody != null
+                ? col.attachedRigidbody.gameObject
+                : col.transform.root.gameObject;
+
+            if (root == null || !root.activeInHierarchy) continue;
+
+            var hp = GetCachedHealth(root);
+            if (hp == null || hp.IsDead) continue;
+
+            EnemyGrade grade = EnemyGrade.Normal;
+            var gradeTag = GetCachedGrade(root);
+            if (gradeTag != null) grade = gradeTag.Grade;
+
+            float dist = Vector2.Distance(playerPos, (Vector2)root.transform.position);
+
+            if (grade < bestGrade || (grade == bestGrade && dist < bestDist))
+            {
+                best = root;
+                bestGrade = grade;
+                bestDist = dist;
+            }
+        }
+
+        return best;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  초기화 (Executor가 호출)
+    // ═══════════════════════════════════════════════════════
+
     public void Init(UltimateDataSO ultimateData, Transform player, LayerMask mask)
     {
         data = ultimateData;
         playerTransform = player;
-        casterTransform = player; // 기본값: 메인 캐릭터 본인
+        casterTransform = player;
         enemyMask = mask;
 
         enemyFilter = new ContactFilter2D();
@@ -61,73 +153,55 @@ public abstract class UltimateResolverBase : MonoBehaviour
         OnInit();
     }
 
-    /// <summary>
-    /// VFX 발사 기준 위치를 오버라이드한다.
-    /// 지원 모드에서 지원 비주얼 Transform으로 설정.
-    /// null이면 playerTransform으로 복원.
-    /// </summary>
     public void SetCasterTransform(Transform caster)
     {
         casterTransform = caster != null ? caster : playerTransform;
     }
 
-    /// <summary>
-    /// 지원 모드 데미지 배율 설정. 1.0 = 메인, 0.55 = 지원 등.
-    /// </summary>
     public void SetDamageMultiplier(float multiplier)
     {
         runtimeDamageMultiplier = multiplier;
     }
 
-    /// <summary>서브클래스 초기화 훅. 필요 시 override.</summary>
     protected virtual void OnInit() { }
 
-    /// <summary>궁극기 시작 시 호출. 상태 초기화용. 필요 시 override.</summary>
-    public virtual void OnCastBegin() { }
+    /// <summary>궁극기 시작. 캐시 자동 초기화.</summary>
+    public virtual void OnCastBegin()
+    {
+        ClearComponentCache();
+    }
 
-    /// <summary>궁극기 종료 시 호출. 정리용. 필요 시 override.</summary>
-    public virtual void OnCastEnd() { }
+    /// <summary>궁극기 종료. 캐시 자동 정리.</summary>
+    public virtual void OnCastEnd()
+    {
+        ClearComponentCache();
+    }
 
     // ═══════════════════════════════════════════════════════
-    //  추상 메서드 — 서브클래스가 반드시 구현
+    //  추상 메서드
     // ═══════════════════════════════════════════════════════
 
-    /// <summary>
-    /// 1회 타격 처리. Executor의 루프에서 hitInterval마다 호출.
-    /// 서브클래스에서 적 탐색 + 데미지 적용을 구현한다.
-    /// </summary>
     public abstract void ResolveHit();
 
     // ═══════════════════════════════════════════════════════
-    //  공용 헬퍼: 적 탐색
+    //  공용 헬퍼
     // ═══════════════════════════════════════════════════════
 
-    /// <summary>
-    /// 플레이어 중심 반경 내 모든 적 콜라이더를 hitBuffer에 담고 갯수를 반환.
-    /// </summary>
     protected int FindEnemiesInRadius(float radius)
     {
         if (playerTransform == null) return 0;
-
         hitBuffer.Clear();
         return Physics2D.OverlapCircle(
             playerTransform.position, radius, enemyFilter, hitBuffer
         );
     }
 
-    /// <summary>
-    /// 지정 위치 중심 반경 내 적 탐색. 결과는 outputBuffer에 담긴다.
-    /// </summary>
     protected int FindEnemiesInRadius(Vector2 center, float radius, List<Collider2D> outputBuffer)
     {
         outputBuffer.Clear();
         return Physics2D.OverlapCircle(center, radius, enemyFilter, outputBuffer);
     }
 
-    /// <summary>
-    /// hitBuffer 내에서 maxHp가 가장 높은 적 GameObject를 반환.
-    /// hitBuffer에 먼저 FindEnemiesInRadius()로 채워야 한다.
-    /// </summary>
     protected GameObject FindHighestMaxHpEnemy()
     {
         float bestMaxHp = float.MinValue;
@@ -144,10 +218,9 @@ public abstract class UltimateResolverBase : MonoBehaviour
 
             if (root == null || !root.activeInHierarchy) continue;
 
-            var hp = root.GetComponentInChildren<EnemyHealth2D>();
+            var hp = GetCachedHealth(root);
             if (hp == null) continue;
 
-            // EnemyHealth2D에 MaxHp 프로퍼티나 maxHp 필드가 있다고 가정
             float maxHp = hp.MaxHp;
             if (maxHp > bestMaxHp)
             {
@@ -159,9 +232,6 @@ public abstract class UltimateResolverBase : MonoBehaviour
         return best;
     }
 
-    /// <summary>
-    /// 최종 데미지 계산: baseDamage × runtimeDamageMultiplier (지원 모드 배율 포함).
-    /// </summary>
     protected int CalcFinalDamage(float baseDamage)
     {
         return Mathf.Max(1, Mathf.RoundToInt(baseDamage * runtimeDamageMultiplier));

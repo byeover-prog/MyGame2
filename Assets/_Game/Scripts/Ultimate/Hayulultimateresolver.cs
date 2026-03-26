@@ -1,20 +1,16 @@
+// UTF-8
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// 하율 궁극기 "천강뇌전부" Resolver.
-/// UltimateResolverBase를 상속하여 하율 고유 로직(범위 반복 데미지 + 전파)을 구현.
 ///
-/// [동작]
-/// 1. hitRadius 내 모든 적에게 baseDamage × multiplier
-/// 2. 각 피격 대상 주변 secondaryRadius → baseDamage × chainDamageRate 전파
-/// 3. 한 대상당 최대 maxChainCount회 전파 (전기속성 규칙)
-/// 4. 데미지는 DamageUtil2D.TryApplyDamage(Electric) — 팝업 + VFX 자동
-///
-/// [프리팹 만들기]
-/// 1. 빈 GameObject 생성 → 이름: UltResolver_Hayul
-/// 2. 이 컴포넌트 부착
-/// 3. 프리팹 저장 → CharacterDefinitionSO(하율).ultimateResolverPrefab에 연결
+/// [v2 최적화]
+/// - 전파 탐색: OverlapCircle N회 → 1회로 통합
+///   기존: 피격 적 30마리 × 전파 탐색 1회 = 31회 물리 쿼리
+///   변경: 확장 반경 1회 탐색 + 메모리 내 거리 비교 = 1회 물리 쿼리
+/// - GetComponent 캐싱: UltimateResolverBase.GetCachedHealth 사용
+/// - sqrMagnitude 거리 비교: sqrt 제거
 /// </summary>
 public sealed class HayulUltimateResolver : UltimateResolverBase
 {
@@ -22,16 +18,29 @@ public sealed class HayulUltimateResolver : UltimateResolverBase
     [Tooltip("전파 데미지 비율 (0.15 = 본체의 15%)")]
     [SerializeField] private float chainDamageRate = 0.15f;
 
-    [Tooltip("한 대상당 최대 전파 횟수 (전기속성 규칙: 5회)")]
+    [Tooltip("한 대상당 최대 전파 횟수")]
     [SerializeField] private int maxChainCount = 5;
 
     // ── GC-free 버퍼 ──
     private readonly HashSet<int> _alreadyHit = new HashSet<int>();
     private readonly Dictionary<int, int> _chainCountMap = new Dictionary<int, int>();
-    private readonly List<Collider2D> _chainBuffer = new List<Collider2D>(32);
+
+    // ★ v2: 확장 반경 탐색용 버퍼 (한 번만 물리 쿼리)
+    private readonly List<Collider2D> _extendedBuffer = new List<Collider2D>(128);
+
+    // ★ v2: 루트 GameObject 캐시 (Collider → Root 매핑)
+    private struct EnemyEntry
+    {
+        public GameObject Root;
+        public Vector2 Position;
+        public int RootId;
+    }
+    private readonly List<EnemyEntry> _mainHitEntries = new List<EnemyEntry>(64);
+    private readonly List<EnemyEntry> _allEntries = new List<EnemyEntry>(128);
 
     public override void OnCastBegin()
     {
+        base.OnCastBegin();
         _alreadyHit.Clear();
         _chainCountMap.Clear();
     }
@@ -42,78 +51,104 @@ public sealed class HayulUltimateResolver : UltimateResolverBase
 
         _alreadyHit.Clear();
         _chainCountMap.Clear();
+        _mainHitEntries.Clear();
+        _allEntries.Clear();
 
-        // ── 1단계: 고정 반경 내 모든 적에게 본체 데미지 ──
-        int hitCount = FindEnemiesInRadius(data.HitRadius);
+        // ═══════════════════════════════════════════════════
+        //  ★ v2: 확장 반경으로 1회만 물리 쿼리
+        //  기존: hitRadius 1회 + secondaryRadius × N회 = N+1회
+        //  변경: (hitRadius + secondaryRadius) 1회 = 1회
+        // ═══════════════════════════════════════════════════
+
+        float extendedRadius = data.HitRadius + data.SecondaryRadius;
+        _extendedBuffer.Clear();
+        int totalCount = Physics2D.OverlapCircle(
+            playerTransform.position, extendedRadius, enemyFilter, _extendedBuffer
+        );
+
+        // ── 루트 해석 + 엔트리 구축 ──
+        Vector2 playerPos = playerTransform.position;
+        float hitRadiusSqr = data.HitRadius * data.HitRadius;
+
+        for (int i = 0; i < totalCount; i++)
+        {
+            Collider2D col = _extendedBuffer[i];
+            if (col == null) continue;
+
+            GameObject root = col.attachedRigidbody != null
+                ? col.attachedRigidbody.gameObject
+                : col.transform.root.gameObject;
+
+            if (root == null || !root.activeInHierarchy) continue;
+
+            int rootId = root.GetInstanceID();
+            Vector2 pos = (Vector2)root.transform.position;
+
+            var entry = new EnemyEntry { Root = root, Position = pos, RootId = rootId };
+            _allEntries.Add(entry);
+
+            // hitRadius 내 = 본체 데미지 대상
+            float dx = pos.x - playerPos.x;
+            float dy = pos.y - playerPos.y;
+            if (dx * dx + dy * dy <= hitRadiusSqr)
+            {
+                _mainHitEntries.Add(entry);
+            }
+        }
+
+        // ── 1단계: 본체 데미지 ──
         int baseDmg = CalcFinalDamage(data.BaseDamage);
         int damagedCount = 0;
 
-        for (int i = 0; i < hitCount; i++)
+        for (int i = 0; i < _mainHitEntries.Count; i++)
         {
-            Collider2D col = hitBuffer[i];
-            if (col == null) continue;
+            var entry = _mainHitEntries[i];
+            if (_alreadyHit.Contains(entry.RootId)) continue;
 
-            int id = col.gameObject.GetInstanceID();
-            if (_alreadyHit.Contains(id)) continue;
-
-            if (DamageUtil2D.TryApplyDamage(col.gameObject, baseDmg, data.DamageElement))
+            if (DamageUtil2D.TryApplyDamage(entry.Root, baseDmg, data.DamageElement))
             {
-                _alreadyHit.Add(id);
+                _alreadyHit.Add(entry.RootId);
                 damagedCount++;
             }
         }
 
-        Debug.Log($"[하율 궁극기] 본체 데미지 | 탐색={hitCount} 피격={damagedCount} dmg={baseDmg}");
-
-        // ── 2단계: 전파 데미지 ──
+        // ── 2단계: 전파 데미지 (★ v2: 메모리 내 거리 비교) ──
         int chainDmg = Mathf.Max(1, Mathf.RoundToInt(baseDmg * chainDamageRate));
         int totalChains = 0;
+        float secRadiusSqr = data.SecondaryRadius * data.SecondaryRadius;
 
-        for (int i = 0; i < hitCount; i++)
+        // ★ 하율 고유 패시브 보너스
+        int finalMaxChain = maxChainCount + HayulPassive_Dosa.ChainBonus;
+        if (finalMaxChain <= 0) finalMaxChain = maxChainCount;
+
+        for (int s = 0; s < _mainHitEntries.Count; s++)
         {
-            Collider2D sourceCol = hitBuffer[i];
-            if (sourceCol == null) continue;
+            var source = _mainHitEntries[s];
+            if (!_alreadyHit.Contains(source.RootId)) continue;
 
-            int sourceId = sourceCol.gameObject.GetInstanceID();
-            if (!_alreadyHit.Contains(sourceId)) continue;
-
-            totalChains += PropagateChain(sourceCol.transform, chainDmg);
-        }
-
-        if (totalChains > 0)
-        {
-            Debug.Log($"[하율 궁극기] 전파 | 전파피해={chainDmg} " +
-                      $"(본체의 {chainDamageRate * 100f}%) 총전파횟수={totalChains}");
-        }
-    }
-
-    private int PropagateChain(Transform source, int chainDmg)
-    {
-        int chainHitCount = FindEnemiesInRadius(
-            (Vector2)source.position, data.SecondaryRadius, _chainBuffer
-        );
-
-        int propagated = 0;
-        for (int i = 0; i < chainHitCount; i++)
-        {
-            Collider2D col = _chainBuffer[i];
-            if (col == null) continue;
-
-            int targetId = col.gameObject.GetInstanceID();
-
-            _chainCountMap.TryGetValue(targetId, out int currentCount);
-
-            // ★ 하율 고유 패시브 "도사란 무엇인가?" — 전파 최대치 보너스 적용
-            int finalMaxChain = maxChainCount + HayulPassive_Dosa.ChainBonus;
-            if (currentCount >= finalMaxChain) continue;
-
-            if (DamageUtil2D.TryApplyDamage(col.gameObject, chainDmg, data.DamageElement))
+            // _allEntries 순회하며 거리 비교 (물리 쿼리 없음)
+            for (int t = 0; t < _allEntries.Count; t++)
             {
-                _chainCountMap[targetId] = currentCount + 1;
-                propagated++;
+                var target = _allEntries[t];
+                if (target.RootId == source.RootId) continue;
+
+                // 거리 체크 (sqrMagnitude)
+                float dx = target.Position.x - source.Position.x;
+                float dy = target.Position.y - source.Position.y;
+                if (dx * dx + dy * dy > secRadiusSqr) continue;
+
+                // 전파 횟수 체크
+                _chainCountMap.TryGetValue(target.RootId, out int currentCount);
+                if (currentCount >= finalMaxChain) continue;
+
+                if (DamageUtil2D.TryApplyDamage(target.Root, chainDmg, data.DamageElement))
+                {
+                    _chainCountMap[target.RootId] = currentCount + 1;
+                    totalChains++;
+                }
             }
         }
 
-        return propagated;
+        GameLogger.Log($"[하율 궁극기] 본체={damagedCount} 전파={totalChains} (쿼리1회)");
     }
 }

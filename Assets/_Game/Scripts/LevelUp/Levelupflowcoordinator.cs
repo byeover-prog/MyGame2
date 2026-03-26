@@ -91,11 +91,11 @@ namespace _Game.LevelUp
 
                 if (cardGenerator == null || loadout == null || panelController == null)
                 {
-                    Debug.LogWarning("[FlowCoordinator] 참조 누락, 큐 중단", this);
+                    GameLogger.LogWarning("[FlowCoordinator] 참조 누락, 큐 중단", this);
                     break;
                 }
 
-                Debug.Log(
+                GameLogger.Log(
                     $"[FlowCoordinator] 카드 생성 시작 | loadoutInstanceId={loadout.GetInstanceID()} | loadoutName={loadout.name}",
                     loadout);
 
@@ -103,13 +103,13 @@ namespace _Game.LevelUp
 
                 if (cards == null || cards.Count == 0)
                 {
-                    Debug.LogWarning("[FlowCoordinator] 생성된 카드 없음, 건너뜀", this);
+                    GameLogger.LogWarning("[FlowCoordinator] 생성된 카드 없음, 건너뜀", this);
                     continue;
                 }
 
                 panelController.Open(cards);
 
-                Debug.Log(
+                GameLogger.Log(
                     $"[FlowCoordinator] 패널 열림 | 카드 {cards.Count}장 | 남은 큐 {pendingLevelUps} | loadoutInstanceId={loadout.GetInstanceID()}",
                     loadout);
             }
@@ -121,7 +121,7 @@ namespace _Game.LevelUp
 
             isProcessing = false;
 
-            Debug.Log("[FlowCoordinator] 큐 완전 종료, 시간 복구됨", this);
+            GameLogger.Log("[FlowCoordinator] 큐 완전 종료, 시간 복구됨", this);
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace _Game.LevelUp
             Time.timeScale = 0f;
             isTimePaused = true;
 
-            Debug.Log($"[FlowCoordinator] 시간 정지 (saved={savedTimeScale})", this);
+            GameLogger.Log($"[FlowCoordinator] 시간 정지 (saved={savedTimeScale})", this);
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace _Game.LevelUp
             Time.timeScale = savedTimeScale > 0f ? savedTimeScale : 1f;
             isTimePaused = false;
 
-            Debug.Log($"[FlowCoordinator] 시간 복구 (restored={Time.timeScale})", this);
+            GameLogger.Log($"[FlowCoordinator] 시간 복구 (restored={Time.timeScale})", this);
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace _Game.LevelUp
             if (isTimePaused)
             {
                 ResumeGame();
-                Debug.LogWarning("[FlowCoordinator] OnDisable에서 강제 시간 복구", this);
+                GameLogger.LogWarning("[FlowCoordinator] OnDisable에서 강제 시간 복구", this);
             }
 
             pendingLevelUps = 0;
