@@ -1,4 +1,3 @@
-// UTF-8
 using System;
 using UnityEngine;
 
@@ -71,6 +70,10 @@ public sealed class GameSettingsRuntime : MonoBehaviour
             timeScale = v;
             PlayerPrefs.SetFloat(KEY_TIME_SCALE, timeScale);
             OnTimeScaleChanged?.Invoke(timeScale);
+
+            // ★ GamePauseGate2D 연동: 일시정지 중이면 Time.timeScale을 건드리지 않음
+            if (!GamePauseGate2D.IsPaused)
+                Time.timeScale = timeScale;
         }
     }
 
@@ -102,5 +105,9 @@ public sealed class GameSettingsRuntime : MonoBehaviour
         damageNumberOpacity = PlayerPrefs.GetFloat(KEY_DMG_OPACITY, damageNumberOpacity);
         timeScale = PlayerPrefs.GetFloat(KEY_TIME_SCALE, timeScale);
         skillSlotsVisible = PlayerPrefs.GetInt(KEY_SLOT_VISIBLE, skillSlotsVisible ? 1 : 0) == 1;
+
+        // ★ 저장된 배속을 즉시 적용 (일시정지 중이 아닐 때만)
+        if (!GamePauseGate2D.IsPaused)
+            Time.timeScale = timeScale;
     }
 }
