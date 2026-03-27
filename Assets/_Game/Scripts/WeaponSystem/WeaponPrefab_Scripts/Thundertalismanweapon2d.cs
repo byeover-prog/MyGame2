@@ -129,7 +129,7 @@ public sealed class ThunderTalismanWeapon2D : CommonSkillWeapon2D
             );
 
             if (debugLog)
-                GameLogger.Log($"[ThunderWeapon] 부적 발사 dir={dir} " +
+                CombatLog.Log($"[ThunderWeapon] 부적 발사 dir={dir} " +
                           $"dmg={StatDamage} baseRadius={P.explosionRadius}");
         }
     }
@@ -163,7 +163,7 @@ public sealed class ThunderTalismanWeapon2D : CommonSkillWeapon2D
         float radius = Mathf.Max(thunderMinRadius, baseRadius * thunderRadiusMultiplier);
 
         if (debugLog)
-            GameLogger.Log($"[ThunderWeapon] 번개 생성 at {enemyPosition} " +
+            CombatLog.Log($"[ThunderWeapon] 번개 생성 at {enemyPosition} " +
                       $"radius={radius} (base={baseRadius} × mul={thunderRadiusMultiplier}) " +
                       $"dmg={StatDamage} mask={enemyMask.value}");
 

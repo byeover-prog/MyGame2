@@ -1,14 +1,11 @@
-// UTF-8
-// ============================================================================
-// PurificationOrbWeapon2D.cs
-// 경로: Assets/_Game/Scripts/Skill_Scripts/HomingMissile/PurificationOrbWeapon2D.cs
-//
+// [v3 최적화 변경사항]
+// 1. GetComponent<EnemyGradeTag>() → TryGetComponent (GC 감소 + 빠른 실패)
+// 2. Physics2D.OverlapCircle → OverlapCircleNonAlloc (GC 0)
 // [구현 원리]
 // MonoBehaviour + ILevelableSkill 패턴 (DarkOrbWeapon2D와 동일).
 // CommonSkillWeapon2D를 상속하지 않는 이유:
 //   정화구는 "발사 → 부착 → 지속 피해" 라는 독자적인 사이클이라
 //   베이스 클래스의 TryBeginFire/cooldownTimer 흐름과 맞지 않음.
-//
 // [레벨 테이블] (기획서 확정)
 //  Lv │ 틱 데미지 │ 틱 횟수 │ 총 데미지 │ 부착 시간
 //  ───┼──────────┼────────┼──────────┼──────────
@@ -20,26 +17,11 @@
 //   6 │  10.0    │   8    │   80.0   │  4.0초
 //   7 │  10.0    │   9    │   90.0   │  4.5초
 //   8 │  10.0    │  10    │  100.0   │  5.0초
-//
 // [기존 시스템 연동]
 // CommonSkillManager2D가 무기 프리팹을 생성하면:
 //   1. OnAttached(Transform owner) 호출 → 플레이어 참조 획득
 //   2. ApplyLevel(int level) 호출 → 레벨 적용
 //   3. 이후 Update()에서 자동 발사
-//
-// [Inspector 설정] — Weapon_PurificationOrb 프리팹
-//   Pool               → ProjectilePool2D (같은 오브젝트 또는 자식)
-//   Enemy Mask          → Enemy
-//   Aim Range           → 20
-//   Cooldown            → 2 (재사용 대기시간)
-//   Projectile Speed    → 8
-//   Tick Interval       → 0.5
-//   Debug Log           → ✅ (디버깅 후 끄기)
-//
-// [Hierarchy 구조]
-// Weapon_PurificationOrb (이 스크립트 + ProjectilePool2D)
-//   → ProjectilePool2D의 Prefab 필드에 PurificationOrb_Projectile 연결
-// ============================================================================
 using UnityEngine;
 
 /// <summary>
@@ -88,7 +70,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
     private bool      _attached;
     private PlayerCombatStats2D _stats;
 
-    // 적 탐색용 (GC 0)
+    // ★ v3: NonAlloc 사용 (GC 0)
     private readonly Collider2D[] _enemyHits = new Collider2D[64];
     private ContactFilter2D _enemyFilter;
     private bool _filterReady;
@@ -120,7 +102,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
         _cooldownTimer = 0f;
 
         if (debugLog)
-            GameLogger.Log($"[정화구 무기] 장착 완료 — 소유자:{owner.name}");
+            CombatLog.Log($"[정화구 무기] 장착 완료 — 소유자:{owner.name}");
     }
 
     /// <summary>
@@ -130,7 +112,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
     {
         _level = Mathf.Clamp(level, 1, 8);
         if (debugLog)
-            GameLogger.Log($"[정화구 무기] 레벨 적용 → Lv{_level} (틱 데미지:{GetTickDamage()}, 틱 횟수:{GetTickCount()})");
+            CombatLog.Log($"[정화구 무기] 레벨 적용 → Lv{_level} (틱 데미지:{GetTickDamage()}, 틱 횟수:{GetTickCount()})");
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -163,7 +145,6 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
             return;
         }
 
-        // PooledObject2D 상속 덕분에 제네릭 제약 충족
         var orb = pool.Get<PurificationOrbProjectile2D>(
             _owner.position, Quaternion.identity);
 
@@ -180,7 +161,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
         orb.gameObject.SetActive(true);
 
         if (debugLog)
-            GameLogger.Log($"[정화구 무기] 발사 → {target.name} (Lv{_level}, 틱:{tickDmg}×{tickCnt})");
+            CombatLog.Log($"[정화구 무기] 발사 → {target.name} (Lv{_level}, 틱:{tickDmg}×{tickCnt})");
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -213,7 +194,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
     }
 
     // ══════════════════════════════════════════════════════════════
-    // 우선순위 기반 타겟 탐색 (Boss > Elite > Normal)
+    // ★ v3: 우선순위 기반 타겟 탐색 (최적화)
     // ══════════════════════════════════════════════════════════════
 
     private Transform FindPriorityTarget()
@@ -224,6 +205,7 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
         if (_stats != null)
             seekRange *= Mathf.Max(0.1f, _stats.AreaMul);
 
+        // ContactFilter2D 오버로드 = NonAlloc + useTriggers 지원
         int count = Physics2D.OverlapCircle(
             (Vector2)_owner.position, seekRange, _enemyFilter, _enemyHits);
 
@@ -244,9 +226,10 @@ public sealed class PurificationOrbWeapon2D : MonoBehaviour, ILevelableSkill
 
             if (!PurificationOrbAttachTracker.CanAttachTo(enemyGo)) continue;
 
+            // ★ v3: TryGetComponent (GetComponent + null 체크보다 빠름, GC 없음)
             EnemyGrade grade = EnemyGrade.Normal;
-            EnemyGradeTag gradeTag = enemyGo.GetComponent<EnemyGradeTag>();
-            if (gradeTag != null) grade = gradeTag.Grade;
+            if (enemyGo.TryGetComponent<EnemyGradeTag>(out var gradeTag))
+                grade = gradeTag.Grade;
 
             float distSq = ((Vector2)enemyGo.transform.position - ownerPos).sqrMagnitude;
 
