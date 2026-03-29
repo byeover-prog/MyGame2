@@ -1,11 +1,9 @@
-// [v3 최적화 변경사항]
-// 1. GetComponent<EnemyGradeTag>() → TryGetComponent (GC 감소 + 빠른 실패)
-// 2. Physics2D.OverlapCircle → OverlapCircleNonAlloc (GC 0)
 // [구현 원리]
 // MonoBehaviour + ILevelableSkill 패턴 (DarkOrbWeapon2D와 동일).
 // CommonSkillWeapon2D를 상속하지 않는 이유:
 //   정화구는 "발사 → 부착 → 지속 피해" 라는 독자적인 사이클이라
 //   베이스 클래스의 TryBeginFire/cooldownTimer 흐름과 맞지 않음.
+//
 // [레벨 테이블] (기획서 확정)
 //  Lv │ 틱 데미지 │ 틱 횟수 │ 총 데미지 │ 부착 시간
 //  ───┼──────────┼────────┼──────────┼──────────
@@ -17,11 +15,6 @@
 //   6 │  10.0    │   8    │   80.0   │  4.0초
 //   7 │  10.0    │   9    │   90.0   │  4.5초
 //   8 │  10.0    │  10    │  100.0   │  5.0초
-// [기존 시스템 연동]
-// CommonSkillManager2D가 무기 프리팹을 생성하면:
-//   1. OnAttached(Transform owner) 호출 → 플레이어 참조 획득
-//   2. ApplyLevel(int level) 호출 → 레벨 적용
-//   3. 이후 Update()에서 자동 발사
 using UnityEngine;
 
 /// <summary>

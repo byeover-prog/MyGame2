@@ -1,20 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 낙뢰부 무기: 부적 투척 → 적 히트 시 적 위치에 번개 범위 공격
-///
-/// [구조]
-/// 1. Update()에서 쿨타임 확인 → Fire()
-/// 2. Fire()에서 ProjectilePool2D로 부적 투사체 생성
-/// 3. 부적이 적에게 닿으면 OnTalismanHit() 콜백
-/// 4. OnTalismanHit()에서 내부 ThunderStrike 풀에서 꺼내서 Strike() 호출
-/// 5. ThunderStrikeArea2D.Strike()가 범위 데미지 + VFX 파티클 생성
-///
-/// [변경 요약 — VFX 전환]
-/// - 무기 코드 자체는 변경 없음
-/// - thunderPrefab이 참조하는 ThunderStrike 프리팹에서 Animator/SpriteRenderer 제거 필요
-/// - ThunderStrikeArea2D가 내부적으로 VFXSpawner를 호출하므로 무기는 관여 안 함
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class ThunderTalismanWeapon2D : CommonSkillWeapon2D
 {
