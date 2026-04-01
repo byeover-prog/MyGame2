@@ -46,6 +46,7 @@ SpriteAtlas:
     variantMultiplier: 1
     packables:
     - {fileID: 102900000, guid: d0b228ee84d53c8439bb58eba9e28896, type: 3}
+    - {fileID: 102900000, guid: ea4b2eecf9eff5c4285905f06bb9132d, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
@@ -100,6 +101,7 @@ SpriteAtlas:
     - e059376847134884b971e8d80765ba01: 1169031118771667779
     - 81f468689939d8242a7bedd4d8080ea5: -7875893764652593989
     - 42759998151238e4eb8b0e6807b0436c: 134782726169223636
+    - c6d05ea8c6af0c0408e858432c246741: 21300000
     - 609239b8497bd5a4d91ff6e53ebd747e: 3023901026936681352
     - e493ffe8d2353c846b000e246230129f: -3934949411982042917
     - ef8753f8d8c2ff341bf0d2a27ee25ae6: 3442106523047633369
@@ -192,6 +194,7 @@ SpriteAtlas:
   - {fileID: 1169031118771667779, guid: e059376847134884b971e8d80765ba01, type: 3}
   - {fileID: -7875893764652593989, guid: 81f468689939d8242a7bedd4d8080ea5, type: 3}
   - {fileID: 134782726169223636, guid: 42759998151238e4eb8b0e6807b0436c, type: 3}
+  - {fileID: 21300000, guid: c6d05ea8c6af0c0408e858432c246741, type: 3}
   - {fileID: 3023901026936681352, guid: 609239b8497bd5a4d91ff6e53ebd747e, type: 3}
   - {fileID: -3934949411982042917, guid: e493ffe8d2353c846b000e246230129f, type: 3}
   - {fileID: 3442106523047633369, guid: ef8753f8d8c2ff341bf0d2a27ee25ae6, type: 3}
@@ -283,6 +286,7 @@ SpriteAtlas:
   - hog1_0
   - wolf5_0
   - snake1_0
+  - ExpOrb
   - junior dokebi6_0
   - toad1_0
   - raven5_0
