@@ -47,6 +47,8 @@ SpriteAtlas:
     packables:
     - {fileID: 102900000, guid: f2be594a4d5694747a3bb67588e60758, type: 3}
     - {fileID: 102900000, guid: 37c02cd6270cd45489b2c094888f4061, type: 3}
+    - {fileID: 2800000, guid: c6d05ea8c6af0c0408e858432c246741, type: 3}
+    - {fileID: 21300000, guid: c6d05ea8c6af0c0408e858432c246741, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
@@ -97,6 +99,7 @@ SpriteAtlas:
     - 5b4664481452b8f4d94abd73e5e6621d: 21300000
     - 6a7317480542a6d458ed006ad44fe245: 21300000
     - e16b7d58a7ed650429d1f68c8116028b: 21300000
+    - c6d05ea8c6af0c0408e858432c246741: 21300000
     - 810351b82997a2d4bba331e9d9cabd26: 21300000
     - 8a2e69b849d4ae54f930c39133d06342: 21300000
     - 900fbad820614ad4d8706ff745d2d288: 21300000
@@ -184,6 +187,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 5b4664481452b8f4d94abd73e5e6621d, type: 3}
   - {fileID: 21300000, guid: 6a7317480542a6d458ed006ad44fe245, type: 3}
   - {fileID: 21300000, guid: e16b7d58a7ed650429d1f68c8116028b, type: 3}
+  - {fileID: 21300000, guid: c6d05ea8c6af0c0408e858432c246741, type: 3}
   - {fileID: 21300000, guid: 810351b82997a2d4bba331e9d9cabd26, type: 3}
   - {fileID: 21300000, guid: 8a2e69b849d4ae54f930c39133d06342, type: 3}
   - {fileID: 21300000, guid: 900fbad820614ad4d8706ff745d2d288, type: 3}
@@ -270,6 +274,7 @@ SpriteAtlas:
   - TrailBlue
   - eff_attack_yellow_02_white
   - Tx_Eff_Circle_001
+  - ExpOrb
   - Tx_Eff_Fire_002
   - Tx_Eff_Slash_011
   - T_Weapon_Arrow_fire
