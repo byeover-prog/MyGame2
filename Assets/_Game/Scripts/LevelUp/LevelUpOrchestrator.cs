@@ -1,12 +1,14 @@
 using UnityEngine;
 
-/// <summary>
-/// 레벨업 흐름의 실제 적용만 담당합니다.
-/// - 열기 요청 수신
-/// - 오퍼 4장 요청
-/// - 카드 선택 적용
-/// - 닫힘 신호 발행
-/// </summary>
+// 레벨업 흐름의 실제 적용만 담당합니다.
+// - 열기 요청 수신
+// - 오퍼 5장 요청
+// - 카드 선택 적용
+// - 닫힘 신호 발행
+//  v2 변경사항:
+// - offerCount 기본 5
+// - OfferKind.CharacterSkill 처리 (Weapon과 동일 장착 경로)
+
 [DisallowMultipleComponent]
 public sealed class LevelUpOrchestrator : MonoBehaviour
 {
@@ -16,7 +18,7 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
     [SerializeField] private SkillRunner skillRunner;
 
     [Header("레벨업 설정")]
-    [SerializeField, Min(1)] private int offerCount = 4;
+    [SerializeField, Min(1)] private int offerCount = 5;
     [SerializeField] private bool pauseTime = true;
 
     [Header("디버그")]
@@ -121,6 +123,7 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
 
             GameSignals.RaiseSkillLevelChanged(picked.id, newLevel);
 
+            // CharacterSkill도 Weapon과 동일한 장착 경로 사용
             if (newLevel == 1 && picked.prefab != null && skillRunner != null)
                 skillRunner.AttachSkillPrefab(picked.id, picked.prefab);
 
@@ -128,7 +131,10 @@ public sealed class LevelUpOrchestrator : MonoBehaviour
                 skillRunner.ApplyLevel(picked.id, newLevel);
 
             if (enableLogs)
-                GameLogger.Log($"[LevelUp] Picked '{picked.id}' => Lv.{newLevel}", this);
+            {
+                string exclusiveTag = picked.isExclusive ? " [전용]" : "";
+                GameLogger.Log($"[LevelUp] Picked '{picked.id}'{exclusiveTag} => Lv.{newLevel}", this);
+            }
         }
         catch (System.Exception e)
         {

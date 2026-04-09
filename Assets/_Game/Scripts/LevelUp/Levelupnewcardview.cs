@@ -1,13 +1,3 @@
-// ──────────────────────────────────────────────
-// LevelUpNewCardView.cs
-// 새 4장 레벨업 시스템 전용 카드 뷰
-//
-// 강조 효과: CanvasGroup 알파값으로 처리
-//   - 기본: 약간 투명 (normalAlpha)
-//   - 호버: 밝게 (hoverAlpha)
-//   - 선택: 가장 밝게 (selectedAlpha)
-// ──────────────────────────────────────────────
-
 using System;
 using TMPro;
 using UnityEngine;
@@ -20,7 +10,7 @@ namespace _Game.LevelUp.UI
     public sealed class LevelUpNewCardView : MonoBehaviour,
         IPointerEnterHandler, IPointerExitHandler
     {
-        // ── UI 레퍼런스 ───────────────────────────
+        // UI 레퍼런스
 
         [Header("=== UI 레퍼런스 ===")]
 
@@ -36,40 +26,54 @@ namespace _Game.LevelUp.UI
         [SerializeField, Tooltip("카드 태그 텍스트")]
         private TMP_Text tagText;
 
-        // ── 클릭 버튼 ─────────────────────────────
+        // 전용 스킬 시각 구분
+
+        [Header("=== 전용 스킬 시각 구분 ===")]
+
+        [SerializeField, Tooltip("전용 스킬일 때 색상을 변경할 테두리 이미지 (없으면 무시)")]
+        private Image borderImage;
+
+        [SerializeField, Tooltip("전용 스킬 테두리 색상")]
+        private Color exclusiveColor = new Color(1f, 0.84f, 0f, 1f); // 금색
+
+        [SerializeField, Tooltip("일반 카드 테두리 색상")]
+        private Color normalBorderColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
+        [SerializeField, Tooltip("전용 태그 텍스트 색상")]
+        private Color exclusiveTagColor = new Color(1f, 0.84f, 0f, 1f);
+
+        [SerializeField, Tooltip("일반 태그 텍스트 색상")]
+        private Color normalTagColor = Color.white;
+
+        // 클릭 버튼
 
         [Header("=== 클릭 버튼(없으면 자동 탐색) ===")]
 
         [SerializeField, Tooltip("카드 선택 버튼")]
         private Button button;
 
-        // ── 강조 효과 (알파값) ─────────────────────
+        // 강조 효과 (알파값)
 
         [Header("=== 강조 효과 (알파값) ===")]
 
-        [SerializeField, Tooltip("기본 상태 알파값")]
-        [Range(0f, 1f)]
+        [SerializeField, Range(0f, 1f)]
         private float normalAlpha = 0.6f;
 
-        [SerializeField, Tooltip("마우스 호버 시 알파값")]
-        [Range(0f, 1f)]
+        [SerializeField, Range(0f, 1f)]
         private float hoverAlpha = 0.85f;
 
-        [SerializeField, Tooltip("선택 시 알파값")]
-        [Range(0f, 1f)]
+        [SerializeField, Range(0f, 1f)]
         private float selectedAlpha = 1f;
 
-        // ── 내부 상태 ─────────────────────────────
+        // 내부 상태
 
         private CanvasGroup canvasGroup;
         private int cardIndex;
         private Action<int> onClick;
         private bool isHovering;
         private bool isSelected;
-
-        // ════════════════════════════════════════════
+        
         //  초기화
-        // ════════════════════════════════════════════
 
         private void Awake()
         {
@@ -82,72 +86,67 @@ namespace _Game.LevelUp.UI
 
             SetAlpha(normalAlpha);
         }
-
-        // ════════════════════════════════════════════
+        
         //  외부 API
-        // ════════════════════════════════════════════
-
-        /// <summary>
-        /// 카드 데이터를 UI에 바인딩한다.
-        /// </summary>
+        // 카드 데이터를 UI에 바인딩한다.
         public void Bind(LevelUpCardData data, int index, Action<int> clickAction)
         {
             cardIndex = index;
             onClick   = clickAction;
 
-            // 제목
             if (nameText != null)
                 nameText.text = data != null ? data.Title : string.Empty;
 
-            // 설명
             if (descText != null)
                 descText.text = data != null ? data.Description : string.Empty;
 
-            // 태그
             if (tagText != null)
                 tagText.text = data != null ? data.Tag : string.Empty;
 
-            // 아이콘
             if (iconImage != null)
             {
                 iconImage.sprite  = data != null ? data.Icon : null;
                 iconImage.enabled = data != null && data.Icon != null;
             }
 
-            // 버튼 클릭 연결
             if (button != null)
             {
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(HandleClick);
             }
 
-            // 강조 초기화
             isSelected = false;
             isHovering = false;
             SetAlpha(normalAlpha);
         }
 
-        /// <summary>
-        /// 카드 선택 가능 여부를 설정한다.
-        /// </summary>
+        // 카드 선택 가능 여부를 설정한다.
         public void SetInteractable(bool isInteractable)
         {
             if (button != null)
                 button.interactable = isInteractable;
         }
 
-        /// <summary>
-        /// 선택 강조 효과를 켜거나 끈다.
-        /// </summary>
+        // 선택 강조 효과를 켜거나 끈다.
         public void SetSelected(bool selected)
         {
             isSelected = selected;
             UpdateAlpha();
         }
+        
+        // 전용 스킬 시각 구분을 설정한다.
+        // true면 테두리 색상 변경 + 태그 텍스트 색상 변경.
+        
+        public void SetExclusive(bool exclusive)
+        {
+            if (borderImage != null)
+                borderImage.color = exclusive ? exclusiveColor : normalBorderColor;
 
-        // ════════════════════════════════════════════
+            if (tagText != null)
+                tagText.color = exclusive ? exclusiveTagColor : normalTagColor;
+        }
+        
         //  마우스 호버 이벤트
-        // ════════════════════════════════════════════
 
         public void OnPointerEnter(PointerEventData eventData)
         {
@@ -160,20 +159,14 @@ namespace _Game.LevelUp.UI
             isHovering = false;
             UpdateAlpha();
         }
-
-        // ════════════════════════════════════════════
+        
         //  내부 로직
-        // ════════════════════════════════════════════
 
         private void HandleClick()
         {
             onClick?.Invoke(cardIndex);
         }
 
-        /// <summary>
-        /// 현재 상태에 따라 알파값을 결정한다.
-        /// 우선순위: 선택 > 호버 > 기본
-        /// </summary>
         private void UpdateAlpha()
         {
             if (isSelected)

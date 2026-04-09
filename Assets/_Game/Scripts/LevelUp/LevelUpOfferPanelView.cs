@@ -1,4 +1,3 @@
-// UTF-8
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,12 +5,13 @@ using UnityEngine.UI;
 using _Game.LevelUp;
 using _Game.LevelUp.UI;
 
-/// <summary>
-/// Scene_Game의 기존 LevelUpPanel 구조를 그대로 사용하면서 4장 카드를 런타임 생성합니다.
-/// - 현재 씬에 cardViews 직렬화가 전혀 안 들어가 있으므로 자동 생성 방식으로 고정
-/// - SkillCard.prefab(LevelUpNewCardView)을 CardRow 아래에 4개 생성
-/// - 레벨업창 표시/닫힘과 pause gate를 같이 처리
-/// </summary>
+// 5카드 레벨업 패널 뷰 (v2).
+//   슬롯 배치:
+//   [0~2 or 0~3] = 스킬 카드 (공통 + 전용)
+//   [3~4 or 4]   = 패시브 카드
+//   OfferService가 보낸 Offer[] 순서 그대로 배치.
+//   전용 스킬 카드는 isExclusive == true → 카드 뷰에 전용 태그 표시.
+
 [DisallowMultipleComponent]
 public sealed class LevelUpOfferPanelView : MonoBehaviour
 {
@@ -21,17 +21,19 @@ public sealed class LevelUpOfferPanelView : MonoBehaviour
 
     [Header("카드 프리팹")]
     [SerializeField] private LevelUpNewCardView cardPrefab;
-    [SerializeField, Min(1)] private int cardCount = 4;
+
+    [Tooltip("카드 최대 개수 (5카드 시스템)")]
+    [SerializeField, Min(1)] private int cardCount = 5;
 
     [Header("리롤")]
     [SerializeField] private Button rerollButton;
     [SerializeField] private TMP_Text rerollCountText;
-    [SerializeField, Min(0)] private int rerollMaxCount = 1;
+    [SerializeField, Min(0)] private int rerollMaxCount = 3;
 
     [Header("디버그")]
     [SerializeField] private bool enableLogs = true;
 
-    private readonly List<LevelUpNewCardView> runtimeCards = new List<LevelUpNewCardView>(4);
+    private readonly List<LevelUpNewCardView> runtimeCards = new(5);
     private Offer[] currentOffers = System.Array.Empty<Offer>();
     private int rerollsLeft;
     private bool clickLocked;
@@ -103,7 +105,7 @@ public sealed class LevelUpOfferPanelView : MonoBehaviour
 
         if (cardPrefab == null)
         {
-            Debug.LogError("[LevelUpUI] cardPrefab이 없습니다. Prefabs/Card_Prefab/SkillCard.prefab의 LevelUpNewCardView를 연결하세요.", this);
+            Debug.LogError("[LevelUpUI] cardPrefab이 없습니다. LevelUpNewCardView 프리팹을 연결하세요.", this);
             return;
         }
 
@@ -162,17 +164,28 @@ public sealed class LevelUpOfferPanelView : MonoBehaviour
                 continue;
 
             Offer offer = currentOffers[i];
+
+            // 전용 스킬이면 태그에 "전용" 접두사 추가
+            string displayTag = offer.tagKr;
+            if (offer.isExclusive && !string.IsNullOrWhiteSpace(displayTag))
+                displayTag = $"전용 · {displayTag}";
+            else if (offer.isExclusive)
+                displayTag = "전용";
+
             LevelUpCardData cardData = new LevelUpCardData
             {
                 Title = offer.titleKr,
                 Description = offer.descKr,
-                Tag = offer.tagKr,
+                Tag = displayTag,
                 Icon = offer.icon
             };
 
             view.Bind(cardData, i, OnCardIndexClicked);
             view.SetInteractable(true);
             view.SetSelected(false);
+
+            // 전용 스킬 시각 구분
+            view.SetExclusive(offer.isExclusive);
         }
     }
 
@@ -209,9 +222,7 @@ public sealed class LevelUpOfferPanelView : MonoBehaviour
     {
         for (int i = 0; i < runtimeCards.Count; i++)
         {
-            if (runtimeCards[i] == null)
-                continue;
-
+            if (runtimeCards[i] == null) continue;
             runtimeCards[i].SetInteractable(value);
         }
     }
@@ -220,7 +231,6 @@ public sealed class LevelUpOfferPanelView : MonoBehaviour
     {
         if (panelRoot != null)
             panelRoot.SetActive(true);
-
         AcquirePause();
     }
 
@@ -228,7 +238,6 @@ public sealed class LevelUpOfferPanelView : MonoBehaviour
     {
         if (panelRoot != null)
             panelRoot.SetActive(false);
-
         ReleasePause();
         UpdateRerollUI();
     }
@@ -244,18 +253,14 @@ public sealed class LevelUpOfferPanelView : MonoBehaviour
 
     private void AcquirePause()
     {
-        if (pauseAcquired)
-            return;
-
+        if (pauseAcquired) return;
         GamePauseGate2D.Acquire(this);
         pauseAcquired = true;
     }
 
     private void ReleasePause()
     {
-        if (!pauseAcquired)
-            return;
-
+        if (!pauseAcquired) return;
         GamePauseGate2D.Release(this);
         pauseAcquired = false;
     }

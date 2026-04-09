@@ -1,38 +1,39 @@
-// UTF-8
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 런에서 보유한 스킬/패시브/전용스킬의 레벨을 관리한다.
+//  v2 변경사항:
+// - OfferKind.CharacterSkill 지원
+// - 전용 스킬은 Weapon 슬롯 카운트와 별도로 관리되지만,
+//   합산 슬롯 제한(useTotalSlotCap)에는 포함된다.
+// - maxCharacterSkillSlots (기본 2): 전용 스킬 최대 보유 수>
 [DisallowMultipleComponent]
 public sealed class SkillRuntimeState : MonoBehaviour
 {
-    [Header("슬롯 제한(기본값은 4/4/8)")]
-    [Tooltip("무기 슬롯 최대 개수(0이면 무기 획득 금지)")]
+    [Header("슬롯 제한")]
     [SerializeField, Min(0)] private int maxWeaponSlots = 4;
-
-    [Tooltip("패시브 슬롯 최대 개수(0이면 패시브 획득 금지)")]
     [SerializeField, Min(0)] private int maxPassiveSlots = 4;
 
-    [Tooltip("무기+패시브 합산 슬롯 제한 사용")]
-    [SerializeField] private bool useTotalSlotCap = true;
+    [Tooltip("캐릭터 전용 스킬 슬롯 최대 개수")]
+    [SerializeField, Min(0)] private int maxCharacterSkillSlots = 2;
 
-    [Tooltip("무기+패시브 합산 슬롯 최대 개수(0이면 합산 제한 미사용)")]
-    [SerializeField, Min(0)] private int maxTotalSlots = 8;
+    [SerializeField] private bool useTotalSlotCap = true;
+    [SerializeField, Min(0)] private int maxTotalSlots = 10;
 
     [Header("디버그/운영")]
-    [Tooltip("플레이 시작(Awake) 때 상태를 자동 초기화")]
     [SerializeField] private bool clearOnAwake = false;
-
-    [Tooltip("슬롯 Full 등 중요한 경고 로그 출력")]
     [SerializeField] private bool enableLogs = true;
 
     // id -> level
-    private readonly Dictionary<string, int> _weaponLevels = new Dictionary<string, int>(32);
-    private readonly Dictionary<string, int> _passiveLevels = new Dictionary<string, int>(32);
+    private readonly Dictionary<string, int> _weaponLevels = new(32);
+    private readonly Dictionary<string, int> _passiveLevels = new(32);
+    private readonly Dictionary<string, int> _charSkillLevels = new(4);
 
     public int WeaponCount => _weaponLevels.Count;
     public int PassiveCount => _passiveLevels.Count;
-    public int TotalCount => _weaponLevels.Count + _passiveLevels.Count;
+    public int CharacterSkillCount => _charSkillLevels.Count;
+    public int TotalCount => _weaponLevels.Count + _passiveLevels.Count + _charSkillLevels.Count;
 
     private void Awake()
     {
@@ -40,28 +41,31 @@ public sealed class SkillRuntimeState : MonoBehaviour
             ClearAll();
     }
 
+    // 해당 kind에 대한 Dictionary를 반환한다.
+    private Dictionary<string, int> GetMap(OfferKind kind)
+    {
+        return kind switch
+        {
+            OfferKind.Weapon         => _weaponLevels,
+            OfferKind.Passive        => _passiveLevels,
+            OfferKind.CharacterSkill => _charSkillLevels,
+            _                        => null
+        };
+    }
+
     public bool Has(OfferKind kind, string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return false;
-
-        return kind switch
-        {
-            OfferKind.Weapon => _weaponLevels.ContainsKey(id),
-            OfferKind.Passive => _passiveLevels.ContainsKey(id),
-            _ => false
-        };
+        var map = GetMap(kind);
+        return map != null && map.ContainsKey(id);
     }
 
     public int GetLevel(OfferKind kind, string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return 0;
-
-        return kind switch
-        {
-            OfferKind.Weapon => _weaponLevels.TryGetValue(id, out int lvW) ? lvW : 0,
-            OfferKind.Passive => _passiveLevels.TryGetValue(id, out int lvP) ? lvP : 0,
-            _ => 0
-        };
+        var map = GetMap(kind);
+        if (map == null) return 0;
+        return map.TryGetValue(id, out int lv) ? lv : 0;
     }
 
     public bool CanAcquire(OfferKind kind)
@@ -72,29 +76,23 @@ public sealed class SkillRuntimeState : MonoBehaviour
 
         return kind switch
         {
-            OfferKind.Weapon => maxWeaponSlots > 0 && _weaponLevels.Count < maxWeaponSlots,
-            OfferKind.Passive => maxPassiveSlots > 0 && _passiveLevels.Count < maxPassiveSlots,
-            _ => false
+            OfferKind.Weapon         => maxWeaponSlots > 0 && _weaponLevels.Count < maxWeaponSlots,
+            OfferKind.Passive        => maxPassiveSlots > 0 && _passiveLevels.Count < maxPassiveSlots,
+            OfferKind.CharacterSkill => maxCharacterSkillSlots > 0 && _charSkillLevels.Count < maxCharacterSkillSlots,
+            _                        => false
         };
     }
-
-    /// <summary>
-    /// 상태 갱신: 획득 또는 레벨업
-    /// - 이미 보유면 level++
-    /// - 미보유면 슬롯 제한을 만족할 때만 level=1로 추가
-    /// </summary>
+    
+    // 상태 갱신: 획득 또는 레벨업.
+    // - 이미 보유면 level++
+    // - 미보유면 슬롯 제한을 만족할 때만 level=1로 추가
+    
     public int GrantOrLevelUp(OfferKind kind, string id)
     {
         if (string.IsNullOrWhiteSpace(id))
             return 0;
 
-        Dictionary<string, int> map = kind switch
-        {
-            OfferKind.Passive => _passiveLevels,
-            OfferKind.Weapon => _weaponLevels,
-            _ => null
-        };
-
+        var map = GetMap(kind);
         if (map == null)
         {
             if (enableLogs)
@@ -126,11 +124,11 @@ public sealed class SkillRuntimeState : MonoBehaviour
     {
         _weaponLevels.Clear();
         _passiveLevels.Clear();
+        _charSkillLevels.Clear();
     }
-
-    // ----------------------------
-    // Save/Load 지원(선택)
-    // ----------------------------
+    
+    // Save/Load 지원
+    
     [Serializable]
     public struct Entry
     {
@@ -155,6 +153,9 @@ public sealed class SkillRuntimeState : MonoBehaviour
         foreach (var kv in _passiveLevels)
             list.Add(new Entry { kind = OfferKind.Passive, id = kv.Key, level = kv.Value });
 
+        foreach (var kv in _charSkillLevels)
+            list.Add(new Entry { kind = OfferKind.CharacterSkill, id = kv.Key, level = kv.Value });
+
         return new Snapshot { entries = list.ToArray() };
     }
 
@@ -169,11 +170,9 @@ public sealed class SkillRuntimeState : MonoBehaviour
             if (string.IsNullOrWhiteSpace(e.id)) continue;
 
             int lv = Mathf.Max(1, e.level);
-
-            if (e.kind == OfferKind.Weapon)
-                _weaponLevels[e.id] = lv;
-            else if (e.kind == OfferKind.Passive)
-                _passiveLevels[e.id] = lv;
+            var map = GetMap(e.kind);
+            if (map != null)
+                map[e.id] = lv;
         }
     }
 }
