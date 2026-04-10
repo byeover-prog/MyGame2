@@ -1,15 +1,41 @@
+// UTF-8
 using System.Collections.Generic;
 using UnityEngine;
 
-// 뇌진 (雷震) — 하율 전용 스킬 #1
-// 마늘형 전기 오라.
-// 플레이어 주변 원형 범위 내 모든 적에게 틱 데미지를 준다.
-// 영구 지속 (장착하면 항상 활성).
-
+/// <summary>
+/// 뇌진 (雷震) — 하율 전용 스킬 #1
+///
+/// 마늘형 전기 오라.
+/// 플레이어 주변 원형 범위 내 모든 적에게 틱 데미지를 준다.
+/// 영구 지속 (장착하면 항상 활성).
+///
+/// ★ 과부하 메카닉:
+///   범위 내 적이 overloadThreshold(기본 3)마리 이상이면
+///   피해량에 overloadDamageMultiplier(기본 1.5배)를 적용.
+///   하율의 전파 패시브와 시너지 → "적을 모아서 전파 폭탄" 플레이 패턴.
+///
+/// 레벨 스케일링 (레벨당):
+///   - 피해량 +10%
+///   - 범위 +10%
+///
+/// 각성 (Lv7~8):
+///   - 틱 간격 0.5초 감소
+///   - 피해량 50% 증가
+///
+/// 프리팹 구조:
+///   Weapon_ThunderShock (프리팹 루트)
+///   ├── LevelableSkillMarker2D (SkillRunner 연결용)
+///   ├── ThunderShockWeapon2D   (이 스크립트)
+///   └── VFX_ThunderShock       (자식 — SpriteRenderer or ParticleSystem)
+///
+/// DamageUtil2D.TryApplyDamage(col, damage, DamageElement2D.Electric) 사용.
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class ThunderShockWeapon2D : MonoBehaviour, ILevelableSkill
 {
+    // ═══════════════════════════════════════════════
     //  인스펙터
+    // ═══════════════════════════════════════════════
 
     [Header("=== 타겟 설정 ===")]
     [SerializeField] private LayerMask enemyMask;
@@ -51,8 +77,10 @@ public sealed class ThunderShockWeapon2D : MonoBehaviour, ILevelableSkill
 
     [Header("=== 디버그 ===")]
     [SerializeField] private bool enableLogs = false;
-    
+
+    // ═══════════════════════════════════════════════
     //  내부 상태
+    // ═══════════════════════════════════════════════
 
     private Transform _owner;
     private PlayerCombatStats2D _combatStats;
@@ -72,8 +100,10 @@ public sealed class ThunderShockWeapon2D : MonoBehaviour, ILevelableSkill
     // OverlapCircle 버퍼
     private readonly List<Collider2D> _hitBuffer = new(64);
     private ContactFilter2D _enemyFilter;
-    
+
+    // ═══════════════════════════════════════════════
     //  ILevelableSkill 구현
+    // ═══════════════════════════════════════════════
 
     public void OnAttaced(Transform newOwner) => OnAttached(newOwner);
 
@@ -108,8 +138,9 @@ public sealed class ThunderShockWeapon2D : MonoBehaviour, ILevelableSkill
             GameLogger.Log($"[뇌진] Lv.{_currentLevel} — 피해량={_damage}, 범위={_radius:F1}, 간격={_interval:F2}초", this);
     }
 
-
+    // ═══════════════════════════════════════════════
     //  레벨별 수치 계산
+    // ═══════════════════════════════════════════════
 
     private void RecalculateStats(int level)
     {
@@ -139,8 +170,10 @@ public sealed class ThunderShockWeapon2D : MonoBehaviour, ILevelableSkill
         float scale = _radius / vfxBaseRadius;
         vfxRoot.localScale = new Vector3(scale, scale, 1f);
     }
-    
+
+    // ═══════════════════════════════════════════════
     //  Update — 틱 데미지 루프
+    // ═══════════════════════════════════════════════
 
     private void Update()
     {
@@ -205,7 +238,7 @@ public sealed class ThunderShockWeapon2D : MonoBehaviour, ILevelableSkill
 
             _hitCooldowns[rootId] = now + perEnemyCooldown;
 
-            // 전기 속성으로 데미지 적용 → 전파 패시브 트리거
+            // ★ 전기 속성으로 데미지 적용 → 전파 패시브 트리거
             if (DamageUtil2D.TryApplyDamage(col, finalDamage, DamageElement2D.Electric))
                 actualHits++;
         }
@@ -219,9 +252,12 @@ public sealed class ThunderShockWeapon2D : MonoBehaviour, ILevelableSkill
             CombatLog.Log($"[뇌진] 틱! 히트={actualHits} 데미지={finalDamage}{overloadTag} 범위 내 생존={aliveCount}");
         }
     }
-    
+
+    // ═══════════════════════════════════════════════
     //  유틸
-    // 만료된 히트 쿨다운을 정리한다. 매 틱마다 호출.
+    // ═══════════════════════════════════════════════
+
+    /// <summary>만료된 히트 쿨다운을 정리한다. 매 틱마다 호출.</summary>
     private void CleanupExpiredCooldowns(float now)
     {
         // 64개 이하면 정리 스킵 (성능 절약)
@@ -237,9 +273,11 @@ public sealed class ThunderShockWeapon2D : MonoBehaviour, ILevelableSkill
         for (int i = 0; i < expired.Count; i++)
             _hitCooldowns.Remove(expired[i]);
     }
-    
+
+    // ═══════════════════════════════════════════════
     //  에디터 기즈모
-    
+    // ═══════════════════════════════════════════════
+
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {

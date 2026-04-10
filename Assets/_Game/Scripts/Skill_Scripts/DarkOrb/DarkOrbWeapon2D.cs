@@ -1,26 +1,8 @@
-// ============================================================================
-// DarkOrbWeapon2D.cs
-// 경로: Assets/_Game/Scripts/Skill_Scripts/DarkOrb/DarkOrbWeapon2D.cs
-// 용도: 암흑구 발사기. CentralProjectileManager에 발사 요청만 함.
-//
-// [v2 변경사항]
-// - GameProjectileManager → CentralProjectileManager 전환
-// - DarkOrbProjectileSpec → ProjectileSlot 템플릿 사용
-// - VisualId = ProjectileVisualId.DarkOrb 지정
-// - Inspector 필드/기존 스킬 시스템 호환: 변경 없음
-//
-// [기존 스킬 시스템 호환]
-// ILevelableSkill 인터페이스 구현:
-//   OnAttached(Transform owner) → 플레이어 참조 획득
-//   OnAttaced(Transform owner) → 오타 호환
-//   ApplyLevel(int level) → 레벨 적용
-// ============================================================================
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
 {
-    // ── Inspector (기존과 완전 동일, 변경 없음) ──
     [Header("타겟")]
     [SerializeField] private LayerMask enemyMask;
     [SerializeField] private float aimRange = 25f;
@@ -45,9 +27,6 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     [SerializeField] private float splitSpeed = 10f;
     [SerializeField] private float splitLifeSeconds = 0.6f;
 
-    [Header("비주얼")]
-    [Range(0.1f, 1f)]
-    [SerializeField] private float orbAlpha = 0.55f;
 
     // ── 런타임 ──
     private Transform _owner;

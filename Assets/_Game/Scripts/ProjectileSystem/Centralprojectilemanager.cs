@@ -1,31 +1,3 @@
-// 모든 투사체의 이동/충돌/소멸을 단일 Update()에서 처리하는 중앙 매니저.
-// MonoBehaviour.Update 1개만 실행 — 투사체 200개여도 Update 호출 1회.
-//
-// [기존 GameProjectileManager(DarkOrb 전용)를 일반화한 버전]
-//
-// [GC 0 보장 규칙]
-// - Update 내부에서 new 금지
-// - List/Array 재사용
-// - delegate 할당 금지
-// - LINQ 금지
-// - string 생성은 #if UNITY_EDITOR 내에서만
-//
-// [Hierarchy / Inspector]
-// Hierarchy: [CentralProjectileManager] (빈 GameObject)
-// 컴포넌트: CentralProjectileManager + CentralViewPool
-//
-// Inspector:
-//   Max Projectiles      → 512
-//   Default Enemy Mask   → Enemy 레이어
-//   View Pool            → 같은 오브젝트의 CentralViewPool
-//   Hit Cache Size       → 2048 (중복 히트 방지 공유 버퍼)
-//
-// [기존 시스템과의 관계]
-// - SkillRunner, UltimateExecutor, CommonSkillWeapon2D: 건드리지 않음
-// - 기존 무기 클래스(DarkOrbWeapon2D 등)가 이 매니저의 Spawn()을 호출
-// - 기존 투사체 MonoBehaviour(ShurikenProjectile2D 등)는 점진적으로 교체
-// ============================================================================
-
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -68,6 +40,7 @@ public sealed class CentralProjectileManager : MonoBehaviour
     // 물리 쿼리 공유 버퍼 (GC 0)
     private Collider2D[] _overlapBuffer;
     private const int OVERLAP_BUFFER_SIZE = 32;
+    private ContactFilter2D _overlapFilter;
 
     // 중복 히트 방지 공유 버퍼
     // _slots[i].HitCacheStartIndex ~ +HitCacheCount 범위를 사용
@@ -89,6 +62,8 @@ public sealed class CentralProjectileManager : MonoBehaviour
 
         _slots = new ProjectileSlot[maxProjectiles];
         _overlapBuffer = new Collider2D[OVERLAP_BUFFER_SIZE];
+        _overlapFilter = new ContactFilter2D();
+        _overlapFilter.useTriggers = true;
         _hitCacheBuffer = new int[hitCacheSize];
         _hitCacheUsed = 0;
         _activeCount = 0;
@@ -655,7 +630,9 @@ public sealed class CentralProjectileManager : MonoBehaviour
     private int OverlapAt(Vector2 center, float radius, LayerMask mask)
     {
         if (radius <= 0f) return 0;
-        return Physics2D.OverlapCircleNonAlloc(center, radius, _overlapBuffer, mask);
+        _overlapFilter.SetLayerMask(mask);
+        _overlapFilter.useLayerMask = true;
+        return Physics2D.OverlapCircle(center, radius, _overlapFilter, _overlapBuffer);
     }
 
     // ══════════════════════════════════════════════════════════════
