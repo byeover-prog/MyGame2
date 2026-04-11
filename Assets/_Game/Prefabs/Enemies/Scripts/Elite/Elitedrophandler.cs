@@ -9,9 +9,12 @@ public sealed class EliteDropHandler : MonoBehaviour
     [Tooltip("고경험치 영혼 프리팹입니다.")]
     [SerializeField] private GameObject highExpSoulPrefab;
 
+    
+#pragma warning disable 0414
     [Header("보상 설정")]
     [Tooltip("경험치 배율 (일반 대비)입니다.")]
     [SerializeField] private float expMultiplier = 5f;
+#pragma warning restore 0414
 
     [Tooltip("보물상자 드랍 확률 (0~1)입니다.")]
     [SerializeField] private float chestDropRate = 1f;
