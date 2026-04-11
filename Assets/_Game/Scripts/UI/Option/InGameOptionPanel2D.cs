@@ -1,4 +1,3 @@
-// UTF-8
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -45,7 +44,6 @@ public sealed class InGameOptionPanel2D : MonoBehaviour
     private Button confirmButton;
 
     private bool _isOpen;
-    private float _resumeTimeScale = 1f;
 
     private void Awake()
     {
@@ -105,14 +103,11 @@ public sealed class InGameOptionPanel2D : MonoBehaviour
         {
             if (open)
             {
-                _resumeTimeScale = Time.timeScale;
-                Time.timeScale = 0f;
+                GamePauseGate2D.Acquire(this);
             }
             else
             {
-                float ts = 1f;
-                if (GameSettingsRuntime.HasInstance) ts = GameSettingsRuntime.Instance.TimeScale;
-                Time.timeScale = ts;
+                GamePauseGate2D.Release(this);
             }
         }
 
@@ -162,9 +157,6 @@ public sealed class InGameOptionPanel2D : MonoBehaviour
     {
         if (GameSettingsRuntime.HasInstance)
             GameSettingsRuntime.Instance.TimeScale = timeScale;
-
-        // 옵션이 닫혀있는 상태에서 누를 수도 있으니 즉시 반영
-        if (!_isOpen && pauseGameOnOpen)
-            Time.timeScale = GameSettingsRuntime.Instance.TimeScale;
+        // GameSettingsRuntime.TimeScale setter가 GamePauseGate2D.IsPaused 확인 후 반영
     }
 }

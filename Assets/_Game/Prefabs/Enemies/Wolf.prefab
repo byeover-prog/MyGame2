@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 6815216093395390843}
   - component: {fileID: 2870998675488758128}
   - component: {fileID: -7805467308354604214}
-  - component: {fileID: -3538360306957351174}
   - component: {fileID: -3964929293596305016}
   - component: {fileID: -4514600718147756942}
   m_Layer: 16
@@ -224,8 +223,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth2D
   maxHp: 40
   currentHp: 40
-  destroyOnDeath: 1
-  destroyDelay: 0
   expOrbPool: {fileID: 0}
   expOrbPrefab: {fileID: 8136490244520117647, guid: 1862153c6c96eae40be029799fe818ef,
     type: 3}
@@ -233,20 +230,6 @@ MonoBehaviour:
   splitIntoMultipleOrbs: 0
   maxOrbs: 6
   debugLog: 0
---- !u!114 &-3538360306957351174
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5418424573138721060}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30271b8415ab3d142b269a8a7059de50, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAutoDespawn2D
-  player: {fileID: 0}
-  despawn_distance: 25
 --- !u!114 &-3964929293596305016
 MonoBehaviour:
   m_ObjectHideFlags: 0

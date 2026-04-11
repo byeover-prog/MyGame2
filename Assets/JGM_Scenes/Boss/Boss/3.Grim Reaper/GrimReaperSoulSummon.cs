@@ -35,8 +35,10 @@ public class GrimReaperSoulSummon : MonoBehaviour
     [Tooltip("스킬 시작 후 실제 소환까지 대기 시간입니다.\n추후 소환 애니메이션 길이에 맞춰 조정하면 됩니다.")]
     [SerializeField] private float summonCastDelay = 0.8f;
 
+#pragma warning disable CS0414
     [Tooltip("망혼 부활 사용 중 저승사자가 멈출지 여부입니다.")]
     [SerializeField] private bool stopWhileCasting = true;
+#pragma warning restore CS0414
 
     [Header("===== 망령 소환 설정 =====")]
     [Tooltip("망령으로 사용할 프리팹입니다.\n현재는 저승사자 프리팹 복사본을 연결하면 됩니다.")]

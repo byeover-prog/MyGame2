@@ -1,13 +1,8 @@
-// ──────────────────────────────────────────────
-// LevelUpRewardType.cs
-// 레벨업 카드 보상 종류
-// ──────────────────────────────────────────────
-
 namespace _Game.LevelUp
 {
     /// <summary>
     /// 레벨업 카드가 제공하는 보상 타입.
-    /// Skill이면 SO 기반 스킬/패시브, 나머지는 즉시 보상.
+    /// Skill이면 SO 기반 스킬/패시브, CharacterSkill이면 전용 스킬(SkillRunner 경로).
     /// </summary>
     public enum LevelUpRewardType
     {
@@ -24,6 +19,9 @@ namespace _Game.LevelUp
         Invincible = 3,
 
         /// <summary>경험치 즉시 획득</summary>
-        BonusExp = 4
+        BonusExp = 4,
+
+        /// <summary> 캐릭터 전용 스킬 (SkillRunner 경로)</summary>
+        CharacterSkill = 5
     }
 }

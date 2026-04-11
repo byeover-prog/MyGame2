@@ -1,11 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// 적 등록부. 모든 활성 적을 추적하여 Physics 쿼리 없이 타겟팅할 수 있게 한다.
+
 public static class EnemyRegistry2D
 {
     private static readonly List<EnemyRegistryMember2D> _enemies = new List<EnemyRegistryMember2D>(256);
 
     public static int Count => _enemies.Count;
+    
+    // 등록된 적 목록 읽기 전용 접근.
+    // WeaponShooterSystem2D.TryPickTargetFromRegistry()에서 사용.
+
+    public static IReadOnlyList<EnemyRegistryMember2D> Members => _enemies;
 
     public static void Register(EnemyRegistryMember2D enemy)
     {
@@ -14,10 +21,20 @@ public static class EnemyRegistry2D
         _enemies.Add(enemy);
     }
 
+   
+    // SwapBack O(1) 제거. 기존 List.Remove()는 O(N)이라 적 수가 많을 때 비쌈.
+    // 순서가 바뀌지만, 레지스트리는 순서를 보장할 필요가 없으므로 안전함.
     public static void Unregister(EnemyRegistryMember2D enemy)
     {
         if (enemy == null) return;
-        _enemies.Remove(enemy);
+
+        int idx = _enemies.IndexOf(enemy);
+        if (idx < 0) return;
+
+        int last = _enemies.Count - 1;
+        if (idx < last)
+            _enemies[idx] = _enemies[last];
+        _enemies.RemoveAt(last);
     }
 
     // 2인자 기본 버전(이게 있어야 다른 코드들이 다 살아남)

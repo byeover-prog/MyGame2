@@ -2,6 +2,10 @@
 // LevelUpCardData.cs
 // 레벨업 카드 1장의 데이터 컨테이너
 // UI는 이 데이터를 받아서 카드에 표시한다.
+//
+// ★ v2: CharacterSkill 타입 추가
+//   - CharacterSkillPrefab: SkillRunner에 장착할 프리팹
+//   - IsExclusive: 전용 스킬 여부 (UI 시각 구분용)
 // ──────────────────────────────────────────────
 
 using _Game.Skills;
@@ -35,8 +39,16 @@ namespace _Game.LevelUp
 
         // ── 스킬 카드 전용 ─────────────────────────
 
-        /// <summary>스킬/패시브 정의 SO (RewardType == Skill일 때 사용)</summary>
+        /// <summary>스킬/패시브 정의 SO (RewardType == Skill 또는 CharacterSkill 일 때 사용)</summary>
         public SkillDefinitionSO SkillDefinition;
+
+        // ── ★ 전용 스킬 카드 전용 ──────────────────
+
+        /// <summary>전용 스킬 프리팹 (RewardType == CharacterSkill일 때 SkillRunner에 장착)</summary>
+        public GameObject CharacterSkillPrefab;
+
+        /// <summary>전용 스킬 여부 (UI에서 테두리/태그 시각 구분용)</summary>
+        public bool IsExclusive;
 
         // ── 대체 카드 전용 ─────────────────────────
 
@@ -62,7 +74,6 @@ namespace _Game.LevelUp
             string tag = "";
             if (definition != null)
             {
-                // SO에 태그가 있으면 사용, 없으면 타입 기반 기본값
                 tag = !string.IsNullOrWhiteSpace(definition.TagKr)
                     ? definition.TagKr
                     : (definition.SkillType == _Game.Skills.SkillType.Active ? "공통 스킬" : "패시브");
@@ -75,7 +86,35 @@ namespace _Game.LevelUp
                 Title           = definition != null ? definition.DisplayName : "스킬",
                 Description     = description,
                 Icon            = definition != null ? definition.Icon : null,
-                Tag             = tag
+                Tag             = tag,
+                IsExclusive     = false
+            };
+        }
+
+        /// <summary>★ 캐릭터 전용 스킬 카드 생성</summary>
+        public static LevelUpCardData CreateCharacterSkillCard(
+            SkillDefinitionSO definition,
+            string description,
+            GameObject prefab)
+        {
+            string tag = "";
+            if (definition != null)
+            {
+                tag = !string.IsNullOrWhiteSpace(definition.TagKr)
+                    ? $"전용 · {definition.TagKr}"
+                    : "전용";
+            }
+
+            return new LevelUpCardData
+            {
+                RewardType            = LevelUpRewardType.CharacterSkill,
+                SkillDefinition       = definition,
+                CharacterSkillPrefab  = prefab,
+                Title                 = definition != null ? definition.DisplayName : "전용 스킬",
+                Description           = description,
+                Icon                  = definition != null ? definition.Icon : null,
+                Tag                   = tag,
+                IsExclusive           = true
             };
         }
 

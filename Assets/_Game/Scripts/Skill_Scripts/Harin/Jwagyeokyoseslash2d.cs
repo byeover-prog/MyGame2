@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -171,10 +170,8 @@ public sealed class JwagyeokYoseSlash2D : PooledObject2D
                 AttributeSynergyManager2D.TryApplySynergy(col, _damage);
         }
 
-#if UNITY_EDITOR
         if (hitCount > 0)
-            GameLogger.Log($"[좌격요세] 전방 베기 적중! {hitCount}명 피해량={_damage}");
-#endif
+            CombatLog.Log($"[좌격요세] 전방 베기 적중! {hitCount}명 피해량={_damage}");
     }
 
 #if UNITY_EDITOR

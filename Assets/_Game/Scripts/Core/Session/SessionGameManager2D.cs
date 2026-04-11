@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace _Game.Scripts.Core.Session
 {
-    // [구현 원리 요약]
-    // - 세션(한 판)의 상태를 enum FSM으로 단일 관리한다.
-    // - TimeScale, 입력 허용, 스폰 허용 같은 "전역 정책"은 오직 여기서만 결정한다.
-    // - 다른 시스템은 "현재 상태 조회" 또는 "상태 변경 요청"만 한다(직접 TimeScale 만지지 않는다).
-    // - 첫 스폰 지연(예: 3초)도 여기서만 결정한다(스폰 시스템이 자체 타이머를 갖지 않게).
     public enum SessionState
     {
         Boot,           // 초기화 중
@@ -48,8 +43,6 @@ namespace _Game.Scripts.Core.Session
 
         [Tooltip("전투 로직(무기/투사체 등) 업데이트 허용 여부(자동 계산).")]
         [SerializeField] private bool allowCombatUpdate = true;
-
-        // 상태 변경 이벤트(1:N 반응용)
         public event Action<SessionState, SessionState> OnStateChanged;
 
         // 보스 타이밍 도달 이벤트(스폰 시스템이 구독)
@@ -96,11 +89,7 @@ namespace _Game.Scripts.Core.Session
                 }
             }
         }
-
-        // -------------------------
-        // 상태 전환 API (외부 호출)
-        // -------------------------
-
+        
         public void StartSession()
         {
             sessionTime = 0f;
@@ -145,10 +134,6 @@ namespace _Game.Scripts.Core.Session
             SetState(SessionState.Victory);
         }
 
-        // -------------------------
-        // 내부 구현
-        // -------------------------
-
         private void SetState(SessionState next)
         {
             if (currentState == next) return;
@@ -163,19 +148,19 @@ namespace _Game.Scripts.Core.Session
         private void ApplyPoliciesForState(SessionState state)
         {
             // 상태별 전역 정책: "여기서만" 결정한다.
-            // 다른 시스템이 Time.timeScale을 직접 만지면 나중에 먹통/충돌의 원인이 된다.
+            // 모든 시간 정지/복구는 GamePauseGate2D를 경유한다.
 
             switch (state)
             {
                 case SessionState.Boot:
-                    Time.timeScale = 1f;
+                    GamePauseGate2D.Release(this);
                     allowPlayerInput = false;
                     allowEnemySpawn = false;
                     allowCombatUpdate = false;
                     break;
 
                 case SessionState.Playing:
-                    Time.timeScale = 1f;
+                    GamePauseGate2D.Release(this);
                     allowPlayerInput = true;
 
                     // Playing이라도 첫 스폰 지연이 있을 수 있으니
@@ -186,15 +171,15 @@ namespace _Game.Scripts.Core.Session
                     break;
 
                 case SessionState.LevelUpChoice:
-                    // 카드 선택 중에는 시간 정지(바서류 방식)
-                    Time.timeScale = 0f;
+                    // 카드 선택 중에는 시간 정지
+                    GamePauseGate2D.Acquire(this);
                     allowPlayerInput = false;
                     allowEnemySpawn = false;
                     allowCombatUpdate = false;
                     break;
 
                 case SessionState.Paused:
-                    Time.timeScale = 0f;
+                    GamePauseGate2D.Acquire(this);
                     allowPlayerInput = false;
                     allowEnemySpawn = false;
                     allowCombatUpdate = false;
@@ -202,7 +187,7 @@ namespace _Game.Scripts.Core.Session
 
                 case SessionState.GameOver:
                 case SessionState.Victory:
-                    Time.timeScale = 0f;
+                    GamePauseGate2D.Acquire(this);
                     allowPlayerInput = false;
                     allowEnemySpawn = false;
                     allowCombatUpdate = false;
