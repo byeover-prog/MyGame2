@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -111,9 +110,7 @@ public sealed class JwagyeokYoseWeapon2D : MonoBehaviour, ILevelableSkill
         slash.Initialize(finalDamage, slashRadius, slashLifetime,
                          enemyMask, _owner, aimDir, angleDeg);
 
-#if UNITY_EDITOR
-        GameLogger.Log($"[좌격요세] 횡베기! 각도={angleDeg:F0}° 피해량={finalDamage} 범위={slashRadius:F1}");
-#endif
+        CombatLog.Log($"[좌격요세] 횡베기! 각도={angleDeg:F0}° 피해량={finalDamage} 범위={slashRadius:F1}");
     }
 
     /// <summary>

@@ -1,12 +1,8 @@
-// UTF-8
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// [구현 원리 요약]
-// - 패널 표시/숨김/시간정지/버튼 연결을 이 컴포넌트 한 곳에서만 담당한다.
-// - Awake에서 1회만 "초기 숨김"을 하고, Open 후에는 다시 꺼버리지 않는다(가장 흔한 버그 방지).
 [DisallowMultipleComponent]
 public sealed class DefeatUIController2D : MonoBehaviour
 {
@@ -52,7 +48,7 @@ public sealed class DefeatUIController2D : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(firstSelect);
 
         if (pauseTimeScale)
-            Time.timeScale = 0f;
+            GamePauseGate2D.Acquire(this);
 
         GameLogger.Log($"[DefeatUIController2D] Open reason='{reason}'", this);
     }
@@ -62,7 +58,7 @@ public sealed class DefeatUIController2D : MonoBehaviour
         if (panelRoot == null) panelRoot = gameObject;
 
         panelRoot.SetActive(false);
-        if (Time.timeScale != 1f) Time.timeScale = 1f;
+        GamePauseGate2D.Release(this);
     }
 
     public void ForceCanvasVisible()

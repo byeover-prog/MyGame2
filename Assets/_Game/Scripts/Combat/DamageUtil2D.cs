@@ -1,9 +1,5 @@
 using UnityEngine;
 
-// [구현 원리 요약]
-// - 데미지 적용은 DamageUtil2D에서 통일한다(레거시 별칭 포함).
-// - 데미지 적용 성공 시 "데미지 팝업 요청 이벤트"를 발생시킨다(전투와 UI 분리).
-
 public static class DamageUtil2D
 {
     // 레이어 마스크 판정
@@ -17,7 +13,6 @@ public static class DamageUtil2D
     // Root Instance Id (동일 적 판정용 키)
     // --------------------------------------------
 
-    // 현재 권장
     public static int GetRootId(GameObject go)
     {
         if (go == null) return 0;
@@ -73,10 +68,9 @@ public static class DamageUtil2D
         if (damage <= 0) return false;
 
         bool applied = false;
-
-        // 1) 권장: 인터페이스 기반
-        var dmgable = hitGo.GetComponentInParent<IDamageable2D>();
-        if (dmgable != null)
+        
+        // 대부분의 적은 콜라이더와 EnemyHealth2D가 같은 오브젝트 또는 루트에 있음
+        if (hitGo.TryGetComponent<IDamageable2D>(out var dmgable))
         {
             if (!dmgable.IsDead)
             {
@@ -86,13 +80,12 @@ public static class DamageUtil2D
         }
         else
         {
-            // 2) 구현체 fallback
-            var hp = hitGo.GetComponentInParent<EnemyHealth2D>();
-            if (hp != null)
+            var dmgableParent = hitGo.GetComponentInParent<IDamageable2D>();
+            if (dmgableParent != null)
             {
-                if (!hp.IsDead)
+                if (!dmgableParent.IsDead)
                 {
-                    hp.TakeDamage(damage);
+                    dmgableParent.TakeDamage(damage);
                     applied = true;
                 }
             }
@@ -100,52 +93,41 @@ public static class DamageUtil2D
 
         if (applied)
         {
+            
             Vector3 pos = GetPopupWorldPos(hitGo, hitCol);
             DamageEvents2D.RaiseDamagePopup(pos, damage, element);
 
-            // ★ 속성 피격 이펙트 요청 (ElementVFXObserver2D가 구독)
+            // 속성 피격 이펙트 요청 (ElementVFXObserver2D가 구독)
             DamageEvents2D.RaiseElementHit(hitGo, element);
 
-            // ★ 적 데미지 적용 완료 알림 (흡혈/후처리용)
+            // 적 데미지 적용 완료 알림 (흡혈/후처리용)
             DamageEvents2D.RaiseEnemyDamageApplied(hitGo, damage, element);
         }
 
         return applied;
     }
-
+    
     private static Vector3 GetPopupWorldPos(GameObject hitGo, Collider2D hitCol)
     {
-        // 기본값
-        Vector3 pos = hitGo.transform.position + Vector3.up * 0.5f;
-
-        // 1) 맞은 콜라이더가 있으면 그 bounds 최상단
+        // 1) 맞은 콜라이더가 있으면 바로 사용 (GetComponentInParent 0회)
         if (hitCol != null)
         {
             var b = hitCol.bounds;
             return new Vector3(b.center.x, b.max.y, 0f);
         }
 
-        // 2) 부모에서 Collider2D 탐색
-        var col = hitGo.GetComponentInParent<Collider2D>();
-        if (col != null)
+        // 2) hitCol이 없을 때만 1회 탐색 (TryGetComponent 우선)
+        if (hitGo.TryGetComponent<Collider2D>(out var col))
         {
             var b = col.bounds;
             return new Vector3(b.center.x, b.max.y, 0f);
         }
 
-        // 3) 부모에서 Renderer 탐색(SpriteRenderer 포함)
-        var r = hitGo.GetComponentInParent<Renderer>();
-        if (r != null)
-        {
-            var b = r.bounds;
-            return new Vector3(b.center.x, b.max.y, 0f);
-        }
-
-        return pos;
+        // 3) 최후 폴백: 오브젝트 위치 + 오프셋
+        return hitGo.transform.position + Vector3.up * 0.5f;
     }
 
     // 레거시 별칭: ApplyDamage(리턴 없는 버전) 호환
-    // ★ 메인 캐릭터 속성 자동 적용
     public static void ApplyDamage(Collider2D hit, int damage)
     {
         TryApplyDamage(hit, damage, MainElementProvider.Element);

@@ -1,13 +1,3 @@
-// ──────────────────────────────────────────────
-// LevelUpFlowCoordinator.cs
-// 새 4장 레벨업 시스템의 진입 브리지 + 큐 관리자
-//
-// 구현 원리 요약:
-// 카드 생성과 패널 오픈 시 동일한 PlayerSkillLoadout을 세션 컨텍스트로 전달한다.
-// 패널은 이 컨텍스트를 리롤/보상 적용에도 그대로 재사용한다.
-// 따라서 최초 생성 / 리롤 / 적용이 모두 같은 loadout 인스턴스를 바라보게 된다.
-// ──────────────────────────────────────────────
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,9 +34,6 @@ namespace _Game.LevelUp
 
         /// <summary>큐 처리 코루틴 실행 중 여부</summary>
         private bool isProcessing;
-
-        /// <summary>시간 정지 전 저장된 timeScale</summary>
-        private float savedTimeScale = 1f;
 
         /// <summary>현재 시간이 정지된 상태인지</summary>
         private bool isTimePaused;
@@ -135,11 +122,10 @@ namespace _Game.LevelUp
             if (isTimePaused)
                 return;
 
-            savedTimeScale = Time.timeScale > 0f ? Time.timeScale : 1f;
-            Time.timeScale = 0f;
+            GamePauseGate2D.Acquire(this);
             isTimePaused = true;
 
-            GameLogger.Log($"[FlowCoordinator] 시간 정지 (saved={savedTimeScale})", this);
+            GameLogger.Log("[FlowCoordinator] 시간 정지 (GamePauseGate2D)", this);
         }
 
         /// <summary>
@@ -153,10 +139,10 @@ namespace _Game.LevelUp
             if (!isTimePaused)
                 return;
 
-            Time.timeScale = savedTimeScale > 0f ? savedTimeScale : 1f;
+            GamePauseGate2D.Release(this);
             isTimePaused = false;
 
-            GameLogger.Log($"[FlowCoordinator] 시간 복구 (restored={Time.timeScale})", this);
+            GameLogger.Log("[FlowCoordinator] 시간 복구 (GamePauseGate2D)", this);
         }
 
         /// <summary>

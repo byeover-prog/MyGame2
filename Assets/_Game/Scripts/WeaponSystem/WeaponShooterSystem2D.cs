@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-// [요약] 무기 시스템에서 투사체를 생성하고 타겟을 향해 발사 명령을 내리는 핵심 로직
+
 public sealed class WeaponShooterSystem2D : MonoBehaviour
 {
     [System.Serializable]
@@ -67,7 +67,14 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
     private PlayerCombatStats2D stats;
 
     private Collider2D[] _buffer;
+    // avoidDup 키는 root InstanceID로 통일 (Registry/Physics 양쪽 동일 키 사용)
     private readonly HashSet<int> _reservedTargetIds = new HashSet<int>();
+
+    // EnemyHealth2D 캐시: root InstanceID → EnemyHealth2D
+    // 적이 Destroy/풀반환되면 == null이 true가 되어 자동 재탐색
+    private readonly Dictionary<int, EnemyHealth2D> _healthCache = new Dictionary<int, EnemyHealth2D>(128);
+    private float _nextCacheCleanTime;
+    private const float CACHE_CLEAN_INTERVAL = 30f;
     
     // 클래스 필드로 추가(버퍼 재사용을 통해 메모리 할당 방지)
     private readonly List<Collider2D> _overlapList = new List<Collider2D>(64);
@@ -106,9 +113,13 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// slots가 비어있을 때만 defaultStartWeapons로 초기 장착(1회).
-    /// </summary>
+    private void OnDisable()
+    {
+        _healthCache.Clear();
+    }
+    
+    // slots가 비어있을 때만 defaultStartWeapons로 초기 장착(1회).
+    
     public void EnsureDefaultLoadoutIfEmpty()
     {
         if (slots == null) slots = new List<WeaponSlotRuntime>(10);
@@ -135,7 +146,14 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
     {
         _reservedTargetIds.Clear();
 
+        // 30초마다 stale 캐시 정리 (Destroy된 적 참조 누적 방지)
         float now = Time.time;
+        if (now >= _nextCacheCleanTime)
+        {
+            CleanHealthCache();
+            _nextCacheCleanTime = now + CACHE_CLEAN_INTERVAL;
+        }
+
         Vector2 origin = firePoint.position;
 
         for (int i = 0; i < slots.Count; i++)
@@ -158,7 +176,7 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
             int mask = slot.weapon.enemyLayer.value;
             if (mask == 0) continue;
 
-            // 3) 타겟 선택
+            // 3) 타겟 선택 (Registry 우선 → Physics 폴백)
             if (!TryPickTarget(
                     origin,
                     slotRange,
@@ -256,11 +274,19 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
             v.x * sin + v.y * cos
         );
     }
+    
+    //  타겟 선택 (Registry 우선 → Physics 폴백)
 
     private bool TryPickTarget(Vector2 origin, float range, int layerMask, TargetPolicy policy, bool avoidDup,
         out Vector2 targetPos)
     {
         targetPos = default;
+
+        // 1차: Registry에서 탐색 (Physics 쿼리 없음)
+        if (TryPickTargetFromRegistry(origin, range, layerMask, policy, avoidDup, out targetPos))
+            return true;
+
+        // 2차: Registry에 후보가 없을 때만 Physics 폴백
         _overlapList.Clear();
 
         var filter = new ContactFilter2D
@@ -286,7 +312,9 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
             Collider2D c = _overlapList[i];
             if (c == null) continue;
 
-            if (avoidDup && _reservedTargetIds.Contains(c.GetInstanceID()))
+            // root InstanceID 사용 (Registry 경로와 동일한 키)
+            int rootId = c.transform.root.gameObject.GetInstanceID();
+            if (avoidDup && _reservedTargetIds.Contains(rootId))
                 continue;
 
             if (!c.TryGetComponent(out EnemyHealth2D hp)) continue;
@@ -316,9 +344,137 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
         Collider2D chosen = (policy == TargetPolicy.BossFirst && bestBoss != null) ? bestBoss : best;
         if (chosen == null) return false;
 
-        if (avoidDup) _reservedTargetIds.Add(chosen.GetInstanceID());
+        // root InstanceID로 등록 (Registry 경로와 일치)
+        if (avoidDup) _reservedTargetIds.Add(chosen.transform.root.gameObject.GetInstanceID());
         targetPos = chosen.transform.position;
         return true;
+    }
+    
+    // EnemyRegistry2D.Members를 순회하여 Physics 쿼리 없이 타겟을 선택.
+    // 적이 Registry에 등록되어 있으면 OverlapCircle 호출을 완전히 건너뜀.
+    
+    private bool TryPickTargetFromRegistry(Vector2 origin, float range, int layerMask, TargetPolicy policy,
+        bool avoidDup, out Vector2 targetPos)
+    {
+        targetPos = default;
+
+        var members = EnemyRegistry2D.Members;
+        if (members == null || members.Count == 0)
+            return false;
+
+        float rangeSqr = range > 0f ? range * range : float.PositiveInfinity;
+
+        EnemyRegistryMember2D best = null;
+        float bestScore = float.MaxValue;
+
+        EnemyRegistryMember2D bestBoss = null;
+        float bestBossSqr = float.MaxValue;
+
+        for (int i = 0; i < members.Count; i++)
+        {
+            EnemyRegistryMember2D member = members[i];
+            if (member == null || !member.IsValidTarget) continue;
+
+            int rootId = member.RootInstanceId;
+            if (avoidDup && _reservedTargetIds.Contains(rootId))
+                continue;
+
+            Transform targetTransform = member.Transform;
+            if (targetTransform == null) continue;
+
+            // 레이어 체크: member 자신 또는 루트 오브젝트의 레이어가 마스크에 포함되어야 함
+            if (!IsInLayerMask(targetTransform.gameObject.layer, layerMask) &&
+                !IsInLayerMask(targetTransform.root.gameObject.layer, layerMask))
+                continue;
+
+            Vector2 pos = member.Position;
+            float sqr = (pos - origin).sqrMagnitude;
+            if (sqr > rangeSqr)
+                continue;
+
+            // EnemyHealth2D 캐시 조회
+            EnemyHealth2D hp = GetCachedEnemyHealth(targetTransform.root.gameObject, rootId);
+            if (hp == null || hp.IsDead)
+                continue;
+
+            bool isBoss = targetTransform.CompareTag(bossTag) || targetTransform.root.CompareTag(bossTag);
+            if (policy == TargetPolicy.BossFirst && isBoss)
+            {
+                if (sqr < bestBossSqr)
+                {
+                    bestBossSqr = sqr;
+                    bestBoss = member;
+                }
+                continue;
+            }
+
+            float score = ComputeScore(policy, sqr, hp);
+            if (score < bestScore)
+            {
+                bestScore = score;
+                best = member;
+            }
+        }
+
+        EnemyRegistryMember2D chosen = (policy == TargetPolicy.BossFirst && bestBoss != null)
+            ? bestBoss
+            : best;
+
+        if (chosen == null)
+            return false;
+
+        if (avoidDup)
+            _reservedTargetIds.Add(chosen.RootInstanceId);
+
+        targetPos = chosen.Position;
+        return true;
+    }
+    
+    //  EnemyHealth2D 캐시 (stale 참조 자동 감지)
+
+    private EnemyHealth2D GetCachedEnemyHealth(GameObject root, int rootId)
+    {
+        if (root == null) return null;
+
+        if (rootId != 0 && _healthCache.TryGetValue(rootId, out EnemyHealth2D cached))
+        {
+            // Unity에서 Destroy된 오브젝트는 == null이 true
+            // 이 경우 캐시에서 제거하고 재탐색
+            if (cached != null)
+                return cached;
+
+            _healthCache.Remove(rootId);
+        }
+
+        EnemyHealth2D hp = root.GetComponentInChildren<EnemyHealth2D>();
+        if (rootId != 0 && hp != null)
+            _healthCache[rootId] = hp;
+
+        return hp;
+    }
+    
+    // 30초마다 호출. Destroy된 적의 stale 참조를 캐시에서 제거.
+    
+    private void CleanHealthCache()
+    {
+        // Dictionary를 순회하면서 삭제하려면 별도 리스트가 필요하지만,
+        // 단순 카운트 기반으로 큰 캐시만 정리 (작은 캐시는 무시)
+        if (_healthCache.Count < 64) return;
+
+        var keysToRemove = new List<int>(32);
+        foreach (var kvp in _healthCache)
+        {
+            if (kvp.Value == null)
+                keysToRemove.Add(kvp.Key);
+        }
+        for (int i = 0; i < keysToRemove.Count; i++)
+            _healthCache.Remove(keysToRemove[i]);
+    }
+
+    private static bool IsInLayerMask(int layer, int layerMask)
+    {
+        int bit = 1 << layer;
+        return (layerMask & bit) != 0;
     }
 
     private static float ComputeScore(TargetPolicy policy, float distanceSqr, EnemyHealth2D hp)
@@ -334,10 +490,8 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
             default: return distanceSqr;
         }
     }
-
-    // ============================
+    
     // 기존 시스템 호환 API (PlayerSkillUpgradeSystem / WeaponLoadApplier2D)
-    // ============================
 
     public void ClearSlots()
     {
@@ -439,10 +593,8 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
 
         return applied;
     }
-
-    // ============================
+    
     // 새 카드 시스템용 API (UpgradeValue)
-    // ============================
 
     public bool ApplyUpgradeToSlot(int slotIndex, WeaponUpgradeStat2D stat, UpgradeValue value)
     {
@@ -480,10 +632,8 @@ public sealed class WeaponShooterSystem2D : MonoBehaviour
 
         return true;
     }
-
-    // ============================
+    
     // 조회 API
-    // ============================
 
     public bool TryGetSlotByWeaponId(string weaponId, out int slotIndex)
     {

@@ -1,7 +1,13 @@
 // ──────────────────────────────────────────────
 // LevelUpCardPanelController.cs
-// UI Toolkit 기반 레벨업 카드 패널
-// LevelUpUI.uxml / LevelUpUI.uss 사용
+// UI Toolkit 기반 레벨업 카드 패널 (v2)
+//
+// ★ v2 변경사항:
+// - 카드 수를 하드코딩하지 않고 UXML에 존재하는 Card 요소 수에 맞춤
+//   → UXML에 Card4를 추가하면 자동으로 5장 동작
+// - 전용 스킬 카드 시각 구분 (IsExclusive → 테두리 색상 변경)
+// - 리롤 시 LevelUpCardGenerator.NotifyReroll() 호출
+// - 레벨업 닫힐 때 LevelUpCardGenerator.NotifyLevelUpClosed() 호출
 // ──────────────────────────────────────────────
 
 using System.Collections.Generic;
@@ -27,25 +33,35 @@ namespace _Game.LevelUp.UI
         [SerializeField] private HUDController hudController;
 
         [Header("리롤")]
-        [SerializeField, Min(0)] private int rerollMaxCount = 1;
+        [SerializeField, Min(0)] private int rerollMaxCount = 3;
+
+        [Header("카드 수")]
+        [Tooltip("UXML에서 탐색할 최대 카드 수. UXML에 해당 Card 요소가 없으면 자동으로 무시됩니다.")]
+        [SerializeField, Min(1)] private int maxCardSearch = 5;
+
+        [Header("전용 스킬 시각")]
+        [SerializeField] private Color exclusiveBorderColor = new Color(1f, 0.84f, 0f, 1f);
+        [SerializeField] private Color normalBorderColor = new Color(0.78f, 0.63f, 0.31f, 0.3f);
 
         // ── 런타임 ───────────────────────────────
         private VisualElement            root;
         private VisualElement            levelUpRoot;
-        private VisualElement[]          cardEls   = new VisualElement[4];
-        private Label[]                  cardNames = new Label[4];
-        private Label[]                  cardDescs = new Label[4];
-        private Label[]                  cardTags  = new Label[4];
-        private VisualElement[]          cardIcons = new VisualElement[4];
+        private readonly List<VisualElement> cardEls   = new();
+        private readonly List<Label>        cardNames = new();
+        private readonly List<Label>        cardDescs = new();
+        private readonly List<Label>        cardTags  = new();
+        private readonly List<VisualElement> cardIcons = new();
         private Button                   btnMinimize;
         private Button                   btnReroll;
 
-        private List<LevelUpCardData>    currentCards = new List<LevelUpCardData>(4);
+        private List<LevelUpCardData>    currentCards = new List<LevelUpCardData>(5);
         private bool                     isOpen;
         private int                      rerollsLeft;
 
         public bool IsOpen => isOpen;
         private bool _isMinimized = false;
+
+        private int _actualCardCount; // UXML에서 실제로 찾은 카드 수
 
         // ─────────────────────────────────────────
         void Awake()
@@ -59,22 +75,29 @@ namespace _Game.LevelUp.UI
             root        = uiDocument.rootVisualElement;
             levelUpRoot = root.Q<VisualElement>("LevelUpRoot");
 
-            // 카드 요소 캐시 + 클릭 등록
-            for (int i = 0; i < 4; i++)
+            // 카드 요소 동적 탐색
+            cardEls.Clear();
+            cardNames.Clear();
+            cardDescs.Clear();
+            cardTags.Clear();
+            cardIcons.Clear();
+
+            for (int i = 0; i < maxCardSearch; i++)
             {
+                var el = root.Q<VisualElement>($"Card{i}");
+                if (el == null) break; // UXML에 없으면 중단
+
                 int idx = i;
-                cardEls[i]   = root.Q<VisualElement>($"Card{i}");
-                cardNames[i] = root.Q<Label>($"Card{i}Name");
-                cardDescs[i] = root.Q<Label>($"Card{i}Desc");
-                cardTags[i]  = root.Q<Label>($"Card{i}Tag");
-                cardIcons[i] = root.Q<VisualElement>($"Card{i}Icon");
+                cardEls.Add(el);
+                cardNames.Add(root.Q<Label>($"Card{i}Name"));
+                cardDescs.Add(root.Q<Label>($"Card{i}Desc"));
+                cardTags.Add(root.Q<Label>($"Card{i}Tag"));
+                cardIcons.Add(root.Q<VisualElement>($"Card{i}Icon"));
 
-                if (cardEls[i] == null) continue;
-
-                cardEls[i].RegisterCallback<ClickEvent>(_ => OnCardClicked(idx));
+                el.RegisterCallback<ClickEvent>(_ => OnCardClicked(idx));
 
                 // 호버
-                cardEls[i].RegisterCallback<MouseEnterEvent>(_ =>
+                el.RegisterCallback<MouseEnterEvent>(_ =>
                 {
                     cardEls[idx].style.borderTopColor    = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 1f));
                     cardEls[idx].style.borderBottomColor = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 1f));
@@ -83,15 +106,22 @@ namespace _Game.LevelUp.UI
                     cardEls[idx].style.backgroundColor  = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 0.12f));
                 });
 
-                cardEls[i].RegisterCallback<MouseLeaveEvent>(_ =>
+                el.RegisterCallback<MouseLeaveEvent>(_ =>
                 {
-                    cardEls[idx].style.borderTopColor    = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 0.3f));
-                    cardEls[idx].style.borderBottomColor = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 0.3f));
-                    cardEls[idx].style.borderLeftColor   = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 0.3f));
-                    cardEls[idx].style.borderRightColor  = new StyleColor(new Color(0.78f, 0.63f, 0.31f, 0.3f));
+                    // 전용 스킬이면 테두리 유지
+                    bool isExcl = idx < currentCards.Count && currentCards[idx].IsExclusive;
+                    Color border = isExcl ? exclusiveBorderColor : normalBorderColor;
+
+                    cardEls[idx].style.borderTopColor    = new StyleColor(border);
+                    cardEls[idx].style.borderBottomColor = new StyleColor(border);
+                    cardEls[idx].style.borderLeftColor   = new StyleColor(border);
+                    cardEls[idx].style.borderRightColor  = new StyleColor(border);
                     cardEls[idx].style.backgroundColor  = new StyleColor(new Color(0.02f, 0.03f, 0.08f, 0.95f));
                 });
             }
+
+            _actualCardCount = cardEls.Count;
+
             btnMinimize = root.Q<Button>("BtnMinimize");
             btnReroll   = root.Q<Button>("BtnReroll");
 
@@ -124,7 +154,6 @@ namespace _Game.LevelUp.UI
                 });
             }
 
-            // 시작 시 숨김
             SetVisible(false);
         }
 
@@ -152,7 +181,6 @@ namespace _Game.LevelUp.UI
             SetCardInteractable(true);
             SetVisible(true);
             UpdateRerollUI();
-
         }
 
         public void Close()
@@ -165,6 +193,11 @@ namespace _Game.LevelUp.UI
             isOpen = false;
 
             UpdateRerollUI();
+
+            // ★ 레벨업 닫힘 알림
+            if (cardGenerator != null)
+                cardGenerator.NotifyLevelUpClosed();
+
             flowCoordinator?.NotifyPanelClosed();
         }
 
@@ -191,36 +224,42 @@ namespace _Game.LevelUp.UI
             _isMinimized = false;
             if (btnMinimize != null) btnMinimize.text = "최소화";
         }
+
         // ── 카드 바인딩 ──────────────────────────
         private void BindCards()
         {
-            for (int i = 0; i < 4; i++)
-            {
-                if (cardEls[i] == null) continue;
+            int displayCount = Mathf.Min(_actualCardCount, currentCards.Count);
 
-                bool hasCard = i < currentCards.Count;
-                cardEls[i].style.display = hasCard
-                    ? DisplayStyle.Flex
-                    : DisplayStyle.None;
+            for (int i = 0; i < _actualCardCount; i++)
+            {
+                if (i >= cardEls.Count || cardEls[i] == null) continue;
+
+                bool hasCard = i < displayCount;
+                cardEls[i].style.display = hasCard ? DisplayStyle.Flex : DisplayStyle.None;
 
                 if (!hasCard) continue;
 
                 var data = currentCards[i];
 
-                if (cardNames[i] != null)
+                if (i < cardNames.Count && cardNames[i] != null)
                     cardNames[i].text = data.Title ?? "";
 
-                if (cardDescs[i] != null)
+                if (i < cardDescs.Count && cardDescs[i] != null)
                     cardDescs[i].text = data.Description ?? "";
 
-                if (cardTags[i] != null)
+                if (i < cardTags.Count && cardTags[i] != null)
                     cardTags[i].text = data.Tag ?? "";
 
-                if (cardIcons[i] != null && data.Icon != null)
-                    cardIcons[i].style.backgroundImage =
-                        new StyleBackground(data.Icon);
-                
-                int idx = i;
+                if (i < cardIcons.Count && cardIcons[i] != null && data.Icon != null)
+                    cardIcons[i].style.backgroundImage = new StyleBackground(data.Icon);
+
+                // ★ 전용 스킬 시각 구분
+                Color borderColor = data.IsExclusive ? exclusiveBorderColor : normalBorderColor;
+                cardEls[i].style.borderTopColor    = new StyleColor(borderColor);
+                cardEls[i].style.borderBottomColor = new StyleColor(borderColor);
+                cardEls[i].style.borderLeftColor   = new StyleColor(borderColor);
+                cardEls[i].style.borderRightColor  = new StyleColor(borderColor);
+
                 cardEls[i].SetEnabled(true);
             }
         }
@@ -260,6 +299,9 @@ namespace _Game.LevelUp.UI
 
             rerollsLeft--;
 
+            // ★ 피티 누적 알림
+            cardGenerator.NotifyReroll();
+
             var newCards = cardGenerator.Generate(loadout);
             if (newCards == null || newCards.Count == 0)
             {
@@ -283,23 +325,20 @@ namespace _Game.LevelUp.UI
             bool canReroll = isOpen && rerollsLeft > 0;
             btnReroll.SetEnabled(canReroll);
             btnReroll.text = $"새로고침 ({rerollsLeft})";
-            
         }
 
         // ── 유틸 ─────────────────────────────────
         private void SetVisible(bool visible)
         {
             if (levelUpRoot == null) return;
-            levelUpRoot.style.display = visible
-                ? DisplayStyle.Flex
-                : DisplayStyle.None;
+            levelUpRoot.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void SetCardInteractable(bool interactable)
         {
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < _actualCardCount; i++)
             {
-                if (cardEls[i] == null) continue;
+                if (i >= cardEls.Count || cardEls[i] == null) continue;
                 cardEls[i].SetEnabled(interactable);
             }
         }
