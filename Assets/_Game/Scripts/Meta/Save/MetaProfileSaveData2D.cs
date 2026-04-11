@@ -20,6 +20,12 @@ public sealed class MetaProfileSaveData2D
     /// <summary>캐릭터별 진행 상태(레벨, 해금)입니다.</summary>
     public CharacterProgressionCollectionSaveData2D progression;
 
+    /// <summary>캐릭터별 장비 장착 상태입니다.</summary>
+    public CharacterEquipmentCollectionSaveData equipment;
+
+    /// <summary>퀘스트 진행 상태입니다.</summary>
+    public QuestProgressSaveData questProgress;
+
     /// <summary>기본값을 보장합니다.</summary>
     public void EnsureDefaults()
     {
@@ -28,6 +34,8 @@ public sealed class MetaProfileSaveData2D
 
         if (upgrades == null) upgrades = new CharacterUpgradeCollectionSaveData2D();
         if (progression == null) progression = new CharacterProgressionCollectionSaveData2D();
+        if (equipment == null) equipment = new CharacterEquipmentCollectionSaveData();
+        if (questProgress == null) questProgress = new QuestProgressSaveData();
     }
 
     public static MetaProfileSaveData2D CreateDefault()
@@ -174,4 +182,35 @@ public sealed class CharacterProgressionEntrySaveData2D
     public int level = 1;
     public bool unlocked = false;
     public int totalExp = 0;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 퀘스트 세이브
+// ─────────────────────────────────────────────────────────────
+
+/// <summary>
+/// 퀘스트 진행 상태 저장 데이터입니다.
+/// </summary>
+[Serializable]
+public sealed class QuestProgressSaveData
+{
+    /// <summary>완료한 퀘스트 ID 목록입니다.</summary>
+    public List<string> completedQuestIds = new List<string>(16);
+
+    /// <summary>획득한 각성 효과 ID 목록입니다.</summary>
+    public List<string> unlockedAwakeningIds = new List<string>(8);
+
+    /// <summary>해당 퀘스트가 완료되었는지 확인합니다.</summary>
+    public bool IsCompleted(string questId)
+    {
+        if (string.IsNullOrWhiteSpace(questId)) return false;
+        return completedQuestIds.Contains(questId);
+    }
+
+    /// <summary>해당 각성이 해금되었는지 확인합니다.</summary>
+    public bool IsAwakeningUnlocked(string awakeningId)
+    {
+        if (string.IsNullOrWhiteSpace(awakeningId)) return false;
+        return unlockedAwakeningIds.Contains(awakeningId);
+    }
 }

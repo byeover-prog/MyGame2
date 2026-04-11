@@ -1,4 +1,3 @@
-// UTF-8
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -52,14 +51,14 @@ public sealed class GameOverUIListener2D : MonoBehaviour
 
         // 3) 그 다음 멈춘다
         if (pauseOnGameOver)
-            Time.timeScale = 0f;
+            GamePauseGate2D.Acquire(this);
     }
 
-    // (선택) 재시작 시 호출용
+    // 재시작 시 호출용
     public void HideAndResume()
     {
         _shown = false;
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
-        Time.timeScale = 1f;
+        GamePauseGate2D.Release(this);
     }
 }

@@ -1,23 +1,15 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
-/// <summary>
-/// PlayerExp 레벨업 이벤트를 레벨업 시스템으로 브릿지.
-/// - useNewLevelUpFlow = true → 새 4장 시스템 (LevelUpFlowCoordinator)
-/// - useNewLevelUpFlow = false → 기존 3장 시스템 (GameSignals → LevelUpOrchestrator)
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class LevelUpOpenOnPlayerExp : MonoBehaviour
 {
     [SerializeField] private PlayerExp playerExp;
 
-    // 신규 4장 레벨업 시스템 ────────────────────
-    [Header("신규 4장 레벨업 시스템")]
-    [Tooltip("true면 새 4장 레벨업 시스템을 사용합니다. false면 기존 3장 시스템 유지.")]
-    [SerializeField] private bool useNewLevelUpFlow = false;
-
-    [SerializeField, Tooltip("새 레벨업 흐름 코디네이터")]
-    private _Game.LevelUp.LevelUpFlowCoordinator newFlowCoordinator;
-    // 추가 끝 ─────────────────────────────────
+    [Header("레벨업 시스템")]
+    [FormerlySerializedAs("newFlowCoordinator")]
+    [SerializeField, Tooltip("레벨업 흐름 코디네이터")]
+    private _Game.LevelUp.LevelUpFlowCoordinator flowCoordinator;
 
     [Header("디버그")]
     [SerializeField] private bool enableLogs = false;
@@ -30,6 +22,9 @@ public sealed class LevelUpOpenOnPlayerExp : MonoBehaviour
             if (playerExp == null)
                 playerExp = FindFirstObjectByType<PlayerExp>();
         }
+
+        if (flowCoordinator == null)
+            flowCoordinator = FindFirstObjectByType<_Game.LevelUp.LevelUpFlowCoordinator>();
     }
 
     private void OnEnable()
@@ -49,15 +44,13 @@ public sealed class LevelUpOpenOnPlayerExp : MonoBehaviour
         if (enableLogs)
             GameLogger.Log($"[LevelUp] PlayerExp LevelUp => {newLevel}", this);
 
-        // 새 시스템 분기 ───────────────────────
-        if (useNewLevelUpFlow && newFlowCoordinator != null)
+        if (flowCoordinator != null)
         {
-            newFlowCoordinator.RequestLevelUp();
-            return;
+            flowCoordinator.RequestLevelUp();
         }
-        // 분기 끝 ─────────────────────────────
-
-        // 기존 경로 (LevelUpOrchestrator → OfferService → 3장 패널)
-        GameSignals.RaiseLevelUpOpenRequested();
+        else
+        {
+            GameLogger.LogWarning("[LevelUp] FlowCoordinator 참조 없음 — 레벨업 UI 열 수 없음", this);
+        }
     }
 }

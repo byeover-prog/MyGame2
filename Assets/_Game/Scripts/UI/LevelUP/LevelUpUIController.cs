@@ -3,13 +3,6 @@ using UnityEngine.UIElements;
 using _Game.Skills;
 using _Game.Player;
 
-/// <summary>
-/// LevelUpUI.uxml 연결 스크립트
-/// PlayerSkillLoadout 에서 카드 후보를 받아 표시합니다.
-///
-/// [Inspector 연결]
-///   skillLoadout → PlayerSkillLoadout
-/// </summary>
 [RequireComponent(typeof(UIDocument))]
 public sealed class LevelUpUIController : MonoBehaviour
 {
@@ -33,7 +26,6 @@ public sealed class LevelUpUIController : MonoBehaviour
     private Button          btnMinimize;
     private Button          btnReroll;
 
-    // ─────────────────────────────────────────────
     void OnEnable()
     {
         root       = GetComponent<UIDocument>().rootVisualElement;
@@ -62,12 +54,9 @@ public sealed class LevelUpUIController : MonoBehaviour
         Hide();
     }
 
-    // ── 외부 호출 API ────────────────────────────
-
-    /// <summary>
-    /// 레벨업 창을 열고 후보 스킬을 표시합니다.
-    /// LevelSystem 쪽에서 호출하세요.
-    /// </summary>
+    // 외부 호출 API
+    // 레벨업 창을 열고 후보 스킬을 표시합니다.
+    // LevelSystem 쪽에서 호출하세요.
     public void Show(SkillDefinitionSO[] candidates)
     {
         if (levelUpRoot == null) return;
@@ -80,18 +69,15 @@ public sealed class LevelUpUIController : MonoBehaviour
         levelUpRoot.style.display = DisplayStyle.Flex;
         Time.timeScale = 0f; // 일시정지
     }
-
-    /// <summary>
-    /// 창을 닫습니다.
-    /// </summary>
+    
     public void Hide()
     {
         if (levelUpRoot == null) return;
         levelUpRoot.style.display = DisplayStyle.None;
-        Time.timeScale = 1f;
+        GamePauseGate2D.Release(this);
     }
 
-    // ── 카드 갱신 ────────────────────────────────
+    // 카드 갱신
     private void RefreshCards()
     {
         for (int i = 0; i < CARD_COUNT; i++)
@@ -130,13 +116,13 @@ public sealed class LevelUpUIController : MonoBehaviour
         }
     }
 
-    // ── 카드 선택 ────────────────────────────────
+    // 카드 선택
     private void OnCardClicked(int index)
     {
         var skill = _candidates[index];
         if (skill == null || skillLoadout == null) return;
 
-        // 이미 보유 → 레벨업 / 미보유 → 신규 추가
+        // 이미 보유 -> 레벨업 / 미보유 -> 신규 추가
         if (skillLoadout.HasSkill(skill.SkillId))
             skillLoadout.TryUpgradeSkill(skill.SkillId);
         else
@@ -146,7 +132,7 @@ public sealed class LevelUpUIController : MonoBehaviour
         Hide();
     }
 
-    // ── 새로고침 ─────────────────────────────────
+    // 새로고침
     private void Reroll()
     {
         // TODO: 새로고침 비용 차감 후 후보 재추첨
