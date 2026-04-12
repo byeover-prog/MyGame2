@@ -1,15 +1,3 @@
-// ============================================================================
-// RemoveMissingScripts.cs
-// 경로: Assets/_Game/Scripts/Editor/RemoveMissingScripts.cs
-// 용도: 프리팹에서 Missing Script 컴포넌트를 일괄 제거하는 에디터 도구
-// 
-// [사용법]
-// 1. Project 창에서 정리할 프리팹을 선택 (복수 선택 가능)
-// 2. 상단 메뉴 → Tools → Remove Missing Scripts (Selected) 클릭
-// 3. Console에서 초록색 결과 메시지 확인
-//
-// ⚠ Editor 폴더 안에 있어야 합니다. 빌드에 포함되지 않습니다.
-// ============================================================================
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
@@ -17,35 +5,75 @@ using UnityEngine;
 public static class RemoveMissingScripts
 {
     [MenuItem("Tools/Remove Missing Scripts (Selected)")]
-    static void Remove()
+    static void RemoveSelected()
     {
         if (Selection.gameObjects.Length == 0)
         {
-            Debug.LogWarning("[RemoveMissingScripts] 선택된 오브젝트가 없습니다. Project 창에서 프리팹을 선택해주세요.");
+            Debug.LogWarning("[RemoveMissingScripts] 선택된 오브젝트가 없습니다.");
             return;
         }
 
         int totalRemoved = 0;
-
         foreach (var go in Selection.gameObjects)
         {
-            int count = GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
-
-            // 자식 오브젝트도 전부 순회
-            foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
-            {
-                count += GameObjectUtility.RemoveMonoBehavioursWithMissingScript(child.gameObject);
-            }
-
-            totalRemoved += count;
-
-            if (count > 0)
-                Debug.Log($"<color=green>[RemoveMissingScripts] '{go.name}' 프리팹에서 Missing Script {count}개 제거 완료!</color>", go);
-            else
-                Debug.Log($"[RemoveMissingScripts] '{go.name}' → Missing Script 없음 (깨끗함)", go);
+            totalRemoved += CleanGameObject(go);
         }
 
-        Debug.Log($"<color=green>[RemoveMissingScripts] 전체 작업 완료. 총 {totalRemoved}개 제거됨.</color>");
+        Debug.Log($"<color=green>[RemoveMissingScripts] 선택 완료. 총 {totalRemoved}개 제거됨.</color>");
+    }
+
+    [MenuItem("Tools/Remove Missing Scripts (All Prefabs)")]
+    static void RemoveAllPrefabs()
+    {
+        string[] guids = AssetDatabase.FindAssets("t:Prefab");
+        int totalRemoved = 0;
+        int prefabsFixed = 0;
+
+        for (int i = 0; i < guids.Length; i++)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null) continue;
+
+            int count = CleanGameObject(prefab);
+            if (count > 0)
+            {
+                prefabsFixed++;
+                totalRemoved += count;
+                PrefabUtility.SavePrefabAsset(prefab);
+                Debug.Log($"<color=green>[RemoveMissingScripts] '{path}' → {count}개 제거</color>");
+            }
+
+            if (i % 50 == 0)
+                EditorUtility.DisplayProgressBar("Missing Script 제거", path, (float)i / guids.Length);
+        }
+
+        EditorUtility.ClearProgressBar();
+        Debug.Log($"<color=green>[RemoveMissingScripts] 전체 프리팹 스캔 완료. {prefabsFixed}개 프리팹에서 총 {totalRemoved}개 제거됨.</color>");
+    }
+
+    [MenuItem("Tools/Remove Missing Scripts (Current Scene)")]
+    static void RemoveCurrentScene()
+    {
+        GameObject[] allObjects = GameObject.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        int totalRemoved = 0;
+
+        foreach (var go in allObjects)
+        {
+            totalRemoved += CleanGameObject(go);
+        }
+
+        Debug.Log($"<color=green>[RemoveMissingScripts] 현재 씬 완료. 총 {totalRemoved}개 제거됨.</color>");
+    }
+
+    private static int CleanGameObject(GameObject go)
+    {
+        int count = GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
+        foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
+        {
+            count += GameObjectUtility.RemoveMonoBehavioursWithMissingScript(child.gameObject);
+        }
+        return count;
     }
 }
 #endif
