@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 1930627660680768787}
   - component: {fileID: 7280727961302527277}
   - component: {fileID: 1307509701105812955}
+  - component: {fileID: 725485650736237613}
   m_Layer: 16
   m_Name: Normal_Fox
   m_TagString: Enemy
@@ -36,7 +37,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -156,7 +157,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.04, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -166,7 +167,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 0.97}
+  m_Size: {x: 0.5, y: 0.5}
   m_EdgeRadius: 0
 --- !u!50 &8255748150739220148
 Rigidbody2D:
@@ -183,7 +184,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -191,10 +192,10 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &7235971464514667435
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,10 +208,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6177deb6221c9154cb139be9d97c676f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth2D
-  maxHp: 30
-  currentHp: 30
-  destroyOnDeath: 1
-  destroyDelay: 0
+  maxHp: 100
+  currentHp: 100
   expOrbPool: {fileID: 0}
   expOrbPrefab: {fileID: 8136490244520117647, guid: 1862153c6c96eae40be029799fe818ef,
     type: 3}
@@ -297,3 +296,20 @@ MonoBehaviour:
   defaultFacingDirection: 0
   flipThreshold: 0.05
   logInvalidTagWarning: 1
+--- !u!114 &725485650736237613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3641684245650433354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 232410eab8fc3bd43a485d33912c4459, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHitFlash2D
+  health: {fileID: 7235971464514667435}
+  spriteRenderer: {fileID: 1837703773609719959}
+  flashColor: {r: 1, g: 0.6, b: 0.6, a: 1}
+  flashDuration: 0.08
+  debugLog: 0
