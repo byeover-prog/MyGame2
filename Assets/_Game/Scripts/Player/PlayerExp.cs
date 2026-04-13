@@ -22,7 +22,7 @@ public sealed class PlayerExp : MonoBehaviour
     [SerializeField] private bool fireLegacyEvent = false;
 
     [Header("디버그")]
-    [SerializeField] private bool verboseLog = false;
+    [SerializeField] private bool verboseLog = true;
 
     public event Action OnLevelup;
     public event Action<int> OnLevelUp;
