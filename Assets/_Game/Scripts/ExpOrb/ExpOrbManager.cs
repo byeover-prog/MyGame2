@@ -225,8 +225,14 @@ public sealed class ExpOrbManager : MonoBehaviour
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         if (p == null) return;
 
-        playerTransform = p.transform;
-        _playerExp = p.GetComponentInChildren<PlayerExp>(true);
-        _playerStats = p.GetComponentInChildren<PlayerCombatStats2D>(true);
+        // 태그가 자식에 있을 수 있으므로 루트부터 탐색
+        Transform root = p.transform.root;
+        playerTransform = root;
+
+        _playerExp = root.GetComponentInChildren<PlayerExp>(true);
+        _playerStats = root.GetComponentInChildren<PlayerCombatStats2D>(true);
+
+        if (_playerExp == null)
+            Debug.LogError("[ExpOrbManager] PlayerExp를 찾지 못했습니다! Player 프리팹 구조를 확인하세요.", this);
     }
 }
