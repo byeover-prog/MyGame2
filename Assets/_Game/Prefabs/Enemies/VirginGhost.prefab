@@ -224,8 +224,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth2D
   maxHp: 60
   currentHp: 60
-  destroyOnDeath: 1
-  destroyDelay: 0
   expOrbPool: {fileID: 0}
   expOrbPrefab: {fileID: 8136490244520117647, guid: 1862153c6c96eae40be029799fe818ef,
     type: 3}
@@ -245,8 +243,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30271b8415ab3d142b269a8a7059de50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAutoDespawn2D
-  player: {fileID: 0}
-  despawn_distance: 25
 --- !u!114 &-7756394782258283552
 MonoBehaviour:
   m_ObjectHideFlags: 0
