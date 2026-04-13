@@ -9,14 +9,10 @@ public class CameraController : MonoBehaviour
     
     // 타겟 목록
     private Transform _player;
-    void Start()
-    {
-        LookAtPlayer();
-    }
 
     void OnEnable()
     {
-        LookAtPlayer();
+        StartCoroutine(LookAtPlayer());
     }
 
     void OnDisable()
