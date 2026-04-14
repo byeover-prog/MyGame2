@@ -98,8 +98,13 @@ public sealed class PlayerDashController : MonoBehaviour
     /// </summary>
     private void RechargeDash()
     {
+        Debug.Log($"RechargeDash 호출 - current: {currentDashCount}, max: {maxDashCount}");
         if (currentDashCount >= maxDashCount)
             return;
+        
+        if (dashChargeUI != null)
+            dashChargeUI.UpdateChargingFill(rechargeTimer, dashCooldown);
+
 
         if (rechargeTimer > 0f)
         {
