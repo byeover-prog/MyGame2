@@ -337,10 +337,10 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     private void TryDash()
     {
-        if (Time.time < _nextDashReadyTime)
+        /*if (Time.time < _nextDashReadyTime)
         {
             return;
-        }
+        }*/
         
         if (dashController != null && !dashController.CanUseDash()) return;
 
@@ -354,7 +354,7 @@ public sealed class PlayerMover2D : MonoBehaviour
         _dashVelocity = dir.normalized * speed;
 
         _dashEndTime = Time.time + dashDuration;
-        _nextDashReadyTime = Time.time + dashCooldown;
+        //_nextDashReadyTime = Time.time + dashCooldown;
         
         if (dashController != null)
             dashController.TryUseDash();
