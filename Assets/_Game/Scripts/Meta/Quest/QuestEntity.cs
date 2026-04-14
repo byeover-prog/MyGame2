@@ -4,7 +4,6 @@ using UnityEngine;
 
 public struct QuestEntity : IComponentData
 {
-    public QuestDefinitionSO definition;
     public float startTime;
     public int questId;
 }

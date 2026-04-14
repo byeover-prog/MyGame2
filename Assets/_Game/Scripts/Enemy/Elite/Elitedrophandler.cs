@@ -67,15 +67,7 @@ public sealed class EliteDropHandler : MonoBehaviour
             if (currency != null)
                 currency.AddGold(nyangDropAmount);
         }
-
-        // QuestManager에 엘리트 처치 보고
-        if (QuestManager.Instance != null)
-        {
-            EnemyGradeTag gradeTag = GetComponent<EnemyGradeTag>();
-            EnemyGrade grade = gradeTag != null ? gradeTag.Grade : EnemyGrade.Elite;
-            QuestManager.Instance.ReportKill(grade);
-        }
-
+        
         GameLogger.Log($"[EliteDrop] {gameObject.name} 드랍 완료 — 냥:{nyangDropAmount}, 영혼:{highExpSoulCount}");
     }
 
