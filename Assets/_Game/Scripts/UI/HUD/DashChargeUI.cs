@@ -30,19 +30,16 @@ public sealed class DashChargeUI : MonoBehaviour
 
             if (i >= maxCount)
             {
-                // 잠긴 슬롯
                 slots[i].fill.fillAmount = 0f;
                 continue;
             }
 
             if (i < currentCount)
             {
-                // 충전됨 - 초기화 후 첫 Refresh는 애니메이션 없이
                 if (!_initialized)
                 {
                     slots[i].fill.fillAmount = 1f;
                 }
-                // 이전에 비어있다가 충전 완료된 경우 팝 효과
                 else if (i >= prevCount)
                 {
                     slots[i].fill.fillAmount = 1f;
@@ -51,13 +48,19 @@ public sealed class DashChargeUI : MonoBehaviour
             }
             else
             {
-                // 소진됨
-                if (!_initialized)
-                    slots[i].fill.fillAmount = 0f;
+                // 소진된 슬롯 → 즉시 0으로
+                slots[i].fill.fillAmount = 0f;
             }
         }
 
         _initialized = true;
+    }
+    
+    public void ResetSlotFill(int index)
+    {
+        if (index < 0 || index >= slots.Length) return;
+        if (slots[index].fill == null) return;
+        slots[index].fill.fillAmount = 0f;
     }
 
     public void UpdateChargingFill(float rechargeTimer, float dashCooldown)

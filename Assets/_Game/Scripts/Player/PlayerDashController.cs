@@ -78,16 +78,16 @@ public sealed class PlayerDashController : MonoBehaviour
     /// </summary>
     public bool TryUseDash()
     {
-        if (currentDashCount <= 0)
-            return false;
+        if (currentDashCount <= 0) return false;
+
+        // 소진되는 슬롯 fill 즉시 0으로
+        if (dashChargeUI != null)
+            dashChargeUI.ResetSlotFill(currentDashCount - 1);
 
         currentDashCount--;
 
-        /// 충전이 비기 시작한 순간 타이머 시작
         if (currentDashCount < maxDashCount && rechargeTimer <= 0f)
-        {
             rechargeTimer = dashCooldown;
-        }
 
         RefreshUI();
         return true;
