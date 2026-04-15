@@ -208,7 +208,11 @@ namespace _Game.LevelUp
 
             // 2) 메인 캐릭터 전용 스킬
             string mainId = SquadLoadoutRuntime.MainId;
+            GameLogger.Log($"[CardGen] 전용 스킬 탐색 — mainId='{mainId}' characterSkillSets수={characterSkillSets.Length}", this);
+            for (int dbg = 0; dbg < characterSkillSets.Length; dbg++)
+                GameLogger.Log($"[CardGen]   등록된 세트[{dbg}] characterId='{characterSkillSets[dbg].characterId}' skills수={characterSkillSets[dbg].skills?.Length ?? 0}", this);
             CharacterSkillSet? activeSet = FindCharacterSkillSet(mainId);
+            GameLogger.Log($"[CardGen] activeSet 발견={activeSet.HasValue}", this);
 
             if (activeSet.HasValue && activeSet.Value.skills != null)
             {
@@ -217,7 +221,11 @@ namespace _Game.LevelUp
                 {
                     var exSkill = skills[i];
                     if (exSkill.definition == null) continue;
-                    if (exSkill.prefab == null) continue;
+                    if (exSkill.prefab == null)
+                    {
+                        GameLogger.LogWarning($"[CardGen] 전용 스킬 프리팹 null — {exSkill.definition?.DisplayName}", this);
+                        continue;
+                    }
                     if (!IsValidCandidate(exSkill.definition, loadout)) continue;
 
                     float baseW = exclusiveWeightMultiplier;
