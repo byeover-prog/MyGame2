@@ -74,6 +74,32 @@ namespace _Game.Skills
 
         [SerializeField, TextArea, Tooltip("Lv.8 설명")]
         private string descLv8;
+        
+        [Header("=== 레벨별 추가 정보 (피해량, 횟수 등) ===")]
+
+        [SerializeField, TextArea, Tooltip("Lv.1 추가 정보")]
+        private string addInfoLv1;
+
+        [SerializeField, TextArea, Tooltip("Lv.2 추가 정보")]
+        private string addInfoLv2;
+
+        [SerializeField, TextArea, Tooltip("Lv.3 추가 정보")]
+        private string addInfoLv3;
+
+        [SerializeField, TextArea, Tooltip("Lv.4 추가 정보")]
+        private string addInfoLv4;
+
+        [SerializeField, TextArea, Tooltip("Lv.5 추가 정보")]
+        private string addInfoLv5;
+
+        [SerializeField, TextArea, Tooltip("Lv.6 추가 정보")]
+        private string addInfoLv6;
+
+        [SerializeField, TextArea, Tooltip("Lv.7 추가 정보")]
+        private string addInfoLv7;
+
+        [SerializeField, TextArea, Tooltip("Lv.8 추가 정보")]
+        private string addInfoLv8;
 
         // ── 패시브 설정 ────────────────────────────
 
@@ -117,6 +143,39 @@ namespace _Game.Skills
             }
 
             return string.Empty;
+        }
+        public string GetAddInfoForLevel(int level)
+        {
+            level = Mathf.Clamp(level, 1, 8);
+
+            string info = GetAddInfoRaw(level);
+            if (!string.IsNullOrWhiteSpace(info))
+                return info;
+
+            for (int lv = level; lv >= 1; lv--)
+            {
+                string d = GetAddInfoRaw(lv);
+                if (!string.IsNullOrWhiteSpace(d))
+                    return d;
+            }
+
+            return string.Empty;
+        }
+
+        private string GetAddInfoRaw(int level)
+        {
+            return level switch
+            {
+                1 => addInfoLv1,
+                2 => addInfoLv2,
+                3 => addInfoLv3,
+                4 => addInfoLv4,
+                5 => addInfoLv5,
+                6 => addInfoLv6,
+                7 => addInfoLv7,
+                8 => addInfoLv8,
+                _ => addInfoLv1
+            };
         }
 
         private string GetDescRaw(int level)

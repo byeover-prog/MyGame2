@@ -10,9 +10,14 @@ public class HoverMoveUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private RectTransform _rect;
     private Vector2 _originPos;
 
-    private void Awake()
+    private void OnEnable()
     {
         _rect = GetComponent<RectTransform>();
+        _originPos = _rect.anchoredPosition;
+    }
+    
+    public void UpdateOrigin()
+    {
         _originPos = _rect.anchoredPosition;
     }
 
@@ -25,6 +30,13 @@ public class HoverMoveUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        _rect.DOAnchorPosY(_originPos.y, duration)
+            .SetEase(Ease.OutQuad)
+            .SetUpdate(true);
+    }
+    public void ForceExit()
+    {
+        _rect.DOKill();
         _rect.DOAnchorPosY(_originPos.y, duration)
             .SetEase(Ease.OutQuad)
             .SetUpdate(true);

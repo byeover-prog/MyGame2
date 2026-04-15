@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using _Game.LevelUp;
 using _Game.Player;
+using DG.Tweening;
 
 public class LevelUpPanelController : MonoBehaviour
 {
@@ -23,11 +24,23 @@ public class LevelUpPanelController : MonoBehaviour
     [SerializeField] private Button btnMinimize;
     [SerializeField] private GameObject cardArea;      // CardRow + 타이틀 등 숨길 영역
     [SerializeField] private TextMeshProUGUI txtMinimize;
+    [SerializeField] private GameObject dim;
+    [SerializeField] private Image panelBG;
 
     [Header("새로고침")]
     [SerializeField] private Button btnReroll;
     [SerializeField] private TextMeshProUGUI txtReroll;
     [SerializeField, Min(0)] private int rerollMaxCount = 3;
+    
+    [Header("버튼 위치")]
+    [SerializeField] private RectTransform btnMinimizeRect;
+    [SerializeField] private RectTransform btnRerollRect;
+    [SerializeField] private float btnMinimizedY = 300f;
+    [SerializeField] private HoverMoveUI hoverMinimize;
+    [SerializeField] private HoverMoveUI hoverReroll;
+    
+    private Vector2 _btnMinimizeOrigin;
+    private Vector2 _btnRerollOrigin;
 
     private List<LevelUpCardData> _currentCards;
     private bool _isMinimized;
@@ -35,8 +48,22 @@ public class LevelUpPanelController : MonoBehaviour
 
     public bool IsOpen { get; private set; }
 
+    private bool _originSaved = false;
+    
     public void Open(List<LevelUpCardData> cards)
     {
+        if (cards == null || cards.Count == 0) return;
+
+        panelRoot.SetActive(true);
+
+        // 첫 Open 시 위치 저장
+        if (!_originSaved)
+        {
+            _btnMinimizeOrigin = btnMinimizeRect.anchoredPosition;
+            _btnRerollOrigin   = btnRerollRect.anchoredPosition;
+            _originSaved = true;
+        }
+        
         if (cards == null || cards.Count == 0) return;
 
         _currentCards = cards;
@@ -87,7 +114,74 @@ public class LevelUpPanelController : MonoBehaviour
     {
         _isMinimized = !_isMinimized;
         if (cardArea != null) cardArea.SetActive(!_isMinimized);
+        if (dim != null) dim.SetActive(!_isMinimized);
         if (txtMinimize != null) txtMinimize.text = _isMinimized ? "▲ 스킬 선택" : "최소화";
+
+        if (_isMinimized)
+        {
+            if (hoverMinimize != null) hoverMinimize.enabled = false;
+            if (hoverReroll != null) hoverReroll.enabled = false;
+    
+            btnMinimizeRect?.DOAnchorPosY(btnMinimizedY, 0.2f)
+                .SetUpdate(true)
+                .OnComplete(() => {
+                    if (hoverMinimize != null)
+                    {
+                        hoverMinimize.UpdateOrigin();
+                        hoverMinimize.enabled = true;
+                    }
+                });
+            btnRerollRect?.DOAnchorPosY(btnMinimizedY, 0.2f)
+                .SetUpdate(true)
+                .OnComplete(() => {
+                    if (hoverReroll != null)
+                    {
+                        hoverReroll.UpdateOrigin();
+                        hoverReroll.enabled = true;
+                    }
+                });
+            var c = panelBG.color;
+            c.a = 0f;
+            panelBG.color = c;
+        }
+        else
+        {
+            if (hoverMinimize != null) hoverMinimize.enabled = false;
+            if (hoverReroll != null) hoverReroll.enabled = false;
+
+            btnMinimizeRect?.DOAnchorPosY(_btnMinimizeOrigin.y, 0.2f)
+                .SetUpdate(true)
+                .OnComplete(() => {
+                    if (hoverMinimize != null)
+                    {
+                        hoverMinimize.UpdateOrigin();
+                        hoverMinimize.enabled = true;
+                    }
+                });
+            btnRerollRect?.DOAnchorPosY(_btnRerollOrigin.y, 0.2f)
+                .SetUpdate(true)
+                .OnComplete(() => {
+                    if (hoverReroll != null)
+                    {
+                        hoverReroll.UpdateOrigin();
+                        hoverReroll.enabled = true;
+                    }
+                });
+            var c = panelBG.color;
+            c.a = 150f / 255f;
+            panelBG.color = c;
+        }
+        
+        if (btnReroll != null)
+        {
+            btnReroll.interactable = !_isMinimized;
+            if (txtReroll != null)
+            {
+                var c = txtReroll.color;
+                c.a = _isMinimized ? 0.3f : 1f;
+                txtReroll.color = c;
+            }
+        }
     }
 
     private void OnRerollClicked()

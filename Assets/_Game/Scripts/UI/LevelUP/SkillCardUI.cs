@@ -5,6 +5,7 @@ using TMPro;
 using System;
 using _Game.LevelUp;
 using DG.Tweening;
+using _Game.Skills;
 
 public class SkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -18,6 +19,15 @@ public class SkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private Image hoverBorder;       // HoverBorder Image
     [SerializeField] private float hoverMoveY = 15f;  // 올라가는 픽셀
     [SerializeField] private float hoverDuration = 0.2f;
+    
+    [SerializeField] private TextMeshProUGUI text_NewAcquire;
+    [SerializeField] private TextMeshProUGUI text_CurrentLevel;
+    [SerializeField] private TextMeshProUGUI text_NextLevel;
+    [SerializeField] private TextMeshProUGUI text_AddInfo;
+    [SerializeField] private GameObject levelArrow;
+    
+    [SerializeField] private float blinkDuration = 0.6f;
+    private Tweener _blinkTween;
 
     private LevelUpCardData _data;
     private Action<LevelUpCardData> _onSelected;
@@ -43,8 +53,40 @@ public class SkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => _onSelected?.Invoke(_data));
 
-        // 초기화
         ResetHover();
+
+        _blinkTween?.Kill();
+
+        if (data.CurrentLevel == 0)
+        {
+            if (text_NewAcquire != null)
+            {
+                text_NewAcquire.text = "New";
+                text_NewAcquire.gameObject.SetActive(true);
+                _blinkTween = text_NewAcquire.DOFade(0.2f, blinkDuration)
+                    .SetLoops(-1, LoopType.Yoyo)
+                    .SetEase(Ease.InOutSine)
+                    .SetUpdate(true);
+            }
+            if (text_CurrentLevel != null) text_CurrentLevel.gameObject.SetActive(false);
+            if (text_NextLevel != null) text_NextLevel.gameObject.SetActive(false);
+            if (levelArrow != null) levelArrow.SetActive(false);
+        }
+        else
+        {
+            if (text_NewAcquire != null) text_NewAcquire.gameObject.SetActive(false);
+            if (text_CurrentLevel != null)
+            {
+                text_CurrentLevel.gameObject.SetActive(true);
+                text_CurrentLevel.text = $"Lv{data.CurrentLevel}";
+            }
+            if (text_NextLevel != null)
+            {
+                text_NextLevel.gameObject.SetActive(true);
+                text_NextLevel.text = $"Lv{data.NextLevel}";
+            }
+            if (levelArrow != null) levelArrow.SetActive(true);
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -86,5 +128,9 @@ public class SkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             c.a = 0f;
             hoverBorder.color = c;
         }
+    }
+    private void OnDisable()
+    {
+        _blinkTween?.Kill();
     }
 }
