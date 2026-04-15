@@ -786,6 +786,82 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &4907872197955939817
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9222382418130318704}
+  - component: {fileID: 5319711099949193081}
+  - component: {fileID: 7535456646560556338}
+  m_Layer: 5
+  m_Name: SkillTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &9222382418130318704
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4907872197955939817}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8910809143913414627}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &5319711099949193081
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4907872197955939817}
+  m_CullTransparentMesh: 1
+--- !u!114 &7535456646560556338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4907872197955939817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 5281748863767920762, guid: 2135ceff9785b98469cc9070a8ee02fa,
+    type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &5380975120140296536
 GameObject:
   m_ObjectHideFlags: 0
@@ -936,7 +1012,7 @@ GameObject:
   - component: {fileID: 8067255818212884645}
   - component: {fileID: 1998398278544516566}
   - component: {fileID: 3632411967291611376}
-  - component: {fileID: 6259096416356365535}
+  - component: {fileID: 7120925031230987325}
   m_Layer: 5
   m_Name: SkillCard
   m_TagString: Untagged
@@ -956,6 +1032,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 9222382418130318704}
   - {fileID: 4037992956983215642}
   - {fileID: 5095906932411380734}
   - {fileID: 8670246440694678845}
@@ -1060,7 +1137,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6259096416356365535
+--- !u!114 &7120925031230987325
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1069,7 +1146,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5420665980195834915}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5870596e41d1de149a2a2c4d737ddf06, type: 3}
+  m_Script: {fileID: 11500000, guid: af151105d1794e640aad263b1550e299, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillCardUI
   icon: {fileID: 2940135017792239772}
@@ -1077,3 +1154,6 @@ MonoBehaviour:
   text_Tag: {fileID: 2620998743797331322}
   text_Desc: {fileID: 787018741015838302}
   button: {fileID: 3632411967291611376}
+  hoverBorder: {fileID: 7535456646560556338}
+  hoverMoveY: 15
+  hoverDuration: 0.2
