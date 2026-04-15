@@ -1,11 +1,7 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// [구현 원리 요약]
-/// - SaveData의 생명주기(로드/기본값 생성/자동저장/종료 저장)만 담당.
-/// - 실제 JSON 입출력은 JsonIO2D(static)에 위임.
-/// </summary>
+[DefaultExecutionOrder(-200)]
 [DisallowMultipleComponent]
 public sealed class SaveManager2D : MonoBehaviour
 {
