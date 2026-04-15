@@ -5,7 +5,8 @@ using Unity.Mathematics;
 using UnityEngine;
 
 /// <summary>
-/// 퀘스트의 생성 및 진행, 달성 관리 역활을 하는 매니져입니다. 
+/// 퀘스트 엔티티의 생성 관리 역활을 하는 매니져입니다.
+/// 퀘스트 자체의 로직은 ECS시스템에서 처리됩니다. 
 /// </summary>
 public sealed class QuestManager : MonoBehaviour
 {
@@ -26,6 +27,8 @@ public sealed class QuestManager : MonoBehaviour
     // ─── 런타임 상태 ───
     private float _timeSinceLastOffer;
     private float _gameElapsed;
+    private float _nextSpawnTime;
+    private EntityQuery _timeQuery;
 
     // ─── 이벤트 ───
     public event Action<string> OnQuestStarted;
@@ -33,9 +36,24 @@ public sealed class QuestManager : MonoBehaviour
     public event Action<string> OnQuestCompleted;
 
 
+    void Start()
+    {
+        _nextSpawnTime = _firstQuestStartTime;
+        _timeQuery = ECSCore.EM.CreateEntityQuery(typeof(SessionTimeData));
+    }
     void Update()
     {
+        //ECS 브릿지에서 관리하는 시간 데이터를 바탕으로 캐싱
+        if (_timeQuery.IsEmpty) return;
+        var timeData = _timeQuery.GetSingleton<SessionTimeData>();
+        float currentTime = timeData.Time;
         
+        if (currentTime >= _nextSpawnTime)
+        {
+            TriggerRandomQuest();
+            // 다음 스폰 시간 갱신
+            _nextSpawnTime += offerInterval;
+        }
     }
 
     // 퀘스트 엔티티 생성
@@ -55,6 +73,24 @@ public sealed class QuestManager : MonoBehaviour
         {
             module.AddComponents(qeust, ECSCore.EM);
         }
+    }
+    
+    // 랜덤 퀘스트 생성
+    private void TriggerRandomQuest()
+    {
+        if (questPool.Count == 0 || spawnPoints.Count == 0) return;
+
+        // 랜덤 퀘스트 및 위치 선정, 추후 가중치 적용시 구조 변경 필요( 가중치를 반영하는 새로운 함수)
+        var randomDef = questPool[UnityEngine.Random.Range(0, 
+            questPool.Count)];
+        var randomPos = spawnPoints[UnityEngine.Random.Range(0, 
+            spawnPoints.Count)];
+
+        SpawnQuest(randomDef, randomPos);
+
+        // 이벤트 발행
+        OnQuestStarted?.Invoke(randomDef.name);
+        Debug.Log($"[Quest] 퀘스트 생성: {randomDef.name} _ {randomPos}");
     }
 
     private void ApplyRewards(QuestDefinitionSO definition)

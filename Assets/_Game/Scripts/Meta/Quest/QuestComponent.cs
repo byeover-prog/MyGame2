@@ -34,6 +34,11 @@ public struct QuestIndicator : IComponentData
     // 생성된 화살표 엔티티 참조
     public Entity IndicatorEntity;
 }
+// 0.0 ~ 1.0 사이의 진행 상태를 공유하기 위한 데이터
+public struct QuestProgress : IComponentData
+{
+    public float Value;
+}
 
 // 퀘스트 별 컴포넌트 - QuestModuleSo를 통해 엔티티에 추가
 // -----영혼 수확-----
@@ -45,6 +50,7 @@ public struct KillCount : IComponentData
 }
 
 // ----신비한 버섯----
+public struct MushroomTag : IComponentData { }
 // 버섯 채집 단계 관리
 public struct MushroomForaging : IComponentData
 {
