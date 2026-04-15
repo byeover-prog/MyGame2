@@ -1,10 +1,5 @@
-// UTF-8
 using UnityEngine;
 
-/// <summary>
-/// 적 체력/사망 처리.
-/// [최적화] Destroy(gameObject) → EnemyPoolTag.ReturnToPool(gameObject)
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
 {
@@ -78,6 +73,15 @@ public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
     }
 
     public void SetMaxAndFill(int hp) => ResetHp(hp);
+
+    /// <summary>
+    /// 즉시 사망 처리. Stage0Director 등 연출에서 강제 제거 시 사용.
+    /// </summary>
+    public void KillImmediate()
+    {
+        if (_isDead) return;
+        TakeDamage(currentHp + 1);
+    }
 
     public void TakeDamage(int damage)
     {
