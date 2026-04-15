@@ -9,6 +9,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
 {
     [Header("쿨다운")]
     [SerializeField] private float cooldownSeconds = 240f;
+    public float CooldownTotal => cooldownSeconds;
 
     [Header("입력")]
     [SerializeField] private KeyCode supportKey = KeyCode.T;
