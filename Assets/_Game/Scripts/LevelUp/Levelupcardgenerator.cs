@@ -208,7 +208,11 @@ namespace _Game.LevelUp
 
             // 2) 메인 캐릭터 전용 스킬
             string mainId = SquadLoadoutRuntime.MainId;
+            GameLogger.Log($"[CardGen] 전용 스킬 탐색 — mainId='{mainId}' characterSkillSets수={characterSkillSets.Length}", this);
+            for (int dbg = 0; dbg < characterSkillSets.Length; dbg++)
+                GameLogger.Log($"[CardGen]   등록된 세트[{dbg}] characterId='{characterSkillSets[dbg].characterId}' skills수={characterSkillSets[dbg].skills?.Length ?? 0}", this);
             CharacterSkillSet? activeSet = FindCharacterSkillSet(mainId);
+            GameLogger.Log($"[CardGen] activeSet 발견={activeSet.HasValue}", this);
 
             if (activeSet.HasValue && activeSet.Value.skills != null)
             {
@@ -217,7 +221,11 @@ namespace _Game.LevelUp
                 {
                     var exSkill = skills[i];
                     if (exSkill.definition == null) continue;
-                    if (exSkill.prefab == null) continue;
+                    if (exSkill.prefab == null)
+                    {
+                        GameLogger.LogWarning($"[CardGen] 전용 스킬 프리팹 null — {exSkill.definition?.DisplayName}", this);
+                        continue;
+                    }
                     if (!IsValidCandidate(exSkill.definition, loadout)) continue;
 
                     float baseW = exclusiveWeightMultiplier;
@@ -317,7 +325,6 @@ namespace _Game.LevelUp
         {
             if (_passiveCandidates.Count == 0) return;
 
-            // 셔플
             List<SkillDefinitionSO> shuffled = new List<SkillDefinitionSO>(_passiveCandidates);
             Shuffle(shuffled);
 
@@ -328,7 +335,14 @@ namespace _Game.LevelUp
                 if (!usedIds.Add(skill.SkillId)) continue;
 
                 string desc = loadout.BuildCardDescription(skill);
-                result.Add(LevelUpCardData.CreateSkillCard(skill, desc));
+                var card = LevelUpCardData.CreateSkillCard(skill, desc);
+
+                // 현재 레벨 세팅
+                var state = loadout.GetSkill(skill.SkillId);
+                card.CurrentLevel = state != null ? state.Level : 0;
+                card.NextLevel    = card.CurrentLevel + 1;
+
+                result.Add(card);
                 count--;
             }
         }
@@ -339,10 +353,21 @@ namespace _Game.LevelUp
         {
             string desc = loadout.BuildCardDescription(ws.definition);
 
+            // 현재 레벨 조회
+            var state = loadout.GetSkill(ws.definition.SkillId);
+            int curLevel = state != null ? state.Level : 0;
+
+            LevelUpCardData card;
             if (ws.isExclusive)
-                return LevelUpCardData.CreateCharacterSkillCard(ws.definition, desc, ws.prefab);
+                card = LevelUpCardData.CreateCharacterSkillCard(ws.definition, desc, ws.prefab);
             else
-                return LevelUpCardData.CreateSkillCard(ws.definition, desc);
+                card = LevelUpCardData.CreateSkillCard(ws.definition, desc);
+
+            card.CurrentLevel = curLevel;
+            card.NextLevel    = curLevel + 1;
+            card.AddInfo = ws.definition.GetAddInfoForLevel(curLevel + 1);
+
+            return card;
         }
 
         //  가중치 랜덤

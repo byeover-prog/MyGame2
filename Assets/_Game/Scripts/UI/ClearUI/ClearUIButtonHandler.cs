@@ -9,11 +9,27 @@ public class ClearUIButtonHandler : MonoBehaviour
 
     private void OnEnable()
     {
-        var root = GetComponent<UIDocument>().rootVisualElement;
+        var doc = GetComponent<UIDocument>();
+        if (doc == null)
+        {
+            GameLogger.LogWarning("[ClearUIButtonHandler] UIDocument 미연결", this);
+            return;
+        }
 
-        root.Q<Button>("btn-next").clicked  += OnClickNext;
-        root.Q<Button>("btn-retry").clicked += OnClickRetry;
-        root.Q<Button>("btn-base").clicked  += OnClickHome;
+        var root = doc.rootVisualElement;
+        if (root == null)
+        {
+            GameLogger.LogWarning("[ClearUIButtonHandler] rootVisualElement null", this);
+            return;
+        }
+
+        var btnNext  = root.Q<Button>("btn-next");
+        var btnRetry = root.Q<Button>("btn-retry");
+        var btnBase  = root.Q<Button>("btn-base");
+
+        if (btnNext  != null) btnNext.clicked  += OnClickNext;
+        if (btnRetry != null) btnRetry.clicked += OnClickRetry;
+        if (btnBase  != null) btnBase.clicked  += OnClickHome;
     }
 
     private void OnClickNext()

@@ -75,6 +75,9 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     [Tooltip("로그를 출력할지 여부입니다.")]
     [SerializeField] private bool debugLog;
+    
+    [Header("대시 충전")]
+    [SerializeField] private PlayerDashController dashController;
 
     public Vector2 MoveInput { get; private set; }
     public Vector2 FacingDir { get; private set; } = Vector2.right;
@@ -334,10 +337,12 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     private void TryDash()
     {
-        if (Time.time < _nextDashReadyTime)
+        /*if (Time.time < _nextDashReadyTime)
         {
             return;
-        }
+        }*/
+        
+        if (dashController != null && !dashController.CanUseDash()) return;
 
         Vector2 dir = MoveInput.sqrMagnitude > 0.0001f ? MoveInput : FacingDir;
         if (dir.sqrMagnitude < 0.0001f)
@@ -349,7 +354,10 @@ public sealed class PlayerMover2D : MonoBehaviour
         _dashVelocity = dir.normalized * speed;
 
         _dashEndTime = Time.time + dashDuration;
-        _nextDashReadyTime = Time.time + dashCooldown;
+        //_nextDashReadyTime = Time.time + dashCooldown;
+        
+        if (dashController != null)
+            dashController.TryUseDash();
     }
 
     public void PlayUltAnimation()
