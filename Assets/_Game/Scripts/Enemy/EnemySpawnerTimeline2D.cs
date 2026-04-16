@@ -105,7 +105,7 @@ public sealed class EnemySpawnerTimeline2D : MonoBehaviour
 
         Vector2 pos = (Vector2)spawnOrigin.position + Random.insideUnitCircle * spawnRadius;
 
-        // ★ Instantiate → 풀
+        // Instantiate → 풀
         GameObject go = _enemyPool.Get(entry.Prefab, pos, Quaternion.identity, null);
 
         var init = go.GetComponent<IEnemyInit2D>();
