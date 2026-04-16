@@ -262,7 +262,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 7467063
 --- !u!114 &3951196573717800152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -307,7 +307,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07c010d9ca99bcb408376c87b7f2c5c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DashChargeUI
-  slots: []
+  slots:
+  - fill: {fileID: 5508674357797240270}
+    icon: {fileID: 7645898591621340721}
+  - fill: {fileID: 342955277416689472}
+    icon: {fileID: 4165383067564586002}
+  - fill: {fileID: 5016076060759303002}
+    icon: {fileID: 5088118297259830085}
 --- !u!1 &627718751216419729
 GameObject:
   m_ObjectHideFlags: 0
@@ -4277,8 +4283,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -745.1, y: 460.5}
-  m_SizeDelta: {x: 378.7842, y: 126.177}
+  m_AnchoredPosition: {x: -729.42566, y: 460.5}
+  m_SizeDelta: {x: 410.1328, y: 126.177}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &7363484143833007491
 GameObject:
