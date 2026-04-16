@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aa6c3bff29cd354e9ea7d920c20b1a9, type: 3}
+  m_Name: Equipment_C12_WeatheredTalisman
+  m_EditorClassIdentifier: Assembly-CSharp::EquipmentDefinitionSO
+  equipmentId: C12
+  equipmentName: "\uD48D\uD654\uB41C \uBD80\uC801"
+  rarity: 0
+  icon: {fileID: 0}
+  description: "\uAE30\uBCF8 \uD53C\uD574\uB7C9 +10% / \uBC1B\uB294 \uD53C\uD574\uB7C9
+    +15% (\uB514\uBA54\uB9AC\uD2B8)"
+  flavorText: 
+  effects:
+  - type: 0
+    value: 10
+  - type: 31
+    value: 15
