@@ -5,19 +5,23 @@ using TMPro;
 using _Game.LevelUp;
 using _Game.Player;
 using DG.Tweening;
+using Sirenix.OdinInspector;
 
 public class LevelUpPanelController : MonoBehaviour
 {
-    [Header("카드 슬롯")]
+    [FoldoutGroup("카드 슬롯")]
     [SerializeField] private List<SkillCardUI> cardSlots;
 
-    [Header("연결")]
+    [FoldoutGroup("연결"), Required]
     [SerializeField] private LevelUpRewardApplier rewardApplier;
+    [FoldoutGroup("연결"), Required]
     [SerializeField] private LevelUpFlowCoordinator flowCoordinator;
+    [FoldoutGroup("연결"), Required]
     [SerializeField] private LevelUpCardGenerator cardGenerator;
+    [FoldoutGroup("연결"), Required]
     [SerializeField] private PlayerSkillLoadout loadout;
 
-    [Header("패널")]
+    [FoldoutGroup("패널"), Required]
     [SerializeField] private GameObject panelRoot;
 
     [Header("최소화")]
