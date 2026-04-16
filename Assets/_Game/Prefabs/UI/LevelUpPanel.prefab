@@ -1184,7 +1184,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 7467063
 --- !u!114 &7241639280111349200
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1198,11 +1198,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelUpPanelController
   cardSlots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 3772012621899680222}
+  - {fileID: 1813395913851682177}
+  - {fileID: 6627339763102565126}
+  - {fileID: 8159643739565214420}
+  - {fileID: 3972366842904769649}
   rewardApplier: {fileID: 0}
   flowCoordinator: {fileID: 0}
   cardGenerator: {fileID: 0}
@@ -1350,6 +1350,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1436220750157813481}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8159643739565214420 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7120925031230987325, guid: 628a2790e8a230a4693108030e70f1bd,
+    type: 3}
+  m_PrefabInstance: {fileID: 1436220750157813481}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af151105d1794e640aad263b1550e299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillCardUI
 --- !u!1001 &4119546747078385467
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1479,6 +1491,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 4119546747078385467}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6627339763102565126 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7120925031230987325, guid: 628a2790e8a230a4693108030e70f1bd,
+    type: 3}
+  m_PrefabInstance: {fileID: 4119546747078385467}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af151105d1794e640aad263b1550e299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillCardUI
 --- !u!1001 &6193070774825592908
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1608,6 +1632,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 6193070774825592908}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3972366842904769649 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7120925031230987325, guid: 628a2790e8a230a4693108030e70f1bd,
+    type: 3}
+  m_PrefabInstance: {fileID: 6193070774825592908}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af151105d1794e640aad263b1550e299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillCardUI
 --- !u!1001 &6235931774357804515
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1802,6 +1838,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 6235931774357804515}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3772012621899680222 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7120925031230987325, guid: 628a2790e8a230a4693108030e70f1bd,
+    type: 3}
+  m_PrefabInstance: {fileID: 6235931774357804515}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af151105d1794e640aad263b1550e299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillCardUI
 --- !u!1001 &8933138830428725692
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1931,3 +1979,15 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 8933138830428725692}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1813395913851682177 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7120925031230987325, guid: 628a2790e8a230a4693108030e70f1bd,
+    type: 3}
+  m_PrefabInstance: {fileID: 8933138830428725692}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af151105d1794e640aad263b1550e299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillCardUI
