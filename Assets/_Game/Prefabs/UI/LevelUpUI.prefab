@@ -69,16 +69,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0a7937af98539f4c8980d815e74d641, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Game.LevelUp.UI.LevelUpCardPanelController
-  panelRoot: {fileID: 0}
-  cardView1: {fileID: 0}
-  cardView2: {fileID: 0}
-  cardView3: {fileID: 0}
-  cardView4: {fileID: 0}
+  uiDocument: {fileID: 0}
   rewardApplier: {fileID: 0}
   flowCoordinator: {fileID: 0}
-  rerollButton: {fileID: 0}
-  rerollCountText: {fileID: 0}
-  rerollMaxCount: 100
   cardGenerator: {fileID: 0}
   loadout: {fileID: 0}
-  queuedCountText: {fileID: 0}
+  hudController: {fileID: 0}
+  rerollMaxCount: 100
+  maxCardSearch: 5
+  exclusiveBorderColor: {r: 1, g: 0.84, b: 0, a: 1}
+  normalBorderColor: {r: 0.78, g: 0.63, b: 0.31, a: 0.3}

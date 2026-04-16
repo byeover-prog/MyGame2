@@ -158,20 +158,19 @@ namespace _Game.Player
         /// </summary>
         public string BuildCardDescription(SkillDefinitionSO skill)
         {
-            if (skill == null)
+            if (skill == null) return string.Empty;
+
+            // 패시브는 설명 없음
+            if (skill.SkillType == SkillType.Passive)
                 return string.Empty;
 
             RuntimeSkillState state = GetSkill(skill.SkillId);
-
-            // 미보유 → 다음 레벨 = 1
             int nextLevel = state == null ? 1 : state.Level + 1;
 
-            // SO에 레벨별 설명이 있으면 우선 사용
             string soDesc = skill.GetDescriptionForLevel(nextLevel);
             if (!string.IsNullOrWhiteSpace(soDesc))
                 return soDesc;
 
-            // SO에 설명 없으면 기본 텍스트
             if (state == null)
                 return "새로 획득";
 
