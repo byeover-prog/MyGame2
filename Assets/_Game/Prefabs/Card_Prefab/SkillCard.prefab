@@ -1507,13 +1507,18 @@ MonoBehaviour:
   text_Desc: {fileID: 787018741015838302}
   button: {fileID: 3632411967291611376}
   hoverBorder: {fileID: 7535456646560556338}
-  hoverMoveY: 15
+  hoverTargets:
+  - {fileID: 9222382418130318704}
+  - {fileID: 4037992956983215642}
+  - {fileID: 5095906932411380734}
+  hoverMoveY: 10
   hoverDuration: 0.2
   text_NewAcquire: {fileID: 266329527621974605}
   text_CurrentLevel: {fileID: 1595961883696268489}
   text_NextLevel: {fileID: 8476554110257874887}
   text_AddInfo: {fileID: 3314632902620750539}
   levelArrow: {fileID: 3760253110407626877}
+  blinkDuration: 0.6
 --- !u!1 &8466403994312303928
 GameObject:
   m_ObjectHideFlags: 0

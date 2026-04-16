@@ -6,6 +6,7 @@ using System;
 using _Game.LevelUp;
 using DG.Tweening;
 using _Game.Skills;
+using Sirenix.OdinInspector;
 
 public class SkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -15,10 +16,16 @@ public class SkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private TextMeshProUGUI text_Desc;
     [SerializeField] private Button button;
 
-    [Header("호버 연출")]
-    [SerializeField] private Image hoverBorder;       // HoverBorder Image
-    [SerializeField] private float hoverMoveY = 15f;  // 올라가는 픽셀
+    [BoxGroup("호버 연출")]
+    [SerializeField] private Image hoverBorder;
+    [BoxGroup("호버 연출")]
+    [SerializeField] private RectTransform[] hoverTargets;
+    [BoxGroup("호버 연출")]
+    [SerializeField] private float hoverMoveY = 15f;
+    [BoxGroup("호버 연출")]
     [SerializeField] private float hoverDuration = 0.2f;
+    
+    private Vector2[] _targetOrigins;
     
     [SerializeField] private TextMeshProUGUI text_NewAcquire;
     [SerializeField] private TextMeshProUGUI text_CurrentLevel;
@@ -31,15 +38,19 @@ public class SkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private LevelUpCardData _data;
     private Action<LevelUpCardData> _onSelected;
-    private Vector2 _originPos;
+    private Vector3 _originLocalPos;
 
     private void Awake()
     {
-        _originPos = GetComponent<RectTransform>().anchoredPosition;
+        _targetOrigins = new Vector2[hoverTargets.Length];
+        for (int i = 0; i < hoverTargets.Length; i++)
+            _targetOrigins[i] = hoverTargets[i] != null ? hoverTargets[i].anchoredPosition : Vector2.zero;
     }
 
     public void Setup(LevelUpCardData data, Action<LevelUpCardData> onSelected)
     {
+        _originLocalPos = transform.localPosition;
+        
         _data = data;
         _onSelected = onSelected;
 
@@ -91,36 +102,35 @@ public class SkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        var rect = GetComponent<RectTransform>();
-
-        // 위로 올라오기
-        rect.DOAnchorPosY(_originPos.y + hoverMoveY, hoverDuration)
-            .SetEase(Ease.OutQuad)
-            .SetUpdate(true);
-
-        // 테두리 페이드인
+        for (int i = 0; i < hoverTargets.Length; i++)
+        {
+            if (hoverTargets[i] != null)
+                hoverTargets[i].DOAnchorPosY(_targetOrigins[i].y + hoverMoveY, hoverDuration)
+                    .SetEase(Ease.OutQuad).SetUpdate(true);
+        }
         if (hoverBorder != null)
             hoverBorder.DOFade(1f, hoverDuration).SetUpdate(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        var rect = GetComponent<RectTransform>();
-
-        // 원래 위치로
-        rect.DOAnchorPosY(_originPos.y, hoverDuration)
-            .SetEase(Ease.OutQuad)
-            .SetUpdate(true);
-
-        // 테두리 페이드아웃
+        for (int i = 0; i < hoverTargets.Length; i++)
+        {
+            if (hoverTargets[i] != null)
+                hoverTargets[i].DOAnchorPosY(_targetOrigins[i].y, hoverDuration)
+                    .SetEase(Ease.OutQuad).SetUpdate(true);
+        }
         if (hoverBorder != null)
             hoverBorder.DOFade(0f, hoverDuration).SetUpdate(true);
     }
 
     private void ResetHover()
     {
-        var rect = GetComponent<RectTransform>();
-        rect.anchoredPosition = _originPos;
+        for (int i = 0; i < hoverTargets.Length; i++)
+        {
+            if (hoverTargets[i] != null)
+                hoverTargets[i].anchoredPosition = _targetOrigins[i];
+        }
 
         if (hoverBorder != null)
         {
@@ -129,6 +139,7 @@ public class SkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             hoverBorder.color = c;
         }
     }
+
     private void OnDisable()
     {
         _blinkTween?.Kill();
