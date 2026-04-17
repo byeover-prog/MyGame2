@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 235301bbe7e69ce438640b7a5297e910, type: 3}
+  m_Name: "\uFEFFSkill_Bingju"
+  m_EditorClassIdentifier: Assembly-CSharp::_Game.Skills.SkillDefinitionSO
+  skillId: "\uFEFFweapon_bingju"
+  skillType: 0
+  displayName: "\uFEFF\uBE59\uC8FC"
+  icon: {fileID: 21300000, guid: b6f08348dfa5f574f9ef0312c412b7c1, type: 3}
+  tagKr: "\uBC94\uC704"
+  maxLevel: 8
+  descLv1: "\uC801\uB4E4\uC758 \uBC1C \uBC11\uC5D0\uC11C \uC5BC\uC74C \uAE30\uB3D9\uC774
+    \uC19F\uC544\uC11C \uC801\uB4E4\uC744 \uC7A0\uAE50 \uACF5\uC911\uC5D0 \uB744\uC6C1\uB2C8\uB2E4."
+  descLv2: "\uC2A4\uD0AC \uD53C\uD574\uB7C9\uC774 \uC99D\uAC00 \uD569\uB2C8\uB2E4."
+  descLv3: "\uC2A4\uD0AC \uD53C\uD574\uB7C9\uC774 \uC99D\uAC00 \uD569\uB2C8\uB2E4."
+  descLv4: "\uC2A4\uD0AC \uD53C\uD574\uB7C9\uC774 \uC99D\uAC00 \uD569\uB2C8\uB2E4."
+  descLv5: "\uC2A4\uD0AC \uD53C\uD574\uB7C9\uC774 \uC99D\uAC00 \uD569\uB2C8\uB2E4."
+  descLv6: "\uC2A4\uD0AC \uD53C\uD574\uB7C9\uC774 \uC99D\uAC00 \uD569\uB2C8\uB2E4."
+  descLv7: "\uC2DC\uC804 \uD69F\uC218\uAC00 \uC99D\uAC00 \uD569\uB2C8\uB2E4"
+  descLv8: "\uC2DC\uC804 \uD69F\uC218\uAC00 \uC99D\uAC00 \uD569\uB2C8\uB2E4"
+  addInfoLv1: "\uD53C\uD574\uB7C9 + 10%"
+  addInfoLv2: "\uD53C\uD574\uB7C9 + 10%"
+  addInfoLv3: "\uD53C\uD574\uB7C9 + 10%"
+  addInfoLv4: "\uD53C\uD574\uB7C9 + 10%"
+  addInfoLv5: "\uD53C\uD574\uB7C9 + 10%"
+  addInfoLv6: "\uD53C\uD574\uB7C9 + 10%"
+  addInfoLv7: "\uC2DC\uC804 \uD69F\uC218 +1"
+  addInfoLv8: "\uC2DC\uC804 \uD69F\uC218 +1"
+  passiveStatType: 0
