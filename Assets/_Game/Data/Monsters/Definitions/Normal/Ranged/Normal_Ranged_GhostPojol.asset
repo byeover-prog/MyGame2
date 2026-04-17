@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a89256b767c32048b29c88f24f0084e, type: 3}
+  m_Name: Normal_Ranged_GhostPojol
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterDefinitionSO
+  monsterId: normal_ranged_ghost_pojol
+  displayName: "\uD63C\uB839\uD3EC\uC878[\uC6D0\uAC70\uB9AC]"
+  monsterType: 0
+  behaviorType: 1
+  monsterPrefab: {fileID: 1167562495931740082, guid: 9815a14f3a6d48742ab7721f850dabfd,
+    type: 3}
+  portrait: {fileID: 0}
+  maxHp: 100
+  moveSpeed: 2
+  detectRange: 14
+  contactDamage: 0
+  countsAsAliveEnemy: 1
+  attackDamage: 10
+  attackRange: 11
+  attackCooldown: 2.5
+  retreatRange: 6
+  chargeDuration: 1
+  projectileCount: 2
+  spreadAngle: 20
+  projectileSpeed: 6
+  dashSpeed: 0
+  dashDistance: 0
+  dashCooldown: 0.01
+  dashWindupTime: 0
+  dashRecoverTime: 0
