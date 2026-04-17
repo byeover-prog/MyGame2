@@ -1,15 +1,6 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// 적의 체력만 관리하는 컴포넌트입니다.
-///
-/// 왜 이렇게 바꾸는가:
-/// - 이전에는 EnemyHealth2D가 체력, 경험치 드랍, 킬 카운트, 풀 반환까지
-///   한 번에 담당할 가능성이 높았습니다.
-/// - 새 구조에서는 EnemyHealth2D는 체력 변화와 죽음 판정만 담당하고,
-///   실제 사망 후처리는 MonsterDeathHandler2D가 맡도록 분리합니다.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
 {
@@ -78,12 +69,13 @@ public sealed class EnemyHealth2D : MonoBehaviour, IDamageable2D
     {
         ResetHp(hp);
     }
-
-    /// <summary>
-    /// 피해를 적용합니다.
-    /// 체력이 0 이하가 되면 죽음 이벤트만 발생시키고,
-    /// 실제 후처리는 여기서 하지 않습니다.
-    /// </summary>
+    
+    public void KillImmediate()
+    {
+        if (isDead) return;
+        TakeDamage(currentHp + 1);
+    }
+    
     public void TakeDamage(int damage)
     {
         if (isDead)
