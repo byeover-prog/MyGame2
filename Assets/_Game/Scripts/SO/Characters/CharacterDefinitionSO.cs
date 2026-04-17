@@ -8,7 +8,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "혼령검/메타/캐릭터 정의", fileName = "CharacterDefinition_")]
 public sealed class CharacterDefinitionSO : ScriptableObject
 {
-    // ─── 식별 ──────────────────────────────────────────
+    // 식별
 
     [Header("식별")]
     [Tooltip("저장·코드에서 사용하는 고유 ID입니다. 예: yunseol, hayul, harin")]
@@ -17,13 +17,13 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("UI에 표시할 한글 이름입니다.")]
     [SerializeField] private string displayName;
 
-    // ─── 속성 ──────────────────────────────────────────
+    // 속성
 
     [Header("속성")]
     [Tooltip("이 캐릭터의 기본 속성입니다. (기존 CharacterAttributeKind 사용)")]
     [SerializeField] private CharacterAttributeKind attribute = CharacterAttributeKind.None;
 
-    // ─── 비주얼 ────────────────────────────────────────
+    // 비주얼
 
     [Header("비주얼")]
     [Tooltip("편성 화면 등에 표시할 초상화 스프라이트입니다.")]
@@ -38,7 +38,7 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("Player의 Animator Controller입니다.")]
     [SerializeField] private RuntimeAnimatorController animatorController;
 
-    // ─── 기본 스킬 ────────────────────────────────────
+    // 기본 스킬
 
     [Header("기본 스킬")]
     [Tooltip("기본 스킬 아이콘입니다.")]
@@ -50,7 +50,7 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("이 캐릭터의 시작 스킬(무기) Config SO입니다.")]
     [SerializeField] private CommonSkillConfigSO startingSkill;
 
-    // ─── 궁극기 ────────────────────────────────────────
+    // 궁극기
 
     [Header("궁극기")]
     [Tooltip("궁극기 아이콘입니다.")]
@@ -65,7 +65,7 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("궁극기 실행 로직 프리팹입니다.")]
     [SerializeField] private GameObject ultimateResolverPrefab;
 
-    // ─── 지원 캐릭터 전용 ──────────────────────────────
+    // 지원 캐릭터 전용
 
     [Header("지원 캐릭터 전용")]
     [Tooltip("지원 궁극기 사용 시 데미지 배율입니다. (예: 0.6 = 60%)")]

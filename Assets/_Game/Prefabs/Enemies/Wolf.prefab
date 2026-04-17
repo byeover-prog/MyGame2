@@ -96,7 +96,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 0.97}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!95 &5943427080616932417
 Animator:

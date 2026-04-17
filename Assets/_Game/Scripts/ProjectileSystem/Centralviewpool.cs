@@ -1,35 +1,6 @@
-// ============================================================================
-// CentralViewPool.cs  (v2 — 스킬별 VisualId 매핑)
-// 경로: Assets/_Game/Scripts/ProjectileSystem/CentralViewPool.cs
-//
-// [v1 문제점]
-// ProjectileMoveKind로 프리팹을 구분했는데, Straight를 쓰는 스킬이
-// 곡궁/화승총/수리검/낙뢰부 4개라서 전부 같은 프리팹이 나옴.
-//
-// [v2 변경]
-// ProjectileVisualId enum을 키로 사용. 스킬 1종 = 뷰 프리팹 1종.
-//
-// [Inspector 설정]
-// Hierarchy: [CentralProjectileManager] 오브젝트에 부착
-// View Entries 배열 (Size = 9):
-//   [0] Id=Arrow,      Prefab=ArrowView,       PrewarmCount=30
-//   [1] Id=Bullet,     Prefab=BulletView,      PrewarmCount=10
-//   [2] Id=Shuriken,   Prefab=ShurikenView,    PrewarmCount=16
-//   [3] Id=Boomerang,  Prefab=BoomerangView,   PrewarmCount=16
-//   [4] Id=HomingOrb,  Prefab=HomingView,       PrewarmCount=10
-//   [5] Id=Blade,      Prefab=BladeView,        PrewarmCount=16
-//   [6] Id=Talisman,   Prefab=TalismanView,     PrewarmCount=10
-//   [7] Id=DarkOrb,    Prefab=DarkOrbView,      PrewarmCount=20
-//   [8] Id=Balsi,      Prefab=BalsiView,        PrewarmCount=10
-// ============================================================================
-
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 투사체 비주얼 종류. 스킬 1종 = ID 1개.
-/// CentralViewPool과 ProjectileSlot.VisualId에서 사용.
-/// </summary>
 public enum ProjectileVisualId : byte
 {
     None = 0,
@@ -195,8 +166,7 @@ public sealed class CentralViewPool : MonoBehaviour
         // Trail 초기화
         if (slot.Trail != null)
             slot.Trail.Clear();
-
-        // ★ v2: 파티클 클리어 후 재생 (이전 잔상 방지)
+        
         if (slot.Particles != null)
         {
             for (int i = 0; i < slot.Particles.Length; i++)
@@ -210,7 +180,7 @@ public sealed class CentralViewPool : MonoBehaviour
         return id;
     }
 
-    /// <summary>뷰를 비활성화하고 풀에 반환.</summary>
+    // 뷰를 비활성화하고 풀에 반환.
     public void Release(int viewId)
     {
         if (viewId < 0 || viewId >= _slots.Length) return;

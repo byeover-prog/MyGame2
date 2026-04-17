@@ -16,7 +16,7 @@ namespace _Game.LevelUp
         private LevelUpCardGenerator cardGenerator;
 
         [SerializeField, Tooltip("새 4장 패널 컨트롤러입니다.")]
-        private LevelUpCardPanelController panelController;
+        private LevelUpPanelController panelController;
 
         [SerializeField, Tooltip("플레이어 스킬 로드아웃입니다.")]
         private PlayerSkillLoadout loadout;

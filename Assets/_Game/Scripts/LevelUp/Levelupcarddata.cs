@@ -63,6 +63,15 @@ namespace _Game.LevelUp
 
         /// <summary>즉시 경험치량 (RewardType == BonusExp)</summary>
         public int BonusExpAmount;
+        
+        /// <summary>현재 레벨 (0 = 미보유)</summary>
+        public int CurrentLevel;
+
+        /// <summary>다음 레벨</summary>
+        public int NextLevel;
+
+        /// <summary>추가 스탯 텍스트 (예: "피해량 +99%")</summary>
+        public string AddInfo;
 
         // ════════════════════════════════════════════
         //  팩토리 메서드

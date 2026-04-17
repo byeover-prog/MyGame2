@@ -1,54 +1,95 @@
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
-/// <summary>
-/// 대쉬 충전 아이콘 표시 전용 UI.
-/// 로직은 하지 않고, 현재 충전 수와 최대 칸 수만 받아서 표시한다.
-/// </summary>
 public sealed class DashChargeUI : MonoBehaviour
 {
-    [Header("대쉬 아이콘")]
-    [Tooltip("대쉬 칸 이미지들. 0~2 순서로 넣기")]
-    [SerializeField] private Image[] dashIcons;
+    [System.Serializable]
+    public struct DashSlot
+    {
+        public Image fill;
+        public RectTransform icon;
+    }
 
-    [Header("스프라이트")]
-    [Tooltip("충전 완료 상태 이미지")]
-    [SerializeField] private Sprite chargedSprite;
+    [Header("대쉬 슬롯")]
+    [SerializeField] private DashSlot[] slots;
 
-    [Tooltip("비어 있는 상태 이미지")]
-    [SerializeField] private Sprite emptySprite;
+    private int _currentCount;
+    private int _maxCount;
+    private bool _initialized;
 
-    [Tooltip("잠긴 칸 상태 이미지")]
-    [SerializeField] private Sprite lockedSprite;
-
-    /// <summary>
-    /// 현재 UI 반영
-    /// </summary>
     public void Refresh(int currentCount, int maxCount)
     {
-        if (dashIcons == null) return;
+        int prevCount = _currentCount;
+        _currentCount = currentCount;
+        _maxCount = maxCount;
 
-        for (int i = 0; i < dashIcons.Length; i++)
+        for (int i = 0; i < slots.Length; i++)
         {
-            if (dashIcons[i] == null) continue;
+            if (slots[i].fill == null) continue;
 
             if (i >= maxCount)
             {
-                dashIcons[i].sprite = lockedSprite;
-                dashIcons[i].color = new Color(1f, 1f, 1f, 0.35f);
+                slots[i].fill.fillAmount = 0f;
                 continue;
             }
 
             if (i < currentCount)
             {
-                dashIcons[i].sprite = chargedSprite;
-                dashIcons[i].color = Color.white;
+                if (!_initialized)
+                {
+                    slots[i].fill.fillAmount = 1f;
+                }
+                else if (i >= prevCount)
+                {
+                    slots[i].fill.fillAmount = 1f;
+                    PlayPopAnim(i);
+                }
             }
             else
             {
-                dashIcons[i].sprite = emptySprite;
-                dashIcons[i].color = new Color(1f, 1f, 1f, 0.6f);
+                // 소진된 슬롯 → 즉시 0으로
+                slots[i].fill.fillAmount = 0f;
             }
         }
+
+        _initialized = true;
+    }
+    
+    public void ResetSlotFill(int index)
+    {
+        if (index < 0 || index >= slots.Length) return;
+        if (slots[index].fill == null) return;
+        slots[index].fill.fillAmount = 0f;
+    }
+
+    public void UpdateChargingFill(float rechargeTimer, float dashCooldown)
+    {
+        if (_currentCount >= _maxCount) return;
+
+        int chargingIndex = _currentCount;
+        Debug.Log($"충전중 슬롯: {chargingIndex}, timer: {rechargeTimer}, cooldown: {dashCooldown}");
+    
+        if (chargingIndex >= slots.Length) return;
+        if (slots[chargingIndex].fill == null) return;
+
+        float ratio = rechargeTimer > 0f ? 1f - (rechargeTimer / dashCooldown) : 1f;
+        Debug.Log($"fillAmount: {ratio}");
+        slots[chargingIndex].fill.fillAmount = ratio;
+    }
+
+    private void PlayPopAnim(int index)
+    {
+        if (slots[index].icon == null) return;
+
+        slots[index].icon.DOKill();
+        slots[index].icon.localScale = Vector3.one;
+        slots[index].icon
+            .DOScale(1.25f, 0.1f)
+            .SetEase(Ease.OutQuad)
+            .OnComplete(() =>
+                slots[index].icon
+                    .DOScale(1f, 0.15f)
+                    .SetEase(Ease.InQuad));
     }
 }
