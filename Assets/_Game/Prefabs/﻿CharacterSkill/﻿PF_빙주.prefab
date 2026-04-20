@@ -1,5 +1,66 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5377250182900935764
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3539783868611284793}
+  - component: {fileID: 3617614047471163025}
+  m_Layer: 0
+  m_Name: ThunderShockWeapon2D
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3539783868611284793
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5377250182900935764}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.33333334, y: 0.33333334, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6880921970440069902}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3617614047471163025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5377250182900935764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 795b55005dd20c84d8b6fe880f6fa51e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThunderShockWeapon2D
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 0
+  baseDamage: 15
+  baseRadius: 3
+  baseInterval: 1
+  damagePerLevel: 0.1
+  radiusPerLevel: 0.1
+  awakeningLevel: 7
+  awakeningIntervalReduce: 0.5
+  awakeningDamageMultiplier: 1.5
+  overloadThreshold: 3
+  overloadDamageMultiplier: 1.5
+  vfxRoot: {fileID: 0}
+  vfxBaseRadius: 1
+  perEnemyCooldown: 0.5
+  enableLogs: 0
 --- !u!1 &7726396615621775536
 GameObject:
   m_ObjectHideFlags: 0
@@ -29,9 +90,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3539783868611284793}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7618773129609032540
@@ -48,7 +110,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpriteSkillVisual
   spriteRoot: {fileID: 6880921970440069902}
   spriteRenderer: {fileID: 3386328625354402739}
-  baseRadius: 1
+  baseRadius: 2
   impactScalePunch: 1.25
   impactDuration: 0.12
   hideRendererOnStop: 1
@@ -124,5 +186,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BingjuSpikeArea2D
   visualBehaviour: {fileID: 7618773129609032540}
+  visualTransform: {fileID: 0}
+  visualSpriteRenderer: {fileID: 0}
   visualBaseRadius: 1
   minScale: 0.05
+  fallHeight: 3
+  impactOvershoot: 1.4
+  impactOvershootDuration: 0.15
+  impactFlashIntensity: 0.85
+  impactFlashDuration: 0.1
+  holdRotationDegPerSec: 120
+  fadeStartRatio: 0.65
