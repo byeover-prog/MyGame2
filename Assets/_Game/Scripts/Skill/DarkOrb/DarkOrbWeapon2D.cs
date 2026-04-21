@@ -28,7 +28,7 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     [SerializeField] private float splitLifeSeconds = 0.6f;
 
 
-    // ── 런타임 ──
+    // 런타임
     private Transform _owner;
     private int       _level;
     private float     _nextFireTime;
@@ -37,10 +37,8 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
     private readonly Collider2D[] _enemyHits = new Collider2D[64];
     private ContactFilter2D _enemyFilter;
     private bool _filterReady;
-
-    // ══════════════════════════════════════════════════════════════
+    
     // ILevelableSkill (기존과 동일)
-    // ══════════════════════════════════════════════════════════════
 
     public void OnAttaced(Transform owner) => OnAttached(owner);
 
@@ -61,16 +59,14 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
         _level = Mathf.Clamp(level, 1, 8);
         GameLogger.Log($"[DarkOrbWeapon2D] ApplyLevel → Lv.{_level}");
     }
-
-    // ══════════════════════════════════════════════════════════════
+    
     // Update (자동 발사)
-    // ══════════════════════════════════════════════════════════════
 
     private void Update()
     {
         if (_level <= 0 || _owner == null) return;
 
-        // ★ v2: CentralProjectileManager 사용
+        // CentralProjectileManager 사용
         if (CentralProjectileManager.Instance == null) return;
 
         if (Time.time < _nextFireTime) return;
@@ -90,9 +86,7 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
         _nextFireTime = Time.time + Mathf.Max(0.05f, finalCd);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // ★ v2: Fire() → CentralProjectileManager.Spawn()
-    // ══════════════════════════════════════════════════════════════
+    //  Fire() → CentralProjectileManager.Spawn()
 
     private void Fire(Transform target)
     {
@@ -117,7 +111,7 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
         Vector2 dir = ((Vector2)target.position - myPos).normalized;
         if (dir.sqrMagnitude < 0.001f) return;
 
-        // ★ v2: ProjectileSlot 템플릿 구성
+        // ProjectileSlot 템플릿 구성
         var template = new ProjectileSlot
         {
             // 종류: 수명 만료 시 폭발 + depth 기반 분열
@@ -152,10 +146,8 @@ public sealed class DarkOrbWeapon2D : MonoBehaviour, ILevelableSkill
 
         CentralProjectileManager.Instance.Spawn(ref template);
     }
-
-    // ══════════════════════════════════════════════════════════════
+    
     // 적 탐색 (기존과 동일)
-    // ══════════════════════════════════════════════════════════════
 
     private Transform FindNearestEnemy()
     {

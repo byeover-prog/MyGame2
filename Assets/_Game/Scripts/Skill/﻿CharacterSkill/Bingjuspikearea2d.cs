@@ -15,18 +15,22 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
     [Tooltip("빙주 시각용 SpriteRenderer. 알파/플래시에 사용합니다.")]
     [SerializeField] private SpriteRenderer visualSpriteRenderer;
 
-    [Tooltip("SpriteSkillVisual 기준 반경입니다.")]
-    [SerializeField] private float visualBaseRadius = 1f;
+    [Header("★ 시각 크기 제어 (피해 범위와 독립)")]
+    [Tooltip("시각 크기 배수. Hit Radius와 무관하게 스프라이트 크기를 조절합니다.\n" +
+             "1.0 = 원본 크기 / 2.0 = 2배 크기 / 3.0 = 3배 크기.\n" +
+             "피해 범위(Weapon_빙주의 Base Hit Radius)는 기획값 유지하고 이 값으로 시각 임팩트만 조정하세요.")]
+    [SerializeField] private float visualSizeMultiplier = 2.0f;
 
     [Header("예고 연출 (자식 구조에서만 적용)")]
-    [Tooltip("예고 시작 시 최소 스케일입니다.")]
+    [Tooltip("예고 시작 시 최소 스케일입니다. (최종 크기 대비 비율)")]
+    [Range(0.01f, 1f)]
     [SerializeField] private float minScale = 0.05f;
 
     [Tooltip("위에서 떨어지는 연출의 시작 높이(y 오프셋). 루트 구조에서는 무시됩니다.")]
     [SerializeField] private float fallHeight = 3f;
 
     [Header("착탄 연출 (항상 적용)")]
-    [Tooltip("착탄 시 스케일 오버슈트 배율입니다. 1.25 = 125% 까지 튀어오름.")]
+    [Tooltip("착탄 시 스케일 오버슈트 배율입니다. 1.4 = 140% 까지 튀어오름.")]
     [SerializeField] private float impactOvershoot = 1.4f;
 
     [Tooltip("착탄 오버슈트 유지 시간(초)입니다.")]
@@ -68,7 +72,7 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
     private Color _baseSpriteColor;
     private bool _hasBaseSpriteColor;
     private Quaternion _baseVisualRotation;
-    private bool _visualIsRoot; // 루트 감지 플래그
+    private bool _visualIsRoot;
 
     private readonly List<EnemyRegistryMember2D> _targets = new List<EnemyRegistryMember2D>(16);
 
@@ -85,7 +89,8 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
             Debug.Log(
                 $"[빙주Spike 진단] Awake | visual={(_visual == null ? "★NULL★" : _visual.GetType().Name)} " +
                 $"| visualIsRoot={_visualIsRoot} " +
-                $"(Root=자식없음: 낙하/회전 스킵, 스케일+플래시만 / Child=자식있음: 풀 연출)",
+                $"| visualSizeMultiplier={visualSizeMultiplier} " +
+                "(시각 크기는 Hit Radius와 독립. PF_빙주에서 조절)",
                 this);
 
             if (_visual == null)
@@ -100,14 +105,12 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
         if (_visual != null)
             _visual.Stop();
 
-        // 자식 구조일 때만 Transform 복구
         if (!_visualIsRoot && visualTransform != null)
         {
             visualTransform.localPosition = Vector3.zero;
             visualTransform.localRotation = _baseVisualRotation;
         }
 
-        // 스프라이트 색 복구 (구조 무관)
         if (_hasBaseSpriteColor && visualSpriteRenderer != null)
             visualSpriteRenderer.color = _baseSpriteColor;
 
@@ -152,10 +155,10 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
         {
             _visual.Play(_impactPoint);
             _visual.UpdatePosition(_impactPoint);
-            _visual.UpdateScale(minScale);
+            // 시작은 매우 작게
+            _visual.UpdateScale(visualSizeMultiplier * minScale);
         }
 
-        // 자식 구조일 때만 Transform 초기화
         if (!_visualIsRoot && visualTransform != null)
             visualTransform.localRotation = _baseVisualRotation;
 
@@ -167,7 +170,6 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
     {
         _age += Time.deltaTime;
 
-        // 예고 중 추적 대상 위치로 impactPoint 갱신
         if (!_fired && _trackedEnemy != null && _trackedEnemy.IsValidTarget)
         {
             _impactPoint = _trackedEnemy.Transform != null
@@ -179,21 +181,19 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
         if (_visual != null)
             _visual.UpdatePosition(_impactPoint);
 
-        // 예고 단계
+        // === 예고 단계 ===
         if (!_fired)
         {
             float rawT = Mathf.Clamp01(_age / _armDelay);
-
-            // ease-out-cubic
             float easeT = 1f - Mathf.Pow(1f - rawT, 3f);
 
-            float targetScale = _hitRadius / Mathf.Max(0.01f, visualBaseRadius);
-            float scale = Mathf.Lerp(minScale, targetScale, easeT);
+            // 리팩토링: visualSizeMultiplier만 써서 스케일 결정. hitRadius와 완전 독립.
+            float targetScale = visualSizeMultiplier;
+            float scale = Mathf.Lerp(visualSizeMultiplier * minScale, targetScale, easeT);
 
             if (_visual != null)
                 _visual.UpdateScale(scale);
 
-            // 낙하 연출 — 자식 구조에서만
             if (!_visualIsRoot && visualTransform != null)
             {
                 float yOffset = (1f - easeT) * fallHeight;
@@ -209,7 +209,6 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
                 if (!_visualIsRoot && visualTransform != null)
                     visualTransform.localPosition = Vector3.zero;
 
-                // 착탄 플래시 (구조 무관 — SpriteRenderer.color만 건드리므로 안전)
                 if (_hasBaseSpriteColor && visualSpriteRenderer != null && impactFlashIntensity > 0f)
                 {
                     Color flashed = Color.Lerp(_baseSpriteColor, Color.white, impactFlashIntensity);
@@ -224,27 +223,26 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
         else
         {
             float sinceImpact = _age - _impactTime;
-            float targetScale = _hitRadius / Mathf.Max(0.01f, visualBaseRadius);
 
-            // 스케일 오버슈트 (구조 무관 — _visual.UpdateScale 통해 적용, 안전)
+            // 리팩토링: visualSizeMultiplier만 써서 스케일 결정
+            float targetScale = visualSizeMultiplier;
+
             float overshootScale = targetScale;
             if (sinceImpact <= impactOvershootDuration && impactOvershootDuration > 0f)
             {
                 float overT = Mathf.Clamp01(sinceImpact / impactOvershootDuration);
-                float pulse = 4f * overT * (1f - overT); // 0~1 포물선 peak=1
+                float pulse = 4f * overT * (1f - overT);
                 overshootScale = targetScale * (1f + (impactOvershoot - 1f) * pulse);
             }
 
             if (_visual != null)
                 _visual.UpdateScale(overshootScale);
 
-            // 회전 연출 — 자식 구조에서만
             if (!_visualIsRoot && visualTransform != null && Mathf.Abs(holdRotationDegPerSec) > 0.01f)
             {
                 visualTransform.Rotate(0f, 0f, holdRotationDegPerSec * Time.deltaTime, Space.Self);
             }
 
-            // 플래시 -> 페이드 아웃 (구조 무관 — color만 건드림)
             if (_hasBaseSpriteColor && visualSpriteRenderer != null)
             {
                 if (impactFlashDuration > 0f && sinceImpact < impactFlashDuration)
@@ -278,6 +276,7 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
     private void Fire()
     {
         _targets.Clear();
+        // Hit Radius는 피해 범위로만 사용 — 시각 크기와 무관
         float sqrR = _hitRadius * _hitRadius;
         IReadOnlyList<EnemyRegistryMember2D> members = EnemyRegistry2D.Members;
         for (int i = 0; i < members.Count; i++)
@@ -331,7 +330,7 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
         {
             Debug.Log(
                 $"[빙주Spike 진단] Fire 완료(AOE) | 대상={appliedCount}명 피격(실패={failCount}) | " +
-                $"dmg={_damage} | hitRadius={_hitRadius}",
+                $"dmg={_damage} | hitRadius={_hitRadius} | visualSize={visualSizeMultiplier}",
                 this);
             s_diagFireLogged = true;
         }
@@ -380,7 +379,6 @@ public sealed class BingjuSpikeArea2D : PooledObject2D
 
     private void CacheBaseVisualTransform()
     {
-        // 루트 감지 — visualTransform 이 자기 자신(또는 null)이면 루트 구조
         _visualIsRoot = (visualTransform == null || visualTransform == transform);
 
         if (visualTransform != null)

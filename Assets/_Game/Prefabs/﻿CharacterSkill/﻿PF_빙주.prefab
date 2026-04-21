@@ -90,7 +90,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3, y: 3, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3539783868611284793}
@@ -110,7 +110,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpriteSkillVisual
   spriteRoot: {fileID: 6880921970440069902}
   spriteRenderer: {fileID: 3386328625354402739}
-  baseRadius: 2
+  baseRadius: 1
   impactScalePunch: 1.25
   impactDuration: 0.12
   hideRendererOnStop: 1
@@ -163,8 +163,9 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  m_Color: {r: 0.3137255, g: 0.7058824, b: 1, a: 0.8627451}
+  m_Sprite: {fileID: 6605197887427296403, guid: cf47fee397c8643468a6581fe4fe3c6a,
+    type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.8627451}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -186,12 +187,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BingjuSpikeArea2D
   visualBehaviour: {fileID: 7618773129609032540}
-  visualTransform: {fileID: 0}
-  visualSpriteRenderer: {fileID: 0}
-  visualBaseRadius: 1
+  visualTransform: {fileID: 6880921970440069902}
+  visualSpriteRenderer: {fileID: 3386328625354402739}
+  visualSizeMultiplier: 1
   minScale: 0.05
   fallHeight: 3
-  impactOvershoot: 1.4
+  impactOvershoot: 0.25
   impactOvershootDuration: 0.15
   impactFlashIntensity: 0.85
   impactFlashDuration: 0.1
