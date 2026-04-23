@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 712f56463d4f8fc42b8c2fac1743a02b, type: 3}
+  m_Name: DuryoksiniGroundSmashConfigSO
+  m_EditorClassIdentifier: Assembly-CSharp::DuryoksiniGroundSmashConfigSO
+  patternId: boss_pattern
+  cooldown: 6
+  playOnEnable: 0
+  minAttackDistance: 1.2
+  maxAttackDistance: 3.2
+  prepareDuration: 0.7
+  recoverDuration: 0.5
+  hitFallbackTime: 0.8
+  finishFallbackTime: 1.2
+  hitRadius: 3
+  targetLayerMask:
+    serializedVersion: 2
+    m_Bits: 4096
+  damage: 18
+  knockbackDistance: 1.2
+  knockbackDuration: 1
+  knockbackUpBias: 1
+  prepareEffectPrefab: {fileID: 5843515073354763399, guid: ec831c0cf924be84ea22f2788b3fc6ee,
+    type: 3}
+  prepareEffectOffset: {x: 0, y: 0, z: 0}
+  prepareEffectLocalScale: {x: 0.25, y: 0.25, z: 0.25}
+  prepareEffectLifetime: 1.5
+  smashImpactEffectPrefab: {fileID: 1442599442317712663, guid: bee223c77ced54241816f85c0337582a,
+    type: 3}
+  smashImpactEffectOffset: {x: 0, y: -1.1, z: 0}
+  smashImpactEffectLocalScale: {x: 2, y: 2, z: 2}
+  smashImpactEffectLifetime: 2
+  drawGizmos: 0

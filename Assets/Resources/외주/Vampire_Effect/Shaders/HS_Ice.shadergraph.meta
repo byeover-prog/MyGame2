@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+<<<<<<< Updated upstream
+guid: 5e6453f5551d46b4fbc7b36268563654
+=======
+guid: 29e1067cbbe02cc4a880bc0f11cee121
+>>>>>>> Stashed changes
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 625f186215c104763be7675aa2d941aa, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 157764
+  packageName: Support package for Hovl Studio assets
+  packageVersion: 3.17
+  assetPath: Assets/Hovl Studio/HSFiles/Shaders/Shader Graph/HS_Ice.shadergraph
+  uploadId: 730589

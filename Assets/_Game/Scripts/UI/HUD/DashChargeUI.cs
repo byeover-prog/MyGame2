@@ -48,14 +48,14 @@ public sealed class DashChargeUI : MonoBehaviour
             }
             else
             {
-                // 소진된 슬롯 → 즉시 0으로
+                // 소진된 슬롯 -> 즉시 0으로
                 slots[i].fill.fillAmount = 0f;
             }
         }
 
         _initialized = true;
     }
-    
+
     public void ResetSlotFill(int index)
     {
         if (index < 0 || index >= slots.Length) return;
@@ -68,13 +68,10 @@ public sealed class DashChargeUI : MonoBehaviour
         if (_currentCount >= _maxCount) return;
 
         int chargingIndex = _currentCount;
-        Debug.Log($"충전중 슬롯: {chargingIndex}, timer: {rechargeTimer}, cooldown: {dashCooldown}");
-    
         if (chargingIndex >= slots.Length) return;
         if (slots[chargingIndex].fill == null) return;
 
         float ratio = rechargeTimer > 0f ? 1f - (rechargeTimer / dashCooldown) : 1f;
-        Debug.Log($"fillAmount: {ratio}");
         slots[chargingIndex].fill.fillAmount = ratio;
     }
 

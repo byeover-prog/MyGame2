@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef51490431d1cd94e97e9bc118045f6a, type: 3}
+  m_Name: DuryoksiniRoarRockfallConfigSO
+  m_EditorClassIdentifier: Assembly-CSharp::DuryoksiniRoarRockfallConfigSO
+  minUseDistance: 10
+  maxUseDistance: 20
+  cooldown: 10
+  roarDuration: 2
+  firstWaveDelay: 0.2
+  recoverDuration: 1
+  waveCount: 2
+  rocksPerWave: 4
+  waveInterval: 0.6
+  rockHitDelay: 0.6
+  spawnRadius: 10
+  playerFocusedRockCount: 12
+  playerFocusRandomRadius: 4
+  minSpacing: 4
+  damage: 20
+  hitRadius: 5
+  targetLayerMask:
+    serializedVersion: 2
+    m_Bits: 4096
+  roarEffectPrefab: {fileID: 2130671060848568974, guid: 58fecfe2d1c359f43b76bbfce58c4050,
+    type: 3}
+  roarEffectOffset: {x: 0, y: 0, z: 0}
+  roarEffectLocalScale: {x: 0.25, y: 0.25, z: 0.25}
+  roarEffectLifetime: 2
+  rockfallEffectPrefab: {fileID: 7732912202228743459, guid: 315d28d427c58d54ea6c511430c099f9,
+    type: 3}
+  rockfallEffectOffset: {x: 0, y: 0, z: 0}
+  rockfallEffectLocalScale: {x: 2, y: 2, z: 2}
+  rockfallEffectLifetime: 2.5

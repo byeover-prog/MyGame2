@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 563236bfeafb8a6469fdd3779e3abca1, type: 3}
+  m_Name: GumihoPatternCatalogSO
+  m_EditorClassIdentifier: Assembly-CSharp::GumihoPatternCatalogSO
+  basicAttackConfig: {fileID: 11400000, guid: 11fe21167f1ffa64381e53d66f78d59b, type: 2}
+  yoHwaPatternConfig: {fileID: 11400000, guid: e513738a92d4aa940803c1ce90355aea, type: 2}
+  yohoFoxBeadPatternConfig: {fileID: 11400000, guid: a433175fbe2ff2549a1b937ac1046b88,
+    type: 2}

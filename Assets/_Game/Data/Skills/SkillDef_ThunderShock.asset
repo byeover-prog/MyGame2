@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: thundershock
   skillType: 0
   displayName: "\uB1CC\uC9C4"
-  icon: {fileID: 0}
+  icon: {fileID: 1468313566036279955, guid: ba3270010c0ddc4449261b1cf8482782, type: 3}
   tagKr: "\uC804\uC6A9"
   maxLevel: 8
   descLv1: "\uD50C\uB808\uC774\uC5B4 \uC8FC\uBCC0\uC5D0 \uC804\uAE30 \uCDA9\uACA9\uD30C\uB97C
@@ -27,4 +27,12 @@ MonoBehaviour:
   descLv6: "\uD53C\uD574\uB7C9 +10%, \uC2A4\uD0AC \uBC94\uC704 +10% \uC99D\uAC00"
   descLv7: "\uD53C\uD574\uB7C9 +10%, \uC2A4\uD0AC \uBC94\uC704 +10% \uC99D\uAC00\r\n"
   descLv8: "\uD53C\uD574\uB7C9 +10%, \uC2A4\uD0AC \uBC94\uC704 +10% \uC99D\uAC00"
+  addInfoLv1: 
+  addInfoLv2: 
+  addInfoLv3: 
+  addInfoLv4: 
+  addInfoLv5: 
+  addInfoLv6: 
+  addInfoLv7: 
+  addInfoLv8: 
   passiveStatType: 0
