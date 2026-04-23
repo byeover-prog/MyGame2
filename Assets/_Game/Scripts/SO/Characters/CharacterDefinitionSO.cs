@@ -1,14 +1,10 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// 개별 캐릭터의 기본 정의입니다.
-/// 윤설, 하율, 하린 각각 하나의 에셋으로 만들어 CharacterCatalogSO에 등록합니다.
-/// </summary>
 [CreateAssetMenu(menuName = "혼령검/메타/캐릭터 정의", fileName = "CharacterDefinition_")]
 public sealed class CharacterDefinitionSO : ScriptableObject
 {
-    // 식별
+    // ─── 식별 ───────────────────────────────────────────
 
     [Header("식별")]
     [Tooltip("저장·코드에서 사용하는 고유 ID입니다. 예: yunseol, hayul, harin")]
@@ -17,13 +13,13 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("UI에 표시할 한글 이름입니다.")]
     [SerializeField] private string displayName;
 
-    // 속성
+    // ─── 속성 ───────────────────────────────────────────
 
     [Header("속성")]
     [Tooltip("이 캐릭터의 기본 속성입니다. (기존 CharacterAttributeKind 사용)")]
     [SerializeField] private CharacterAttributeKind attribute = CharacterAttributeKind.None;
 
-    // 비주얼
+    // ─── 비주얼 ─────────────────────────────────────────
 
     [Header("비주얼")]
     [Tooltip("편성 화면 등에 표시할 초상화 스프라이트입니다.")]
@@ -38,11 +34,17 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("Player의 Animator Controller입니다.")]
     [SerializeField] private RuntimeAnimatorController animatorController;
 
-    // 기본 스킬
+    // ─── 기본 스킬 ──────────────────────────────────────
 
     [Header("기본 스킬")]
-    [Tooltip("기본 스킬 아이콘입니다.")]
+    [Tooltip("기본/대표 아이콘입니다. 모양별 슬롯이 비어있을 때 fallback으로 사용됩니다.")]
     [SerializeField] private Sprite basicSkillIcon;
+
+    [Tooltip("[다이아몬드 슬롯 전용] 레벨업 카드 등에서 사용. 비워두면 BasicSkillIcon으로 자동 fallback.")]
+    [SerializeField] private Sprite basicSkillIconDiamond;
+
+    [Tooltip("[정사각형 슬롯 전용] 인게임 HUD 8칸 슬롯에서 사용. 비워두면 BasicSkillIcon으로 자동 fallback.")]
+    [SerializeField] private Sprite basicSkillIconSquare;
 
     [Tooltip("기본 스킬 ID입니다. 예: weapon_balsi, weapon_nakroebu, weapon_jwagyekyose")]
     [SerializeField] private string basicSkillId;
@@ -50,11 +52,17 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("이 캐릭터의 시작 스킬(무기) Config SO입니다.")]
     [SerializeField] private CommonSkillConfigSO startingSkill;
 
-    // 궁극기
+    // ─── 궁극기 ─────────────────────────────────────────
 
     [Header("궁극기")]
-    [Tooltip("궁극기 아이콘입니다.")]
+    [Tooltip("기본/대표 아이콘입니다. 모양별 슬롯이 비어있을 때 fallback으로 사용됩니다.")]
     [SerializeField] private Sprite ultimateSkillIcon;
+
+    [Tooltip("[다이아몬드 슬롯 전용] R/T HUD 슬롯, 레벨업 카드, 편성 화면 등에서 사용. 비워두면 UltimateSkillIcon으로 자동 fallback.")]
+    [SerializeField] private Sprite ultimateSkillIconDiamond;
+
+    [Tooltip("[정사각형 슬롯 전용] 향후 정사각형 슬롯에서 표시할 경우 사용. 비워두면 UltimateSkillIcon으로 자동 fallback.")]
+    [SerializeField] private Sprite ultimateSkillIconSquare;
 
     [Tooltip("궁극기 스킬 ID입니다. 예: ult_hokhan, ult_cheongang, ult_wolgwang")]
     [SerializeField] private string ultimateSkillId;
@@ -65,7 +73,7 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("궁극기 실행 로직 프리팹입니다.")]
     [SerializeField] private GameObject ultimateResolverPrefab;
 
-    // 지원 캐릭터 전용
+    // ─── 지원 캐릭터 전용 ──────────────────────────────
 
     [Header("지원 캐릭터 전용")]
     [Tooltip("지원 궁극기 사용 시 데미지 배율입니다. (예: 0.6 = 60%)")]
@@ -105,7 +113,9 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("true면 게임 시작 시 기본 해금 상태입니다.")]
     [SerializeField] private bool unlockedByDefault = false;
 
-    // ─── 프로퍼티 ──────────────────────────────────────
+    // ═══════════════════════════════════════════════════
+    //  프로퍼티
+    // ═══════════════════════════════════════════════════
 
     public string CharacterId => characterId;
     public string DisplayName => displayName;
@@ -114,10 +124,28 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     public Sprite Thumbnail => thumbnail;
     public Sprite PlayerIdleSprite => playerIdleSprite;
     public RuntimeAnimatorController AnimatorController => animatorController;
+
+    /// <summary>기본/대표 아이콘. 어떤 슬롯 모양에도 fallback으로 쓰입니다.</summary>
     public Sprite BasicSkillIcon => basicSkillIcon;
+
+    /// <summary>다이아몬드 슬롯에 표시할 기본 스킬 아이콘. 없으면 BasicSkillIcon으로 fallback.</summary>
+    public Sprite BasicSkillIconDiamond => basicSkillIconDiamond != null ? basicSkillIconDiamond : basicSkillIcon;
+
+    /// <summary>정사각형 슬롯에 표시할 기본 스킬 아이콘. 없으면 BasicSkillIcon으로 fallback.</summary>
+    public Sprite BasicSkillIconSquare => basicSkillIconSquare != null ? basicSkillIconSquare : basicSkillIcon;
+
     public string BasicSkillId => basicSkillId;
     public CommonSkillConfigSO StartingSkill => startingSkill;
+
+    /// <summary>기본/대표 궁극기 아이콘. 어떤 슬롯 모양에도 fallback으로 쓰입니다.</summary>
     public Sprite UltimateSkillIcon => ultimateSkillIcon;
+
+    /// <summary>다이아몬드 슬롯에 표시할 궁극기 아이콘. 없으면 UltimateSkillIcon으로 fallback.</summary>
+    public Sprite UltimateSkillIconDiamond => ultimateSkillIconDiamond != null ? ultimateSkillIconDiamond : ultimateSkillIcon;
+
+    /// <summary>정사각형 슬롯에 표시할 궁극기 아이콘. 없으면 UltimateSkillIcon으로 fallback.</summary>
+    public Sprite UltimateSkillIconSquare => ultimateSkillIconSquare != null ? ultimateSkillIconSquare : ultimateSkillIcon;
+
     public string UltimateSkillId => ultimateSkillId;
     public UltimateDataSO UltimateData => ultimateData;
     public GameObject UltimateResolverPrefab => ultimateResolverPrefab;
