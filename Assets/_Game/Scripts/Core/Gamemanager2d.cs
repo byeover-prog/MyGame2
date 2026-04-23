@@ -1,20 +1,11 @@
 using UnityEngine;
 using _Game.Scripts.Core.Session;
 
-/// <summary>
-/// [구현 원리 요약]
-/// 게임 한 판(런)의 최상위 조율자입니다.
-/// - 각 매니저를 직접 제어하지 않고, "시작/종료 신호"만 보냅니다.
-/// - 세부 정책(TimeScale, 입력 허용 등)은 SessionGameManager2D가 담당합니다.
-/// - 킬 카운트, 게임 결과 등 "런 단위" 데이터를 모아둡니다.
-///
-/// 씬 배치: @Managers > GameManager 오브젝트에 이 컴포넌트를 붙이세요.
-/// </summary>
 [DefaultExecutionOrder(-100)]
 [DisallowMultipleComponent]
 public sealed class GameManager2D : MonoBehaviour
 {
-    // ───────── 싱글턴 ─────────
+    // ───────── 싱글톤 ─────────
     public static GameManager2D Instance { get; private set; }
 
     // ───────── 인스펙터 참조 ─────────
@@ -37,7 +28,7 @@ public sealed class GameManager2D : MonoBehaviour
     
     [Header("")]
 
-    // ───────── 런타임 상태 ─────────
+    // 런타임 상태
     private bool _gameStarted;
 
     /// <summary> 현재 런이 진행 중인지 </summary>
@@ -71,6 +62,10 @@ public sealed class GameManager2D : MonoBehaviour
 
     private void Start()
     {
+        // 로비 미경유 시 편성 데이터 강제 로드
+        if (string.IsNullOrWhiteSpace(SquadLoadoutRuntime.MainId))
+            SquadLoadoutRuntime.LoadFromSave();
+
         if (autoStartOnAwake)
             StartGame();
     }
@@ -90,7 +85,7 @@ public sealed class GameManager2D : MonoBehaviour
         GameManager2D.Instance.RestartGame();
     }
 
-    // ───────── 공개 API ─────────
+    // 공개 API
 
     /// <summary>
     /// 게임(런) 시작. 로비에서 게임 씬 진입 시 1회 호출합니다.
@@ -174,7 +169,7 @@ public sealed class GameManager2D : MonoBehaviour
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
 
-    // ───────── 이벤트 핸들러 ─────────
+    // 이벤트 핸들러
 
     private void OnPlayerDead()
     {

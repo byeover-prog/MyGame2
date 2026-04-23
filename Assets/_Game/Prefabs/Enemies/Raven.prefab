@@ -97,7 +97,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 0.97}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!95 &7488334704191171477
 Animator:
@@ -162,8 +162,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth2D
   maxHp: 20
   currentHp: 20
-  destroyOnDeath: 1
-  destroyDelay: 0
   expOrbPool: {fileID: 0}
   expOrbPrefab: {fileID: 8136490244520117647, guid: 1862153c6c96eae40be029799fe818ef,
     type: 3}
@@ -199,8 +197,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30271b8415ab3d142b269a8a7059de50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAutoDespawn2D
-  player: {fileID: 0}
-  despawn_distance: 25
 --- !u!61 &1180651834792872406
 BoxCollider2D:
   m_ObjectHideFlags: 0

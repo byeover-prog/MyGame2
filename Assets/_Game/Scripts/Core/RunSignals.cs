@@ -1,11 +1,5 @@
-// UTF-8
 using System;
 
-/// <summary>
-/// 런(한 판)에서 쓰는 이벤트 모음
-/// - 서로 직접 참조하지 않고 신호로만 연결
-/// - 디버그 추적 가능하도록 발행 로그 포함
-/// </summary>
 public static class RunSignals
 {
     /// <summary>
@@ -22,6 +16,11 @@ public static class RunSignals
     /// 플레이어 사망
     /// </summary>
     public static event Action PlayerDead;
+
+    /// <summary>
+    /// 궁극기 사용 (R키 또는 T키 궁극기 발동 시)
+    /// </summary>
+    public static event Action UltimateUsed;
 
     // ====== 발행 함수 ======
 
@@ -61,6 +60,14 @@ public static class RunSignals
 #endif
     }
 
+    public static void RaiseUltimateUsed()
+    {
+        UltimateUsed?.Invoke();
+#if UNITY_EDITOR
+        GameLogger.Log("[RunSignals] UltimateUsed 발행");
+#endif
+    }
+
     /// <summary>
     /// 모든 이벤트 구독 제거 (플레이 리셋 시 안전장치)
     /// </summary>
@@ -69,6 +76,7 @@ public static class RunSignals
         StageStarted = null;
         RunConfigChanged = null;
         PlayerDead = null;
+        UltimateUsed = null;
 
 #if UNITY_EDITOR
         GameLogger.Log("[RunSignals] 모든 구독자 제거됨");

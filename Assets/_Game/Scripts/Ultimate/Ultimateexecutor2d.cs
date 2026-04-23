@@ -121,12 +121,6 @@ public sealed class UltimateExecutor2D : MonoBehaviour
             _currentResolver.SetCasterTransform(casterTransform);
     }
     
-    //  실행
-    /// <summary>
-    /// 궁극기 실행. UltimateController2D에서 호출.
-    /// </summary>
-    /// <param name="onFinished">종료 시 콜백</param>
-    /// <param name="isSupport">true면 지원 모드 (데미지 감소)</param>
     public void Execute(Action onFinished, bool isSupport = false)
     {
         _onFinished = onFinished;
@@ -167,6 +161,9 @@ public sealed class UltimateExecutor2D : MonoBehaviour
 
         // 연출 시작
         presenter?.BeginPresentation(_currentData, duration);
+
+        // 궁극기 발동 신호 (Stage0Director 등에서 감지)
+        RunSignals.RaiseUltimateUsed();
 
         GameLogger.Log($"[궁극기] 시전 시작 | {_currentData.DisplayName} " +
                   $"지원={isSupport} 배율={damageMultiplier:F2} duration={duration}s");

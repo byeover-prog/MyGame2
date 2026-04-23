@@ -29,7 +29,26 @@ public class ClearUIController : MonoBehaviour
 
     void Start()
     {
-        root          = uiDocument.rootVisualElement.Q<VisualElement>("root");
+        if (uiDocument == null)
+        {
+            GameLogger.LogWarning("[ClearUIController] UIDocument 미연결 — Start 스킵", this);
+            return;
+        }
+
+        var visualRoot = uiDocument.rootVisualElement;
+        if (visualRoot == null)
+        {
+            GameLogger.LogWarning("[ClearUIController] rootVisualElement null — Start 스킵", this);
+            return;
+        }
+
+        root          = visualRoot.Q<VisualElement>("root");
+        if (root == null)
+        {
+            GameLogger.LogWarning("[ClearUIController] 'root' VisualElement 없음 — UXML 확인 필요", this);
+            return;
+        }
+
         gradeValue    = root.Q<Label>("grade-value");
         killValue     = root.Q<Label>("kill-value");
         timeValue     = root.Q<Label>("time-value");
@@ -43,22 +62,26 @@ public class ClearUIController : MonoBehaviour
         _currencyHonryeong  = root.Q<Label>("currency-honryeong");
         
         // squad 라벨
-        _squadNameMain   = root.Q<Label>("squad-name-main");  // 없으면 name 클래스명 확인
+        _squadNameMain   = root.Q<Label>("squad-name-main");
         _squadLvMain     = root.Q<Label>("squad-lv-main");
         _squadIconMain   = root.Q<VisualElement>("squad-icon-main");
 
-        _squadName1      = root.Q<Label>("squad-name-1");     // UXML에 따라 조정
+        _squadName1      = root.Q<Label>("squad-name-1");
         _squadLv1        = root.Q<Label>("squad-lv-1");
-        _squadIcon1 = uiDocument.rootVisualElement.Q<VisualElement>("squad-icon-1");
+        _squadIcon1 = visualRoot.Q<VisualElement>("squad-icon-1");
 
         _squadName2      = root.Q<Label>("squad-name-2");
         _squadLv2        = root.Q<Label>("squad-lv-2");
-        _squadIcon2 = uiDocument.rootVisualElement.Q<VisualElement>("squad-icon-2");
+        _squadIcon2 = visualRoot.Q<VisualElement>("squad-icon-2");
 
         // 버튼 이벤트 연결
-        root.Q<Button>("btn-next").clicked  += OnNextStage;
-        root.Q<Button>("btn-retry").clicked += OnRetry;
-        root.Q<Button>("btn-base").clicked  += OnGoToBase;
+        var btnNext  = root.Q<Button>("btn-next");
+        var btnRetry = root.Q<Button>("btn-retry");
+        var btnBase  = root.Q<Button>("btn-base");
+
+        if (btnNext  != null) btnNext.clicked  += OnNextStage;
+        if (btnRetry != null) btnRetry.clicked += OnRetry;
+        if (btnBase  != null) btnBase.clicked  += OnGoToBase;
 
         // 처음엔 숨김
         root.style.display = DisplayStyle.None;

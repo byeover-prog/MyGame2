@@ -16,6 +16,13 @@ public sealed class GameSettingsRuntime : MonoBehaviour
     private const string KEY_DMG_OPACITY   = "SET_damageNumberOpacity";
     private const string KEY_TIME_SCALE    = "SET_timeScale";
     private const string KEY_SLOT_VISIBLE  = "SET_skillSlotsVisible";
+    private const string KEY_MASTER_VOLUME = "SET_masterVolume";
+    private const string KEY_BGM_VOLUME    = "SET_bgmVolume";
+    private const string KEY_SFX_VOLUME    = "SET_sfxVolume";
+    
+    public event Action<float> OnMasterVolumeChanged;
+    public event Action<float> OnBGMVolumeChanged;
+    public event Action<float> OnSFXVolumeChanged;
 
     [SerializeField, InspectorName("스킬 투명도(0~1)")]
     private float skillOpacity = 0.25f;
@@ -28,6 +35,54 @@ public sealed class GameSettingsRuntime : MonoBehaviour
 
     [SerializeField, InspectorName("스킬 슬롯 표시")]
     private bool skillSlotsVisible = true;
+    
+    [SerializeField, InspectorName("전체 음량(0~1)")]
+    private float masterVolume = 1f;
+
+    [SerializeField, InspectorName("배경음(0~1)")]
+    private float bgmVolume = 1f;
+
+    [SerializeField, InspectorName("효과음(0~1)")]
+    private float sfxVolume = 1f;
+    
+    public float MasterVolume
+    {
+        get => masterVolume;
+        set
+        {
+            float v = Mathf.Clamp01(value);
+            if (Mathf.Approximately(masterVolume, v)) return;
+            masterVolume = v;
+            PlayerPrefs.SetFloat(KEY_MASTER_VOLUME, masterVolume);
+            OnMasterVolumeChanged?.Invoke(masterVolume);
+        }
+    }
+    
+    public float BGMVolume
+    {
+        get => bgmVolume;
+        set
+        {
+            float v = Mathf.Clamp01(value);
+            if (Mathf.Approximately(bgmVolume, v)) return;
+            bgmVolume = v;
+            PlayerPrefs.SetFloat(KEY_BGM_VOLUME, bgmVolume);
+            OnBGMVolumeChanged?.Invoke(bgmVolume);
+        }
+    }
+    
+    public float SFXVolume
+    {
+        get => sfxVolume;
+        set
+        {
+            float v = Mathf.Clamp01(value);
+            if (Mathf.Approximately(sfxVolume, v)) return;
+            sfxVolume = v;
+            PlayerPrefs.SetFloat(KEY_SFX_VOLUME, sfxVolume);
+            OnSFXVolumeChanged?.Invoke(sfxVolume);
+        }
+    }
 
     public float SkillOpacity
     {
@@ -105,6 +160,9 @@ public sealed class GameSettingsRuntime : MonoBehaviour
         damageNumberOpacity = PlayerPrefs.GetFloat(KEY_DMG_OPACITY, damageNumberOpacity);
         timeScale = PlayerPrefs.GetFloat(KEY_TIME_SCALE, timeScale);
         skillSlotsVisible = PlayerPrefs.GetInt(KEY_SLOT_VISIBLE, skillSlotsVisible ? 1 : 0) == 1;
+        masterVolume = PlayerPrefs.GetFloat(KEY_MASTER_VOLUME, masterVolume);
+        bgmVolume    = PlayerPrefs.GetFloat(KEY_BGM_VOLUME,    bgmVolume);
+        sfxVolume    = PlayerPrefs.GetFloat(KEY_SFX_VOLUME,    sfxVolume);
 
         // ★ 저장된 배속을 즉시 적용 (일시정지 중이 아닐 때만)
         if (!GamePauseGate2D.IsPaused)

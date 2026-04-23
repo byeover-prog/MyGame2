@@ -1,20 +1,6 @@
-// UTF-8
 using System;
 using UnityEngine;
 
-/// <summary>
-/// 3인 스쿼드 편성 데이터.
-/// 메인/지원1/지원2 캐릭터 슬롯을 관리한다.
-///
-/// [사용법]
-/// 1. Player 오브젝트에 부착
-/// 2. Inspector에서 기본 편성 설정 (또는 런타임에 SetLoadout 호출)
-/// 3. 편성이 바뀌면 OnLoadoutChanged 이벤트 발생 → SquadApplier2D가 적용
-///
-/// [편성 화면 연동]
-/// 나중에 캐릭터 선택 UI에서 SetLoadout()을 호출하면 됨.
-/// 현재는 Inspector 기본값으로 동작.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class SquadLoadout2D : MonoBehaviour
 {
@@ -32,7 +18,7 @@ public sealed class SquadLoadout2D : MonoBehaviour
     [Tooltip("지원 2 캐릭터")]
     [SerializeField] private CharacterDefinitionSO defaultSupport2;
 
-    // ── 런타임 편성 ──
+    // 런타임 편성
     private CharacterDefinitionSO _main;
     private CharacterDefinitionSO _support1;
     private CharacterDefinitionSO _support2;
@@ -54,10 +40,19 @@ public sealed class SquadLoadout2D : MonoBehaviour
 
     private void Awake()
     {
-        // 기본 편성 적용
         _main = defaultMain;
         _support1 = defaultSupport1;
         _support2 = defaultSupport2;
+        
+        if (string.IsNullOrWhiteSpace(SquadLoadoutRuntime.MainId))
+        {
+            if (_main != null)     SquadLoadoutRuntime.SetMain(_main.CharacterId);
+            if (_support1 != null) SquadLoadoutRuntime.SetSupport1(_support1.CharacterId);
+            if (_support2 != null) SquadLoadoutRuntime.SetSupport2(_support2.CharacterId);
+
+            GameLogger.Log($"[SquadLoadout2D] Runtime 동기화 — 메인:{SquadLoadoutRuntime.MainId}, " +
+                           $"지원1:{SquadLoadoutRuntime.Support1Id}, 지원2:{SquadLoadoutRuntime.Support2Id}");
+        }
     }
 
     /// <summary>

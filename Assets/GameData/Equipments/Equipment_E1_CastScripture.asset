@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aa6c3bff29cd354e9ea7d920c20b1a9, type: 3}
+  m_Name: Equipment_E1_CastScripture
+  m_EditorClassIdentifier: Assembly-CSharp::EquipmentDefinitionSO
+  equipmentId: E1
+  equipmentName: "\uC2DC\uC804 \uC8FC\uBB38\uC758 \uACA9\uC11C"
+  rarity: 3
+  icon: {fileID: 0}
+  description: "\uAE30\uBCF8 \uC2A4\uD0AC\uC758 \uC2DC\uC804 \uD69F\uC218\uB97C 2\uD68C
+    \uC99D\uAC00\uC2DC\uD0A8\uB2E4."
+  flavorText: 
+  effects:
+  - type: 20
+    value: 2

@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-/// <summary>
-/// 아웃게임 메타 프로필의 최상위 세이브 데이터입니다.
-/// SaveManager2D.Data 안에 이 객체를 포함시켜야 합니다.
-/// </summary>
 [Serializable]
 public sealed class MetaProfileSaveData2D
 {
@@ -26,6 +22,9 @@ public sealed class MetaProfileSaveData2D
     /// <summary>퀘스트 진행 상태입니다.</summary>
     public QuestProgressSaveData questProgress;
 
+    /// <summary>스토리 모드 스테이지 진행 상태입니다.</summary>
+    public StageProgressSaveData stageProgress;
+
     /// <summary>기본값을 보장합니다.</summary>
     public void EnsureDefaults()
     {
@@ -36,6 +35,7 @@ public sealed class MetaProfileSaveData2D
         if (progression == null) progression = new CharacterProgressionCollectionSaveData2D();
         if (equipment == null) equipment = new CharacterEquipmentCollectionSaveData();
         if (questProgress == null) questProgress = new QuestProgressSaveData();
+        if (stageProgress == null) stageProgress = new StageProgressSaveData();
     }
 
     public static MetaProfileSaveData2D CreateDefault()
@@ -49,10 +49,7 @@ public sealed class MetaProfileSaveData2D
     }
 }
 
-// ─────────────────────────────────────────────────────────────
 // 강화 세이브
-// ─────────────────────────────────────────────────────────────
-
 /// <summary>
 /// 모든 캐릭터의 강화 상태를 모아 두는 컬렉션입니다.
 /// </summary>
@@ -139,13 +136,9 @@ public sealed class CharacterPurchasedUpgradeNodeSaveData2D
     public int rank;
 }
 
-// ─────────────────────────────────────────────────────────────
 // 진행(레벨·해금) 세이브
-// ─────────────────────────────────────────────────────────────
+// 모든 캐릭터의 레벨·해금 상태를 모아 두는 컬렉션입니다.
 
-/// <summary>
-/// 모든 캐릭터의 레벨·해금 상태를 모아 두는 컬렉션입니다.
-/// </summary>
 [Serializable]
 public sealed class CharacterProgressionCollectionSaveData2D
 {
@@ -184,13 +177,9 @@ public sealed class CharacterProgressionEntrySaveData2D
     public int totalExp = 0;
 }
 
-// ─────────────────────────────────────────────────────────────
 // 퀘스트 세이브
-// ─────────────────────────────────────────────────────────────
+// 퀘스트 진행 상태 저장 데이터입니다.
 
-/// <summary>
-/// 퀘스트 진행 상태 저장 데이터입니다.
-/// </summary>
 [Serializable]
 public sealed class QuestProgressSaveData
 {

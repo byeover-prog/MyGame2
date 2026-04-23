@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aa6c3bff29cd354e9ea7d920c20b1a9, type: 3}
+  m_Name: Equipment_C16_ExpShard
+  m_EditorClassIdentifier: Assembly-CSharp::EquipmentDefinitionSO
+  equipmentId: C16
+  equipmentName: "\uACBD\uD5D8\uC758 \uC870\uAC01"
+  rarity: 0
+  icon: {fileID: 0}
+  description: "\uACBD\uD5D8\uCE58 \uD68D\uB4DD\uB7C9 +8%"
+  flavorText: 
+  effects:
+  - type: 8
+    value: 8

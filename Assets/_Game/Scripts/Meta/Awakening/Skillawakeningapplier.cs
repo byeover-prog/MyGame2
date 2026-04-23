@@ -1,19 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 퀘스트 보상으로 획득한 스킬 각성 효과를 런타임에 적용합니다.
-/// 게임 시작 시 저장된 각성 효과를 자동으로 적용하고,
-/// 인게임에서 새로 획득한 각성도 즉시 적용합니다.
-///
-/// [Hierarchy]
-/// [Player]
-///   └─ SkillAwakeningApplier 컴포넌트
-///
-/// [Inspector 설정]
-///   Awakening Database: SkillAwakeningSO 에셋 목록 (전체 각성 풀)
-///   Save Manager: (비워두면 자동 탐색)
-/// </summary>
 public sealed class SkillAwakeningApplier : MonoBehaviour
 {
     [Header("각성 데이터베이스")]
