@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66ee2bc8f07873c4fb8a735c83d23f45, type: 3}
+  m_Name: GumihoBasicAttackConfigSO
+  m_EditorClassIdentifier: Assembly-CSharp::GumihoBasicAttackConfigSO
+  attackCooldown: 1.5
+  attackRange: 20
+  attackTriggerName: Attack
+  attackStateName: attack
+  fireballPrefab: {fileID: 4863759834486247403, guid: 2a20bacbb9767b94894bbd98c830299e,
+    type: 3}
+  prewarmCount: 8
+  projectileSpeed: 13
+  projectileLifetime: 10
+  projectileDamage: 10
+  targetLayerMask:
+    serializedVersion: 2
+    m_Bits: 4096
