@@ -7,14 +7,46 @@ public class UltimateHUDController : MonoBehaviour
     [Header("R키 궁극기")]
     [SerializeField] private UltimateController2D ultimateController;
     [SerializeField] private Image icon_R;
-    [SerializeField] private Image cooldownFill_R;  // In_ULT_R
-    [SerializeField] private TextMeshProUGUI text_R; // 쿨타임 숫자 (선택)
+    [SerializeField] private Image cooldownFill_R;
+    [SerializeField] private TextMeshProUGUI text_R;
 
     [Header("T키 궁극기")]
     [SerializeField] private SupportUltimateController2D supportController;
     [SerializeField] private Image icon_T;
-    [SerializeField] private Image cooldownFill_T;  // In_ULT_T
+    [SerializeField] private Image cooldownFill_T;
     [SerializeField] private TextMeshProUGUI text_T;
+
+    [Header("스쿼드 참조")]
+    [SerializeField] private SquadLoadout2D squadLoadout;
+
+    private void Start()
+    {
+        ApplyIcons();
+        if (squadLoadout != null)
+            squadLoadout.OnLoadoutChanged += ApplyIcons;
+    }
+
+    private void OnDestroy()
+    {
+        if (squadLoadout != null)
+            squadLoadout.OnLoadoutChanged -= ApplyIcons;
+    }
+
+    private void ApplyIcons()
+    {
+        if (squadLoadout == null) return;
+
+        // R키 = 메인 캐릭터 궁극기
+        var mainIcon = squadLoadout.Main?.UltimateSkillIcon;
+        if (icon_R != null && mainIcon != null)
+            icon_R.sprite = mainIcon;
+
+        // T키 = 지원1 궁극기 (지원1 우선, 없으면 지원2)
+        var supportIcon = squadLoadout.Support1?.UltimateSkillIcon
+                       ?? squadLoadout.Support2?.UltimateSkillIcon;
+        if (icon_T != null && supportIcon != null)
+            icon_T.sprite = supportIcon;
+    }
 
     private void Update()
     {
@@ -38,7 +70,8 @@ public class UltimateHUDController : MonoBehaviour
             fill.fillAmount = isReady ? 0f : remaining / total;
 
         if (icon != null)
-            icon.color = isReady ? Color.white : new Color(0.4f, 0.4f, 0.4f, 1f);
+            if (icon != null)
+                icon.color = Color.white;
 
         if (text != null)
             text.text = isReady ? "" : Mathf.CeilToInt(remaining).ToString();

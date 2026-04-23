@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: passive_attack_power
   skillType: 1
   displayName: "\uAE30\uBCF8 \uACF5\uACA9\uB825 \uC99D\uAC00"
-  icon: {fileID: 8241828299165355788, guid: ed4b427fc4f55ac49a7bd6335c5f5e35, type: 3}
+  icon: {fileID: 21300000, guid: 88638c0b23d6f3b44a8f0f77540a7c34, type: 3}
   tagKr: 
   maxLevel: 8
   descLv1: 
@@ -26,4 +26,12 @@ MonoBehaviour:
   descLv6: 
   descLv7: 
   descLv8: 
+  addInfoLv1: 
+  addInfoLv2: 
+  addInfoLv3: 
+  addInfoLv4: 
+  addInfoLv5: 
+  addInfoLv6: 
+  addInfoLv7: 
+  addInfoLv8: 
   passiveStatType: 1

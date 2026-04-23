@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UltimateDataSO
   ultimateId: ult_yoonseol_ice
   displayName: "\uD639\uD55C\uC758 \uC9D1\uB150"
+  icon: {fileID: 21300000, guid: 8b03bcfaca8065646ac1d796af46aa2c, type: 3}
   duration: 4
   hitDelay: 0.2
   hitInterval: 0.5

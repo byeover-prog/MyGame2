@@ -22,8 +22,7 @@ MonoBehaviour:
   basicSkillIcon: {fileID: 21300000, guid: 69a9de31810c78f4d8d88f4fcbc1e110, type: 3}
   basicSkillId: weapon_balsi
   startingSkill: {fileID: 11400000, guid: 28185b87f409f214ebad0f4f930488bc, type: 2}
-  ultimateSkillIcon: {fileID: -1745281532439384917, guid: 629c0737c6eda674fb4c92e37fc1632f,
-    type: 3}
+  ultimateSkillIcon: {fileID: 21300000, guid: 10e30e52cda78be4382c043e37b45e01, type: 3}
   ultimateSkillId: ult_hokhan
   ultimateData: {fileID: 11400000, guid: 7d24d5eee34b41f47b5f089f3bfd1ae9, type: 2}
   ultimateResolverPrefab: {fileID: 3538057671869789501, guid: e6e848649e0ea16498e3fd9e18213e9c,

@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: weapon_arrow
   skillType: 0
   displayName: "\uD654\uC0B4"
-  icon: {fileID: 21300000, guid: 68e1f20514059064880a904f4cfb141e, type: 3}
+  icon: {fileID: 21300000, guid: 1047b2d09260c5f4bb816e506e8b2f29, type: 3}
   tagKr: "\uBB3C\uB9AC"
   maxLevel: 8
   descLv1: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC801\uC744 \uB300\uC0C1\uC73C\uB85C
@@ -27,4 +27,12 @@ MonoBehaviour:
   descLv6: "\uD22C\uC0AC\uCCB4 \uAC2F\uC218 1 \uC99D\uAC00"
   descLv7: "\uD22C\uC0AC\uCCB4 \uAC2F\uC218 1 \uC99D\uAC00"
   descLv8: "\uD22C\uC0AC\uCCB4 \uAC2F\uC218 1 \uC99D\uAC00"
+  addInfoLv1: 
+  addInfoLv2: 
+  addInfoLv3: 
+  addInfoLv4: 
+  addInfoLv5: 
+  addInfoLv6: 
+  addInfoLv7: 
+  addInfoLv8: 
   passiveStatType: 0

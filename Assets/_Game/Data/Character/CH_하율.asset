@@ -24,8 +24,7 @@ MonoBehaviour:
   basicSkillIcon: {fileID: 21300000, guid: 5c5b97ecbd09aa9498e31fa51f4f49cb, type: 3}
   basicSkillId: 
   startingSkill: {fileID: 11400000, guid: dc37c8bf22f65f64ebe0a1e1ecc24c0f, type: 2}
-  ultimateSkillIcon: {fileID: 2102040697523899506, guid: f6efd088fb53b1c48b8e95cc6a591514,
-    type: 3}
+  ultimateSkillIcon: {fileID: 21300000, guid: 8b03bcfaca8065646ac1d796af46aa2c, type: 3}
   ultimateSkillId: 
   ultimateData: {fileID: 11400000, guid: 582d2343d81583741b553c80eaba6694, type: 2}
   ultimateResolverPrefab: {fileID: 4368902744537951787, guid: 1c2d85e0139b10d468742b714b3f44ca,

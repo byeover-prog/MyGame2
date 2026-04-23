@@ -28,6 +28,9 @@ public sealed class UltimateDataSO : ScriptableObject
 
     [Tooltip("궁극기 한글 이름 (UI 표시용)")]
     [SerializeField] private string displayName;
+    
+    [Tooltip("궁극기 아이콘")]
+    public Sprite icon;
 
     public string UltimateId => ultimateId;
     public string DisplayName => displayName;
