@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9847df62270465d4691ac1109570a17e, type: 3}
+  m_Name: GumihoYohoFoxBeadPatternConfigSO
+  m_EditorClassIdentifier: Assembly-CSharp::GumihoYohoFoxBeadPatternConfigSO
+  patternId: boss_pattern
+  cooldown: 6
+  playOnEnable: 0
+  patternStartEffectPrefab: {fileID: 2951464412166199108, guid: 79dabf7c515908e41ad5b236136a6459,
+    type: 3}
+  patternStartEffectScale: {x: 1, y: 1, z: 1}
+  patternStartEffectOffset: {x: 0, y: 0.25, z: 0}
+  patternStartEffectLifetime: 1.5
+  foxBeadPrefab: {fileID: 8986524933403635257, guid: 3b6dd8c9ed9bdca4eb0db710faf4baf8,
+    type: 3}
+  prewarmCount: 1
+  foxBeadScale: {x: 1.5, y: 1.5, z: 1.5}
+  explosionEffectPrefab: {fileID: 1064173126545927710, guid: 12a1456019489304187631b5e3525aad,
+    type: 3}
+  explosionEffectScale: {x: 2, y: 2, z: 2}
+  explosionEffectLifetime: 5
+  explosionWarningSprite: {fileID: 2023403614999174680, guid: 0b2d0296796acf3409c20c0706b74c7a,
+    type: 3}
+  explosionWarningColor: {r: 1, g: 1, b: 1, a: 0.30980393}
+  explosionWarningSortingOrder: 0
+  autoFitWarningToExplosionRadius: 0
+  warningScaleMultiplier: 2
+  manualWarningScale: {x: 6, y: 6, z: 6}
+  beadLifetime: 60
+  spawnLocalOffset: {x: 0, y: 0.8}
+  spawnJitterRadius: 0.1
+  followSpeed: 5.5
+  minDistanceToTarget: 2
+  explosionInterval: 5
+  useExplosionEffectVisualSize: 1
+  explosionRadiusMultiplier: 2
+  manualExplosionRadius: 2
+  explosionDamage: 20
+  targetLayerMask:
+    serializedVersion: 2
+    m_Bits: 4096
+  preExplosionDelay: 1
+  postExplosionPause: 1
+  enhancedProjectileCount: 3
+  enhancedDamageMultiplier: 1.5
+  enhancedSpreadAngle: 8
+  allowBasicAttackWhileBeadActive: 1
