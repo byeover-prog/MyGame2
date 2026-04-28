@@ -20,7 +20,7 @@ MonoBehaviour:
     type: 3}
   prewarmCount: 8
   projectileSpeed: 13
-  projectileLifetime: 10
+  projectileLifetime: 8
   projectileDamage: 10
   targetLayerMask:
     serializedVersion: 2

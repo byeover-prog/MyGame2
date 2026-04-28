@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05728a7968c3bed499842ed4df813f8a, type: 3}
+  m_Name: GrimReaperBasicAttackConfigSO
+  m_EditorClassIdentifier: Assembly-CSharp::GrimReaperBasicAttackConfigSO
+  patternId: boss_pattern
+  cooldown: 1
+  playOnEnable: 1
+  attackDistance: 5
+  hitBoxWidth: 1.6
+  hitBoxHeight: 1.1
+  targetLayerMask:
+    serializedVersion: 2
+    m_Bits: 4096
+  damage: 10
+  hitFallbackTime: 0.35
+  finishFallbackTime: 0.8
+  drawGizmos: 1
