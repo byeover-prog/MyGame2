@@ -1,11 +1,13 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// 열참 참격 판정 오브젝트입니다.
 /// 플레이어 중심 원형 360° 판정.
 /// 외곽 링 적중 = 추가 데미지, 내부 적중 = 감소 데미지 (LOL 다리우스 Q 메카닉).
 /// 각성 시 외곽 적에게 출혈(DoT) 부여.
+///
+/// 참고: 적 검색은 EnemyRegistry2D O(N) 사용 (Physics 쿼리 X).
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class YeolchamSlash2D : PooledObject2D
@@ -25,8 +27,8 @@ public sealed class YeolchamSlash2D : PooledObject2D
     private int _baseDamage;
     private float _radius;
     private float _lifetime;
-    private LayerMask _enemyMask;
     private Transform _owner;
+    private DamageElement2D _element;
 
     private float _outerRingRatio;
     private float _outerMultiplier;
@@ -38,19 +40,18 @@ public sealed class YeolchamSlash2D : PooledObject2D
 
     private float _timer;
     private bool _hasHit;
-    private ContactFilter2D _filter;
     private GameObject _activeVfx;
 
-    private readonly List<Collider2D> _hitBuffer = new(64);
-    private readonly HashSet<int> _hitIds = new(32);
+    private readonly List<EnemyRegistryMember2D> _targets = new List<EnemyRegistryMember2D>(32);
+    private readonly HashSet<int> _hitIds = new HashSet<int>(32);
 
     /// <summary>무기에서 호출. 모든 파라미터 주입.</summary>
     public void Initialize(
         int damage,
         float radius,
         float lifetime,
-        LayerMask enemyMask,
         Transform owner,
+        DamageElement2D element,
         float outerRingRatio,
         float outerMultiplier,
         float innerMultiplier,
@@ -61,8 +62,8 @@ public sealed class YeolchamSlash2D : PooledObject2D
         _baseDamage = damage;
         _radius = Mathf.Max(0.1f, radius);
         _lifetime = Mathf.Max(0.1f, lifetime);
-        _enemyMask = enemyMask;
         _owner = owner;
+        _element = element;
 
         _outerRingRatio = Mathf.Clamp(outerRingRatio, 0.1f, 0.95f);
         _outerMultiplier = outerMultiplier;
@@ -71,11 +72,6 @@ public sealed class YeolchamSlash2D : PooledObject2D
         _awakened = awakened;
         _bleedDuration = bleedDuration;
         _bleedDpsRatio = bleedDpsRatio;
-
-        _filter = new ContactFilter2D();
-        _filter.SetLayerMask(enemyMask);
-        _filter.useLayerMask = true;
-        _filter.useTriggers = true;
 
         _timer = 0f;
         _hasHit = false;
@@ -95,11 +91,8 @@ public sealed class YeolchamSlash2D : PooledObject2D
         if (!Mathf.Approximately(vfxScaleMultiplier, 1f))
             _activeVfx.transform.localScale = Vector3.one * vfxScaleMultiplier;
 
-        // VFX 자동 정리
         Destroy(_activeVfx, _lifetime + 0.5f);
     }
-
-    // ── 라이프사이클 ──
 
     private void OnEnable()
     {
@@ -117,7 +110,7 @@ public sealed class YeolchamSlash2D : PooledObject2D
     {
         _timer += Time.deltaTime;
 
-        // 플레이어 + VFX 위치 추적 (플레이어가 움직여도 같이 따라감)
+        // 플레이어 + VFX 위치 추적
         if (_owner != null)
         {
             transform.position = _owner.position;
@@ -141,76 +134,89 @@ public sealed class YeolchamSlash2D : PooledObject2D
         }
     }
 
-    // ── 차등 데미지 판정 ──
+    // ── 차등 데미지 판정 (EnemyRegistry2D 사용) ──
 
     private void PerformSlashDamage()
     {
         if (_owner == null) return;
 
         Vector2 center = _owner.position;
-        float innerRadiusSqr = (_radius * _outerRingRatio) * (_radius * _outerRingRatio);
+        float innerRadius = _radius * _outerRingRatio;
+        float innerRadiusSqr = innerRadius * innerRadius;
+        float outerRadiusSqr = _radius * _radius;
 
-        _hitBuffer.Clear();
-        int count = Physics2D.OverlapCircle(center, _radius, _filter, _hitBuffer);
-        if (count == 0) return;
+        _targets.Clear();
+        IReadOnlyList<EnemyRegistryMember2D> members = EnemyRegistry2D.Members;
+        for (int i = 0; i < members.Count; i++)
+        {
+            EnemyRegistryMember2D e = members[i];
+            if (e == null || !e.IsValidTarget) continue;
+            if ((e.Position - center).sqrMagnitude > outerRadiusSqr) continue;
+            _targets.Add(e);
+        }
+
+        if (_targets.Count == 0) return;
 
         int outerHits = 0;
         int innerHits = 0;
 
-        for (int i = 0; i < count; i++)
+        StatusEffectInfo bleedInfo = default;
+        bool useBleed = _awakened && _bleedDuration > 0f;
+        if (useBleed)
         {
-            Collider2D col = _hitBuffer[i];
-            if (col == null) continue;
+            int bleedDps = Mathf.Max(1, Mathf.RoundToInt(_baseDamage * _bleedDpsRatio));
+            bleedInfo = StatusEffectInfo.Bleed(_bleedDuration, bleedDps);
+        }
 
-            // 죽은 적 필터링
-            var health = col.GetComponentInParent<EnemyHealth2D>();
-            if (health != null && health.IsDead) continue;
+        for (int i = 0; i < _targets.Count; i++)
+        {
+            EnemyRegistryMember2D enemy = _targets[i];
+            if (enemy == null || !enemy.IsValidTarget) continue;
 
             // 중복 히트 방지
-            int rootId = DamageUtil2D.GetRootId(col);
+            int rootId = enemy.gameObject.GetInstanceID();
             if (!_hitIds.Add(rootId)) continue;
 
             // 외곽/내부 분류
-            Vector2 toEnemy = (Vector2)col.bounds.center - center;
-            float distSqr = toEnemy.sqrMagnitude;
-
+            float distSqr = (enemy.Position - center).sqrMagnitude;
             bool isOuter = distSqr > innerRadiusSqr;
             float multiplier = isOuter ? _outerMultiplier : _innerMultiplier;
             int finalDamage = Mathf.Max(1, Mathf.RoundToInt(_baseDamage * multiplier));
 
-            bool applied = DamageUtil2D.TryApplyDamage(col, finalDamage, DamageElement2D.Dark);
-            if (!applied) continue;
-
-            if (isOuter)
+            if (DamageUtil2D.TryApplyDamage(enemy.gameObject, finalDamage, _element))
             {
-                outerHits++;
-
-                // 각성: 외곽 적에게 출혈 부여
-                if (_awakened && _bleedDuration > 0f)
+                if (isOuter)
                 {
-                    int bleedDps = Mathf.Max(1, Mathf.RoundToInt(_baseDamage * _bleedDpsRatio));
-                    StatusEffectInfo bleedInfo = StatusEffectInfo.Bleed(_bleedDuration, bleedDps);
-                    IStatusReceiver[] receivers = col.GetComponentsInChildren<IStatusReceiver>(true);
-                    if (receivers != null)
+                    outerHits++;
+
+                    // 각성: 외곽 적에게 출혈 부여
+                    if (useBleed)
                     {
-                        for (int j = 0; j < receivers.Length; j++)
+                        IStatusReceiver[] receivers = enemy.GetComponentsInChildren<IStatusReceiver>(true);
+                        if (receivers != null)
                         {
-                            if (receivers[j] != null)
-                                receivers[j].TryApplyStatus(bleedInfo);
+                            for (int j = 0; j < receivers.Length; j++)
+                            {
+                                if (receivers[j] != null)
+                                    receivers[j].TryApplyStatus(bleedInfo);
+                            }
                         }
                     }
                 }
-            }
-            else
-            {
-                innerHits++;
+                else
+                {
+                    innerHits++;
+                }
             }
         }
+
+        _targets.Clear();
 
         if (outerHits > 0 || innerHits > 0)
         {
             CombatLog.Log(
-                $"[열참] 적중! 외곽={outerHits}({_outerMultiplier:P0}) 내부={innerHits}({_innerMultiplier:P0})");
+                $"[열참] 적중! 외곽={outerHits}({_outerMultiplier:P0}) 내부={innerHits}({_innerMultiplier:P0})",
+                this);
         }
     }
 
@@ -219,11 +225,9 @@ public sealed class YeolchamSlash2D : PooledObject2D
     {
         Vector3 ownerPos = _owner != null ? _owner.position : transform.position;
 
-        // 외곽 링 (빨강)
         Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.6f);
         Gizmos.DrawWireSphere(ownerPos, _radius > 0f ? _radius : 3f);
 
-        // 내부 (파랑)
         Gizmos.color = new Color(0.3f, 0.6f, 1f, 0.4f);
         Gizmos.DrawWireSphere(ownerPos, (_radius > 0f ? _radius : 3f) * _outerRingRatio);
     }

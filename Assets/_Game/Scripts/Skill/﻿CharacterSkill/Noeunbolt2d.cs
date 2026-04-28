@@ -1,13 +1,13 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// 뇌운 번개 투사체.
 ///   - NoeunCloud2D에서 호출되어 스폰 위치에서 즉시 AOE 데미지
 ///   - 짧은 VFX 표시 후 풀로 반환
 ///
-/// 데미지 속성: Electric (전기)
-/// 하율 패시브와 시너지: 전파/체인 효과 트리거
+/// 데미지 속성: Electric (전기) — 하율 패시브 트리거 (전파/체인)
+/// 적 검색은 EnemyRegistry2D 사용.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class NoeunBolt2D : PooledObject2D
@@ -21,40 +21,50 @@ public sealed class NoeunBolt2D : PooledObject2D
     [SerializeField] private SpriteRenderer boltRenderer;
 
     // ── 런타임 상태 ──
+    private DamageElement2D _element;
     private int _damage;
     private float _radius;
-    private LayerMask _enemyMask;
     private float _age;
     private bool _hasHit;
+    private Color _baseSpriteColor;
+    private bool _hasBaseSpriteColor;
 
-    private static readonly Collider2D[] s_buffer = new Collider2D[32];
+    private readonly List<EnemyRegistryMember2D> _targets = new List<EnemyRegistryMember2D>(32);
 
     private void Awake()
     {
         if (boltRenderer == null)
             boltRenderer = GetComponentInChildren<SpriteRenderer>(true);
-    }
-
-    public void Initialize(int damage, float radius, LayerMask enemyMask)
-    {
-        _damage = damage;
-        _radius = Mathf.Max(0.1f, radius);
-        _enemyMask = enemyMask;
-        _age = 0f;
-        _hasHit = false;
 
         if (boltRenderer != null)
         {
-            Color c = boltRenderer.color;
-            c.a = 1f;
-            boltRenderer.color = c;
+            _baseSpriteColor = boltRenderer.color;
+            _hasBaseSpriteColor = true;
         }
+    }
+
+    public void Initialize(int damage, float radius, DamageElement2D element)
+    {
+        _damage = Mathf.Max(1, damage);
+        _radius = Mathf.Max(0.1f, radius);
+        _element = element;
+        _age = 0f;
+        _hasHit = false;
+
+        if (_hasBaseSpriteColor && boltRenderer != null)
+            boltRenderer.color = _baseSpriteColor;
     }
 
     private void OnEnable()
     {
         _age = 0f;
         _hasHit = false;
+    }
+
+    private void OnDisable()
+    {
+        if (_hasBaseSpriteColor && boltRenderer != null)
+            boltRenderer.color = _baseSpriteColor;
     }
 
     private void Update()
@@ -68,15 +78,16 @@ public sealed class NoeunBolt2D : PooledObject2D
             _hasHit = true;
         }
 
-        // VFX 페이드 + 수명
-        if (boltRenderer != null && vfxDuration > 0f)
+        // VFX 페이드
+        if (_hasBaseSpriteColor && boltRenderer != null && vfxDuration > 0f)
         {
             float t = _age / vfxDuration;
-            Color c = boltRenderer.color;
-            c.a = Mathf.Clamp01(1f - t);
+            Color c = _baseSpriteColor;
+            c.a *= Mathf.Clamp01(1f - t);
             boltRenderer.color = c;
         }
 
+        // 수명 만료
         if (_age >= vfxDuration)
         {
             ReturnToPool();
@@ -85,31 +96,30 @@ public sealed class NoeunBolt2D : PooledObject2D
 
     private void ApplyDamage()
     {
-        ContactFilter2D filter = new ContactFilter2D();
-        filter.SetLayerMask(_enemyMask);
-        filter.useLayerMask = true;
-        filter.useTriggers = true;
+        // EnemyRegistry2D O(N)
+        _targets.Clear();
+        Vector2 center = transform.position;
+        float sqrR = _radius * _radius;
+        IReadOnlyList<EnemyRegistryMember2D> members = EnemyRegistry2D.Members;
 
-        int hitCount = Physics2D.OverlapCircle(
-            (Vector2)transform.position, _radius, filter, s_buffer);
-
-        if (hitCount == 0) return;
-
-        var hitIds = new HashSet<int>();
-        for (int i = 0; i < hitCount; i++)
+        for (int i = 0; i < members.Count; i++)
         {
-            Collider2D col = s_buffer[i];
-            if (col == null) continue;
-
-            var health = col.GetComponentInParent<EnemyHealth2D>();
-            if (health != null && health.IsDead) continue;
-
-            int rootId = DamageUtil2D.GetRootId(col);
-            if (!hitIds.Add(rootId)) continue;
-
-            // Electric 속성 — 하율 패시브의 전파 효과 트리거
-            DamageUtil2D.TryApplyDamage(col, _damage, DamageElement2D.Electric);
+            EnemyRegistryMember2D enemy = members[i];
+            if (enemy == null || !enemy.IsValidTarget) continue;
+            if ((enemy.Position - center).sqrMagnitude > sqrR) continue;
+            _targets.Add(enemy);
         }
+
+        for (int i = 0; i < _targets.Count; i++)
+        {
+            EnemyRegistryMember2D enemy = _targets[i];
+            if (enemy == null || !enemy.IsValidTarget) continue;
+
+            // Electric 속성 → 하율 패시브의 전파 효과 트리거
+            DamageUtil2D.TryApplyDamage(enemy.gameObject, _damage, _element);
+        }
+
+        _targets.Clear();
     }
 
 #if UNITY_EDITOR

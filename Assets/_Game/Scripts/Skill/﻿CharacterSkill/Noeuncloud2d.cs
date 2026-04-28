@@ -1,13 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// 뇌운 구름 본체.
 ///   - 가장 가까운 적을 따라다님 (followSpeed로 이동)
 ///   - 적이 죽거나 사라지면 새 타겟 재탐색
-///   - boltInterval 마다 번개를 아래로 발사 (자식 풀 NoeunBolt2D)
+///   - boltInterval 마다 번개를 발사 (자식 풀 NoeunBolt2D)
 ///   - lifetime 만료 시 풀로 반환
 ///
 /// 본체는 데미지 X. 번개만 데미지.
+/// 적 검색은 EnemyRegistry2D 사용 (Physics 쿼리 X).
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class NoeunCloud2D : PooledObject2D
@@ -27,25 +29,32 @@ public sealed class NoeunCloud2D : PooledObject2D
     [SerializeField] private float retargetInterval = 0.5f;
 
     // ── 런타임 상태 ──
+    private DamageElement2D _element;
     private int _damage;
     private float _boltRadius;
     private float _lifetime;
     private float _boltInterval;
     private float _followSpeed;
     private float _seekRadius;
-    private LayerMask _enemyMask;
     private ProjectilePool2D _boltPool;
 
     private float _age;
     private float _boltTimer;
     private float _retargetTimer;
-    private Transform _currentTarget;
-    private Vector3 _baseLocalPos;
+    private EnemyRegistryMember2D _currentTarget;
+    private Color _baseSpriteColor;
+    private bool _hasBaseSpriteColor;
 
     private void Awake()
     {
         if (cloudRenderer == null)
             cloudRenderer = GetComponentInChildren<SpriteRenderer>(true);
+
+        if (cloudRenderer != null)
+        {
+            _baseSpriteColor = cloudRenderer.color;
+            _hasBaseSpriteColor = true;
+        }
     }
 
     public void Initialize(
@@ -55,41 +64,39 @@ public sealed class NoeunCloud2D : PooledObject2D
         float boltInterval,
         float followSpeed,
         float seekRadius,
-        LayerMask enemyMask,
+        DamageElement2D element,
         ProjectilePool2D boltPool)
     {
-        _damage = damage;
-        _boltRadius = boltRadius;
-        _lifetime = lifetime;
-        _boltInterval = boltInterval;
-        _followSpeed = followSpeed;
-        _seekRadius = seekRadius;
-        _enemyMask = enemyMask;
+        _damage = Mathf.Max(1, damage);
+        _boltRadius = Mathf.Max(0.1f, boltRadius);
+        _lifetime = Mathf.Max(0.1f, lifetime);
+        _boltInterval = Mathf.Max(0.05f, boltInterval);
+        _followSpeed = Mathf.Max(0f, followSpeed);
+        _seekRadius = Mathf.Max(1f, seekRadius);
+        _element = element;
         _boltPool = boltPool;
 
         _age = 0f;
-        _boltTimer = boltInterval; // 첫 번개는 interval 후 발사
+        _boltTimer = _boltInterval;
         _retargetTimer = 0f;
         _currentTarget = FindNearestEnemy(transform.position);
 
-        // 시각 초기화
-        if (cloudRenderer != null)
+        if (_hasBaseSpriteColor && cloudRenderer != null)
         {
-            Color c = cloudRenderer.color;
-            c.a = 1f;
-            cloudRenderer.color = c;
+            cloudRenderer.color = _baseSpriteColor;
         }
     }
 
     private void OnEnable()
     {
         _age = 0f;
-        _baseLocalPos = transform.localPosition;
     }
 
     private void OnDisable()
     {
         _currentTarget = null;
+        if (_hasBaseSpriteColor && cloudRenderer != null)
+            cloudRenderer.color = _baseSpriteColor;
     }
 
     private void Update()
@@ -104,11 +111,11 @@ public sealed class NoeunCloud2D : PooledObject2D
         }
 
         // 페이드 아웃 (마지막 0.5초)
-        if (cloudRenderer != null && _lifetime - _age < 0.5f)
+        if (_hasBaseSpriteColor && cloudRenderer != null && _lifetime - _age < 0.5f)
         {
             float fadeT = Mathf.Clamp01((_lifetime - _age) / 0.5f);
-            Color c = cloudRenderer.color;
-            c.a = fadeT;
+            Color c = _baseSpriteColor;
+            c.a *= fadeT;
             cloudRenderer.color = c;
         }
 
@@ -116,7 +123,7 @@ public sealed class NoeunCloud2D : PooledObject2D
         UpdateTargeting();
         UpdateMovement();
 
-        // 부유 애니메이션 (시각만, 위치 판정엔 영향 없음 — Y 진동)
+        // 부유 애니메이션 (시각만)
         if (cloudRenderer != null && floatAmplitude > 0.001f)
         {
             float bob = Mathf.Sin(_age / Mathf.Max(0.1f, floatPeriod) * Mathf.PI * 2f) * floatAmplitude;
@@ -136,18 +143,8 @@ public sealed class NoeunCloud2D : PooledObject2D
 
     private void UpdateTargeting()
     {
-        // 현재 타겟이 죽었거나 사라졌으면 재탐색 타이머 시작
-        bool needRetarget = false;
-        if (_currentTarget == null || !_currentTarget.gameObject.activeInHierarchy)
-        {
-            needRetarget = true;
-        }
-        else
-        {
-            var health = _currentTarget.GetComponentInParent<EnemyHealth2D>();
-            if (health != null && health.IsDead)
-                needRetarget = true;
-        }
+        // 현재 타겟이 죽었거나 사라졌으면 재탐색
+        bool needRetarget = (_currentTarget == null || !_currentTarget.IsValidTarget);
 
         if (needRetarget)
         {
@@ -162,74 +159,53 @@ public sealed class NoeunCloud2D : PooledObject2D
 
     private void UpdateMovement()
     {
-        if (_currentTarget == null) return;
+        if (_currentTarget == null || !_currentTarget.IsValidTarget) return;
 
-        Vector3 toTarget = _currentTarget.position - transform.position;
+        Vector2 targetPos = _currentTarget.Position;
+        Vector2 currentPos = transform.position;
+        Vector2 toTarget = targetPos - currentPos;
         float dist = toTarget.magnitude;
         if (dist < 0.05f) return;
 
-        Vector3 dir = toTarget / dist;
+        Vector2 dir = toTarget / dist;
         float moveDist = _followSpeed * Time.deltaTime;
         if (moveDist > dist) moveDist = dist;
 
-        transform.position += dir * moveDist;
+        transform.position = currentPos + dir * moveDist;
     }
 
     private void FireBolt()
     {
         if (_boltPool == null) return;
 
-        // 번개 시작 위치: 구름 위치
         Vector3 spawnPos = transform.position;
 
         var bolt = _boltPool.Get<NoeunBolt2D>(spawnPos, Quaternion.identity);
         if (bolt == null) return;
 
-        // 번개는 즉시 폭발 (구름 위치에서 AOE)
         bolt.Initialize(
             damage: _damage,
             radius: _boltRadius,
-            enemyMask: _enemyMask);
+            element: _element);
     }
 
-    private Transform FindNearestEnemy(Vector3 origin)
+    private EnemyRegistryMember2D FindNearestEnemy(Vector3 origin)
     {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, _seekRadius, _enemyMask);
-        if (hits == null || hits.Length == 0) return null;
-
-        Transform closest = null;
-        float closestDistSqr = float.MaxValue;
-        for (int i = 0; i < hits.Length; i++)
-        {
-            Collider2D col = hits[i];
-            if (col == null) continue;
-
-            var health = col.GetComponentInParent<EnemyHealth2D>();
-            if (health != null && health.IsDead) continue;
-
-            float distSqr = ((Vector2)col.bounds.center - (Vector2)origin).sqrMagnitude;
-            if (distSqr < closestDistSqr)
-            {
-                closestDistSqr = distSqr;
-                closest = col.transform;
-            }
-        }
-
-        return closest;
+        if (EnemyRegistry2D.TryGetNearest(origin, _seekRadius, out EnemyRegistryMember2D enemy))
+            return enemy;
+        return null;
     }
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        // 폭발 범위
         Gizmos.color = new Color(1f, 1f, 0.3f, 0.4f);
         Gizmos.DrawWireSphere(transform.position, _boltRadius > 0f ? _boltRadius : 1f);
 
-        // 타겟 라인
-        if (_currentTarget != null)
+        if (_currentTarget != null && _currentTarget.IsValidTarget)
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(transform.position, _currentTarget.position);
+            Gizmos.DrawLine(transform.position, _currentTarget.Position);
         }
     }
 #endif
