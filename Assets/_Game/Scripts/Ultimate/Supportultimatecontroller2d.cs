@@ -3,6 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // T키 지원 궁극기 컨트롤러.
+//
+// [v2 패치 — 동시 입력 deadlock 방지 + 양방향 가드 + 메인 복귀 안전화]
+//  - IsReady에 executor.IsExecuting + ultimateController.IsBusy 양방향 체크
+//  - SetCharacter / Execute 의 bool 반환을 받아 실패 처리
+//  - try/finally 로 어떤 실패 경로에서도 cleanup 보장
+//  - 지원1 → 지원2 순차 실행 보존
+//  - 메인 복귀 SetCharacter 실패 시 RetryRestoreMain 코루틴으로 다음 프레임 재시도
 
 [DisallowMultipleComponent]
 public sealed class SupportUltimateController2D : MonoBehaviour
@@ -29,6 +36,9 @@ public sealed class SupportUltimateController2D : MonoBehaviour
     [SerializeField] private UltimateExecutor2D executor;
     [SerializeField] private Transform playerTransform;
 
+    [Tooltip("R키 궁극기 컨트롤러. 양방향 가드용. 비워두면 자동 탐색.")]
+    [SerializeField] private UltimateController2D ultimateController;
+
     [Tooltip("메인 캐릭터의 SpriteRenderer입니다. 지원 캐릭터가 같은 방향을 바라보는 데 사용합니다.")]
     [SerializeField] private SpriteRenderer playerSpriteRenderer;
 
@@ -40,18 +50,36 @@ public sealed class SupportUltimateController2D : MonoBehaviour
 
     [Header("디버그")]
     [SerializeField] private bool debugLog = true;
-    
+
+    [Header("메인 복귀 재시도")]
+    [Tooltip("지원궁 종료 후 메인 캐릭터 복귀가 거부된 경우 재시도 간격(초)")]
+    [Min(0.05f)] [SerializeField] private float restoreRetryInterval = 0.1f;
+    [Tooltip("메인 캐릭터 복귀 재시도 최대 횟수")]
+    [Min(1)] [SerializeField] private int restoreRetryMaxAttempts = 50;
+
     private float _cooldownTimer;
     private bool _isExecuting;
     private Coroutine _routine;
+    private Coroutine _restoreRoutine;
 
     // 비주얼 풀: CharacterId → 비활성 상태의 비주얼 스택
-    // SetParent 없이 SetActive(false)만으로 관리 → Transform 재계산 비용 0
     private readonly Dictionary<string, Stack<GameObject>> _visualPool
         = new Dictionary<string, Stack<GameObject>>(4);
 
     public float CooldownRemaining => Mathf.Max(0f, _cooldownTimer);
-    public bool IsReady => _cooldownTimer <= 0f && !_isExecuting;
+
+    /// <summary>★ v2 추가: 자기 시전 상태 외부 노출 (양방향 가드용)</summary>
+    public bool IsBusy => _isExecuting;
+
+    /// <summary>
+    /// T키 입력 가능 여부.
+    /// ★ v2 패치: executor.IsExecuting + 메인궁 IsBusy 모두 체크.
+    /// </summary>
+    public bool IsReady =>
+        _cooldownTimer <= 0f
+        && !_isExecuting
+        && (executor == null || !executor.IsExecuting)
+        && (ultimateController == null || !ultimateController.IsBusy);
 
     private void Awake()
     {
@@ -65,6 +93,8 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         if (landingPresenter == null) landingPresenter = FindFirstObjectByType<SupportLandingPresenter2D>();
         if (buffController == null) buffController = GetComponent<BattleBuffController2D>();
         if (buffController == null) buffController = FindFirstObjectByType<BattleBuffController2D>();
+        // ★ v2: 같은 GameObject에서 UltimateController2D 자동 검색
+        if (ultimateController == null) ultimateController = GetComponent<UltimateController2D>();
     }
 
     private void Start()
@@ -91,13 +121,31 @@ public sealed class SupportUltimateController2D : MonoBehaviour
     {
         if (_isExecuting)
         {
-            GameLogger.Log("[지원 궁극기] 이미 시전 중");
+            if (debugLog)
+                GameLogger.Log("[지원 궁극기] 거부 — 이미 시전 중");
             return;
         }
 
         if (_cooldownTimer > 0f)
         {
-            GameLogger.Log($"[지원 궁극기] 쿨다운 중 — 남은 시간:{_cooldownTimer:F1}초");
+            if (debugLog)
+                GameLogger.Log($"[지원 궁극기] 거부 — 쿨다운 중 (남은 {_cooldownTimer:F1}초)");
+            return;
+        }
+
+        // ★ v2: 메인궁 시전 중이면 거부
+        if (ultimateController != null && ultimateController.IsBusy)
+        {
+            if (debugLog)
+                GameLogger.LogWarning("[지원 궁극기] 거부 — 메인궁 시전 중");
+            return;
+        }
+
+        // executor 점유 중이면 거부
+        if (executor != null && executor.IsExecuting)
+        {
+            if (debugLog)
+                GameLogger.LogWarning("[지원 궁극기] 거부 — Executor가 이미 사용 중");
             return;
         }
 
@@ -107,9 +155,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
             return;
         }
 
-        if (_routine != null)
-            StopCoroutine(_routine);
-
+        // ★ v2: 기존 _routine 강제 종료 코드 제거. 위 _isExecuting 체크로 충분.
         _routine = StartCoroutine(ExecuteSupportSequence());
     }
 
@@ -123,11 +169,8 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         Vector3 offset1 = Vector3.right * sideDistance * -1f;
         Vector3 offset2 = Vector3.right * sideDistance * 1f;
 
-        // 초기 위치 (플레이어 현재 위치 기준)
         Vector3 landPos1 = playerTransform.position + offset1;
         Vector3 landPos2 = playerTransform.position + offset2;
-        
-        //  비주얼 생성 (풀에서 꺼내거나 새로 Instantiate)
 
         GameObject visual1 = SpawnVisualHidden(sup1, landPos1, -1f);
         GameObject visual2 = SpawnVisualHidden(sup2, landPos2, 1f);
@@ -135,164 +178,225 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         SupportLandingConfigSO cfg1 = GetLandingConfig(sup1);
         SupportLandingConfigSO cfg2 = GetLandingConfig(sup2);
 
-        if (debugLog)
-            GameLogger.Log($"[지원 궁극기] 등장 시작 | 지원1={GetName(sup1)} 지원2={GetName(sup2)}");
-        
-        //  등장 (playerTransform + offset 전달 → 실시간 추적 낙하)
+        SupportFollower2D follower1 = null;
+        SupportFollower2D follower2 = null;
+        bool needRetryRestore = false;
 
-        bool entrance1Done = false;
-        bool entrance2Done = false;
-
-        if (landingPresenter != null)
+        // ★ v2: try/finally로 어떤 실패 경로에서도 cleanup 보장
+        try
         {
-            if (visual1 != null)
-                landingPresenter.PlayEntrance(visual1, playerTransform, offset1, cfg1, () => entrance1Done = true);
+            if (debugLog)
+                GameLogger.Log($"[지원 궁극기] 등장 시작 | 지원1={GetName(sup1)} 지원2={GetName(sup2)}");
+
+            // 등장
+            bool entrance1Done = false;
+            bool entrance2Done = false;
+
+            if (landingPresenter != null)
+            {
+                if (visual1 != null)
+                    landingPresenter.PlayEntrance(visual1, playerTransform, offset1, cfg1, () => entrance1Done = true);
+                else
+                    entrance1Done = true;
+
+                if (staggerDelay > 0f)
+                    yield return new WaitForSeconds(staggerDelay);
+
+                if (visual2 != null)
+                    landingPresenter.PlayEntrance(visual2, playerTransform, offset2, cfg2, () => entrance2Done = true);
+                else
+                    entrance2Done = true;
+
+                while (!entrance1Done || !entrance2Done)
+                    yield return null;
+            }
             else
-                entrance1Done = true;
+            {
+                if (visual1 != null) { visual1.transform.position = landPos1; SetVisualVisible(visual1, true); }
+                if (visual2 != null) { visual2.transform.position = landPos2; SetVisualVisible(visual2, true); }
+                yield return new WaitForSeconds(0.5f);
+            }
 
-            if (staggerDelay > 0f)
-                yield return new WaitForSeconds(staggerDelay);
-
-            if (visual2 != null)
-                landingPresenter.PlayEntrance(visual2, playerTransform, offset2, cfg2, () => entrance2Done = true);
-            else
-                entrance2Done = true;
-
-            while (!entrance1Done || !entrance2Done)
-                yield return null;
-        }
-        else
-        {
-            if (visual1 != null) { visual1.transform.position = landPos1; SetVisualVisible(visual1, true); }
-            if (visual2 != null) { visual2.transform.position = landPos2; SetVisualVisible(visual2, true); }
-            yield return new WaitForSeconds(0.5f);
-        }
-
-        //  따라다니기 시작 (메인 SpriteRenderer 전달)
-
-        SupportFollower2D follower1 = AttachFollower(visual1, offset1);
-        SupportFollower2D follower2 = AttachFollower(visual2, offset2);
-
-        if (debugLog)
-            GameLogger.Log("[지원 궁극기] 따라다니기 시작");
-        
-        //  지원1 궁극기
-
-        if (sup1 != null)
-        {
-            Animator anim1 = visual1 != null ? visual1.GetComponent<Animator>() : null;
-            FireUltTriggerOnce(anim1);
+            // 따라다니기
+            follower1 = AttachFollower(visual1, offset1);
+            follower2 = AttachFollower(visual2, offset2);
 
             if (debugLog)
-                GameLogger.Log($"[지원 궁극기] 지원1 시전 | {sup1.DisplayName}");
+                GameLogger.Log("[지원 궁극기] 따라다니기 시작");
 
-            ApplySupportBuff(sup1);
-            executor.SetCharacter(sup1);
+            // ── 지원1 궁극기 ───────────────────────────────
+            if (sup1 != null)
+            {
+                yield return RunSingleSupportUltimate(sup1, visual1, "지원1");
+            }
 
-            if (visual1 != null)
-                executor.SetCasterOverride(visual1.transform);
+            // ── 지원2 궁극기 ───────────────────────────────
+            if (sup2 != null)
+            {
+                yield return RunSingleSupportUltimate(sup2, visual2, "지원2");
+            }
 
-            bool finished1 = false;
-            executor.Execute(() => finished1 = true, isSupport: true);
+            // 퇴장 전 대기
+            if (exitLingerDuration > 0f)
+            {
+                if (debugLog)
+                    GameLogger.Log($"[지원 궁극기] 퇴장 대기 {exitLingerDuration}초...");
+                yield return new WaitForSeconds(exitLingerDuration);
+            }
 
-            while (!finished1)
-                yield return null;
+            // 따라다니기 중지 + 퇴장
+            if (follower1 != null) follower1.IsActive = false;
+            if (follower2 != null) follower2.IsActive = false;
 
-            executor.SetCasterOverride(null);
-            ForceIdleOnVisual(anim1);
+            bool exit1Done = false;
+            bool exit2Done = false;
+
+            if (landingPresenter != null)
+            {
+                if (visual1 != null)
+                    landingPresenter.PlayExit(visual1, cfg1, () => exit1Done = true);
+                else
+                    exit1Done = true;
+
+                if (visual2 != null)
+                    landingPresenter.PlayExit(visual2, cfg2, () => exit2Done = true);
+                else
+                    exit2Done = true;
+
+                while (!exit1Done || !exit2Done)
+                    yield return null;
+            }
 
             if (debugLog)
-                GameLogger.Log($"[지원 궁극기] 지원1 완료 → Idle | {sup1.DisplayName}");
+                GameLogger.Log("[지원 궁극기] 퇴장 완료");
         }
-
-        // 지원2 궁극기
-
-        if (sup2 != null)
+        finally
         {
-            Animator anim2 = visual2 != null ? visual2.GetComponent<Animator>() : null;
-            FireUltTriggerOnce(anim2);
+            // ★ 어떤 경로에서 종료되든 반드시 cleanup
+            if (follower1 != null) follower1.IsActive = false;
+            if (follower2 != null) follower2.IsActive = false;
+
+            if (executor != null)
+                executor.SetCasterOverride(null);
+
+            ReleaseVisual(visual1, sup1);
+            ReleaseVisual(visual2, sup2);
+
+            // ★ v2: 메인 캐릭터 복귀 시도. 실패 시 재시도 코루틴 예약.
+            if (executor != null && loadout != null && loadout.Main != null)
+            {
+                bool restored = executor.SetCharacter(loadout.Main);
+                if (!restored)
+                {
+                    needRetryRestore = true;
+                    if (debugLog)
+                        GameLogger.LogWarning("[지원 궁극기] 메인 캐릭터 복귀 실패 — 재시도 예약");
+                }
+            }
+
+            _cooldownTimer = cooldownSeconds;
+            _isExecuting = false;
+            _routine = null;
 
             if (debugLog)
-                GameLogger.Log($"[지원 궁극기] 지원2 시전 | {sup2.DisplayName}");
-
-            ApplySupportBuff(sup2);
-            executor.SetCharacter(sup2);
-
-            if (visual2 != null)
-                executor.SetCasterOverride(visual2.transform);
-
-            bool finished2 = false;
-            executor.Execute(() => finished2 = true, isSupport: true);
-
-            while (!finished2)
-                yield return null;
-
-            executor.SetCasterOverride(null);
-            ForceIdleOnVisual(anim2);
-
-            if (debugLog)
-                GameLogger.Log($"[지원 궁극기] 지원2 완료 → Idle | {sup2.DisplayName}");
+                GameLogger.Log($"[지원 궁극기] 종료 — 쿨다운 {cooldownSeconds}초 시작");
         }
-        
-        //  퇴장 전 대기
-        
-        if (exitLingerDuration > 0f)
+
+        // ★ v2: 메인 복귀가 실패한 경우, finally 밖에서 재시도 코루틴 시작
+        // (finally 안에서는 yield 불가능하므로 별도 코루틴으로 분리)
+        if (needRetryRestore)
         {
-            if (debugLog)
-                GameLogger.Log($"[지원 궁극기] 퇴장 대기 {exitLingerDuration}초...");
-
-            yield return new WaitForSeconds(exitLingerDuration);
+            if (_restoreRoutine != null)
+                StopCoroutine(_restoreRoutine);
+            _restoreRoutine = StartCoroutine(RetryRestoreMain());
         }
-
-        // 따라다니기 중지 + 퇴장
-
-        if (follower1 != null) follower1.IsActive = false;
-        if (follower2 != null) follower2.IsActive = false;
-
-        bool exit1Done = false;
-        bool exit2Done = false;
-
-        if (landingPresenter != null)
-        {
-            if (visual1 != null)
-                landingPresenter.PlayExit(visual1, cfg1, () => exit1Done = true);
-            else
-                exit1Done = true;
-
-            if (visual2 != null)
-                landingPresenter.PlayExit(visual2, cfg2, () => exit2Done = true);
-            else
-                exit2Done = true;
-
-            while (!exit1Done || !exit2Done)
-                yield return null;
-        }
-        else
-        {
-            exit1Done = true;
-            exit2Done = true;
-        }
-
-        if (debugLog)
-            GameLogger.Log("[지원 궁극기] 퇴장 완료");
-        
-        //  풀 반환 + 정리 (Destroy 대신 풀에 반환)
-
-        ReleaseVisual(visual1, sup1);
-        ReleaseVisual(visual2, sup2);
-
-        if (loadout.Main != null)
-            executor.SetCharacter(loadout.Main);
-
-        _cooldownTimer = cooldownSeconds;
-        _isExecuting = false;
-        _routine = null;
-
-        if (debugLog)
-            GameLogger.Log($"[지원 궁극기] 종료 — 쿨다운 {cooldownSeconds}초 시작");
     }
-    
-    //  따라다니기
+
+    /// <summary>
+    /// 메인 캐릭터 복귀를 다음 프레임부터 일정 간격으로 재시도한다.
+    /// 메인궁 등이 끝나서 executor가 idle이 되면 즉시 복귀하고 종료.
+    /// </summary>
+    private IEnumerator RetryRestoreMain()
+    {
+        for (int i = 0; i < restoreRetryMaxAttempts; i++)
+        {
+            yield return new WaitForSeconds(restoreRetryInterval);
+
+            if (executor == null || loadout == null || loadout.Main == null)
+                break;
+
+            // 이미 메인 캐릭터로 설정되어 있으면 종료
+            if (executor.CurrentCharacterId == loadout.Main.CharacterId)
+            {
+                if (debugLog)
+                    GameLogger.Log("[지원 궁극기] 메인 캐릭터 이미 복귀 완료 — 재시도 중단");
+                break;
+            }
+
+            if (executor.SetCharacter(loadout.Main))
+            {
+                if (debugLog)
+                    GameLogger.Log($"[지원 궁극기] 메인 캐릭터 복귀 성공 (재시도 #{i + 1})");
+                break;
+            }
+        }
+
+        _restoreRoutine = null;
+    }
+
+    /// <summary>
+    /// 지원 캐릭터 1명의 궁극기를 실행한다.
+    /// SetCharacter 실패 → Execute 건너뜀.
+    /// Execute 실패 → finished 무한 대기 방지.
+    /// </summary>
+    private IEnumerator RunSingleSupportUltimate(CharacterDefinitionSO sup, GameObject visual, string tagForLog)
+    {
+        Animator anim = visual != null ? visual.GetComponent<Animator>() : null;
+        FireUltTriggerOnce(anim);
+
+        if (debugLog)
+            GameLogger.Log($"[지원 궁극기] {tagForLog} 시전 시도 | {sup.DisplayName}");
+
+        ApplySupportBuff(sup);
+
+        // ★ v2: SetCharacter 결과 확인
+        bool charSet = executor.SetCharacter(sup);
+        if (!charSet)
+        {
+            GameLogger.LogWarning($"[지원 궁극기] {tagForLog} SetCharacter 실패 — Execute 건너뜀 ({sup.DisplayName})");
+            ForceIdleOnVisual(anim);
+            yield break;
+        }
+
+        if (visual != null)
+            executor.SetCasterOverride(visual.transform);
+
+        bool finished = false;
+
+        // ★ v2: Execute 결과 확인
+        bool started = executor.Execute(() => finished = true, isSupport: true);
+        if (!started)
+        {
+            GameLogger.LogWarning($"[지원 궁극기] {tagForLog} Execute 실패 — 다음 단계로 ({sup.DisplayName})");
+            executor.SetCasterOverride(null);
+            ForceIdleOnVisual(anim);
+            yield break;
+        }
+
+        // 정상 시작 — 콜백 대기
+        while (!finished)
+            yield return null;
+
+        executor.SetCasterOverride(null);
+        ForceIdleOnVisual(anim);
+
+        if (debugLog)
+            GameLogger.Log($"[지원 궁극기] {tagForLog} 완료 → Idle | {sup.DisplayName}");
+    }
+
+    // ════════════════════════════════════════════════════
+    //  ↓↓↓ 아래는 헬퍼 — 원본 그대로 ↓↓↓
+    // ════════════════════════════════════════════════════
 
     private SupportFollower2D AttachFollower(GameObject visual, Vector3 offset)
     {
@@ -306,14 +410,10 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         follower.Offset = offset;
         follower.FollowSpeed = followSpeed;
         follower.IsActive = true;
-
-        // 메인 캐릭터의 SpriteRenderer 전달 → flipX 따라가기
         follower.MainSpriteRenderer = playerSpriteRenderer;
 
         return follower;
     }
-
-    //  Animator 제어
 
     private void FireUltTriggerOnce(Animator anim)
     {
@@ -336,9 +436,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
             anim.Play("Idle", 0, 0f);
         }
     }
-    
-    //  버프
-    
+
     private void ApplySupportBuff(CharacterDefinitionSO supportChar)
     {
         if (supportChar == null || buffController == null) return;
@@ -356,15 +454,12 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         if (debugLog)
             GameLogger.Log($"[지원 궁극기] 버프 적용 — {supportChar.DisplayName} → {buff.kind} +{buff.value} ({buff.duration}초)");
     }
-    
-    //  비주얼 풀링 (SetParent 없이 SetActive만 사용)
 
     private GameObject SpawnVisualHidden(CharacterDefinitionSO charDef, Vector3 landPos, float sideSign)
     {
         if (charDef == null || charDef.SupportVisualPrefab == null || playerTransform == null)
             return null;
 
-        // 풀에서 꺼내거나 새로 생성
         GameObject instance = AcquireVisual(charDef);
         if (instance == null) return null;
 
@@ -372,7 +467,6 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         instance.transform.position = landPos;
         instance.transform.rotation = Quaternion.identity;
 
-        // 초기 flipX는 메인 캐릭터와 동일하게
         SpriteRenderer sr = instance.GetComponent<SpriteRenderer>();
         if (sr != null && playerSpriteRenderer != null)
             sr.flipX = playerSpriteRenderer.flipX;
@@ -380,10 +474,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         SetVisualVisible(instance, false);
         return instance;
     }
-    
-    // 풀에서 비활성 비주얼을 꺼내거나, 없으면 새로 Instantiate.
-    // 두 번째 T키 사용부터는 Instantiate 없이 재사용됨.
-     
+
     private GameObject AcquireVisual(CharacterDefinitionSO charDef)
     {
         if (charDef == null || charDef.SupportVisualPrefab == null)
@@ -394,7 +485,6 @@ public sealed class SupportUltimateController2D : MonoBehaviour
 
         if (_visualPool.TryGetValue(key, out Stack<GameObject> stack))
         {
-            // Destroy된 오브젝트 건너뛰기
             while (stack.Count > 0 && instance == null)
                 instance = stack.Pop();
         }
@@ -402,22 +492,17 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         if (instance == null)
             instance = Instantiate(charDef.SupportVisualPrefab);
 
-        // SetParent 없음 — Transform 계층 재계산 비용 제거
         instance.SetActive(true);
         ResetVisualRuntime(instance);
         return instance;
     }
-    
-    // 비주얼을 풀에 반환. Destroy 대신 SetActive(false)로 보관.
-    // SetParent를 사용하지 않으므로 Hierarchy에 흩어져 보이지만 성능은 더 좋음.
-    
+
     private void ReleaseVisual(GameObject visual, CharacterDefinitionSO charDef)
     {
         if (visual == null) return;
 
         ResetVisualRuntime(visual);
         SetVisualVisible(visual, false);
-        // SetParent 없이 비활성화만 — 런타임 SetParent 오버헤드 제거
         visual.SetActive(false);
 
         string key = GetVisualPoolKey(charDef);
@@ -429,10 +514,7 @@ public sealed class SupportUltimateController2D : MonoBehaviour
 
         stack.Push(visual);
     }
-    
-    // 풀에서 꺼낸 비주얼의 런타임 상태를 초기화.
-    // Animator Rebind로 애니메이션 깨짐 방지.
-    
+
     private static void ResetVisualRuntime(GameObject visual)
     {
         if (visual == null) return;
