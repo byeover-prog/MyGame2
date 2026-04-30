@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -42,8 +42,6 @@ public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
     {
         base.Awake();
         element = DamageElement2D.Ice;
-        baseDamage = 15;
-        baseCooldown = 1.5f;
 
         if (spikePool == null)
             spikePool = GetComponentInChildren<ProjectilePool2D>(true);
@@ -131,8 +129,8 @@ public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
                 armDelay: armDelay,
                 lifetime: spikeLifetime,
                 impactPoint: impactPoint,
-                frostDuration: frostDuration,
-                frostSlowMultiplier: frostSlowMultiplier,
+                frostDuration: GetBalanceFloat("frostDuration", frostDuration),
+                frostSlowMultiplier: GetBalanceFloat("frostSlowMultiplier", frostSlowMultiplier),
                 enableLog: debugLog,
                 trackedEnemy: enemy
             );
@@ -145,7 +143,7 @@ public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
         }
 
         _pickedTargets.Clear();
-        cooldownTimer = ScaleCooldown(baseCooldown, 0.1f);
+        cooldownTimer = ScaleCooldown(GetBalanceCooldown(), 0.1f);
 
         if (debugLog)
             CombatLog.Log($"[빙주] 생성 {pickedCount}개", this);
@@ -154,12 +152,12 @@ public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
     // damageAddPerLevel = 0 — 레벨업해도 데미지 고정
     private int GetSpikeDamage()
     {
-        return ScaleDamage(baseDamage);
+        return ScaleDamage(GetBalanceDamage());
     }
 
     // explosionRadius = 0.8 고정 (ScaleRadius의 레벨업 보정은 유지해도 무방)
     private float GetHitRadius()
     {
-        return ScaleRadius(baseHitRadius, 0.1f);
+        return ScaleRadius(GetBalanceFloat("hitRadius", baseHitRadius), 0.1f);
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -138,6 +138,42 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
         return jsonCooldown >= 0f ? jsonCooldown : baseCooldown;
     }
     
+
+    /// <summary>
+    /// JSON 우선 커스텀 값 조회. 현재 JSON 스키마와의 호환을 위해 일부 키는 기존 필드에 매핑합니다.
+    /// 값이 없거나 0 이하/음수면 fallback을 사용합니다.
+    /// </summary>
+    protected float GetBalanceFloat(string key, float fallback)
+    {
+        if (string.IsNullOrEmpty(key)) return fallback;
+        if (!SkillBalanceService2D.IsLoaded || string.IsNullOrEmpty(balanceId)) return fallback;
+        if (!SkillBalanceService2D.TryGet(balanceId, out var row) || row == null) return fallback;
+
+        int lvMinus1 = Mathf.Max(0, level - 1);
+        float value = -1f;
+
+        switch (key)
+        {
+            case "hitRadius":
+                value = row.explosionRadius >= 0f
+                    ? row.explosionRadius + row.explosionRadiusAddPerLevel * lvMinus1
+                    : -1f;
+                break;
+            case "frostDuration":
+                value = row.slowSeconds >= 0f
+                    ? row.slowSeconds + row.slowSecondsAddPerLevel * lvMinus1
+                    : -1f;
+                break;
+            case "frostSlowMultiplier":
+                value = row.slowRate >= 0f
+                    ? row.slowRate + row.slowRateAddPerLevel * lvMinus1
+                    : -1f;
+                break;
+        }
+
+        return value >= 0f ? value : fallback;
+    }
+
     // 내부 유틸
 
     protected void CacheOwnerRefs()
