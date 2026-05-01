@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 235301bbe7e69ce438640b7a5297e910, type: 3}
+  m_Name: SkillDef_Noeun
+  m_EditorClassIdentifier: Assembly-CSharp::_Game.Skills.SkillDefinitionSO
+  skillId: weapon_noeun
+  skillType: 0
+  displayName: "\uB1CC\uC6B4"
+  icon: {fileID: 0}
+  tagKr: "\uC18C\uD658 \xB7 \uC804\uAE30"
+  maxLevel: 5
+  descLv1: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC801 \uC704\uC5D0 \uAD6C\uB984\uC744
+    \uC18C\uD658, 0.5\uCD08\uB9C8\uB2E4 \uBC88\uAC1C\uB97C \uB5A8\uC5B4\uB728\uB9B0\uB2E4."
+  descLv2: 
+  descLv3: 
+  descLv4: 
+  descLv5: 
+  descLv6: 
+  descLv7: 
+  descLv8: 
+  addInfoLv1: 
+  addInfoLv2: 
+  addInfoLv3: 
+  addInfoLv4: 
+  addInfoLv5: 
+  addInfoLv6: 
+  addInfoLv7: 
+  addInfoLv8: 
+  passiveStatType: 0
+  balanceData: {fileID: 0}

@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 235301bbe7e69ce438640b7a5297e910, type: 3}
+  m_Name: SkillDef_Yeolcham
+  m_EditorClassIdentifier: Assembly-CSharp::_Game.Skills.SkillDefinitionSO
+  skillId: weapon_yeolcham
+  skillType: 0
+  displayName: "\uC5F4\uCC38"
+  icon: {fileID: 0}
+  tagKr: "\uBC94\uC704 \xB7 \uC74C"
+  maxLevel: 15
+  descLv1: "\uC8FC\uBCC0\uC5D0 \uC6D0\uD615 \uAC80\uC744 \uD718\uB458\uB7EC \uC678\uACFD\uC5D0
+    \uB354 \uD070 \uD53C\uD574\uB97C \uC8FC\uACE0 \uD761\uD608\uD55C\uB2E4."
+  descLv2: 
+  descLv3: 
+  descLv4: 
+  descLv5: 
+  descLv6: 
+  descLv7: 
+  descLv8: 
+  addInfoLv1: 
+  addInfoLv2: 
+  addInfoLv3: 
+  addInfoLv4: 
+  addInfoLv5: 
+  addInfoLv6: 
+  addInfoLv7: 
+  addInfoLv8: 
+  passiveStatType: 0
+  balanceData: {fileID: 0}
