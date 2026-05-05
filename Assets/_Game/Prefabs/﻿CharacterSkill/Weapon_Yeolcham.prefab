@@ -219,7 +219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f90665054930c0c4fba04cd93318594f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::YeolchamWeapon2D
-  skillDefinition: {fileID: 0}
+  skillDefinition: {fileID: 11400000, guid: b55592b76151d5a4f80395948683e0b3, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536
@@ -227,7 +227,7 @@ MonoBehaviour:
   visualBehaviour: {fileID: 3910568434514244547}
   baseDamage: 15
   baseCooldown: 1
-  balanceId: 
+  balanceId: weapon_yeolcham
   balanceDebugLog: 0
   slashPool: {fileID: 8614016753638692227}
   baseSlashRadius: 3

@@ -127,7 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a54dc8088630174fa24b00adc6524b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NoeunWeapon2D
-  skillDefinition: {fileID: 0}
+  skillDefinition: {fileID: 11400000, guid: b55592b76151d5a4f80395948683e0b3, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536
@@ -135,10 +135,10 @@ MonoBehaviour:
   visualBehaviour: {fileID: 0}
   baseDamage: 15
   baseCooldown: 1
-  balanceId: 
+  balanceId: weapon_noeun
   balanceDebugLog: 0
-  cloudPool: {fileID: 0}
-  boltPool: {fileID: 0}
+  cloudPool: {fileID: 7636525701342305231}
+  boltPool: {fileID: 7806684013044055558}
   baseBoltRadius: 1
   cloudLifetime: 5
   boltInterval: 0.5

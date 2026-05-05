@@ -45,15 +45,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfd6a6481c669cc4a852f212d41a726a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WolchamWeapon2D
-  skillDefinition: {fileID: 0}
+  skillDefinition: {fileID: 11400000, guid: b55592b76151d5a4f80395948683e0b3, type: 2}
   enemyMask:
     serializedVersion: 2
     m_Bits: 65536
   element: 8
-  visualBehaviour: {fileID: 0}
+  visualBehaviour: {fileID: 2192684845522260859, guid: b439e78f68133414b9d88032f50ff159,
+    type: 3}
   baseDamage: 15
   baseCooldown: 1
-  balanceId: 
+  balanceId: weapon_wolcham
   balanceDebugLog: 0
   crescentPool: {fileID: 3620027639807686528}
   spawnPoint: {fileID: 0}

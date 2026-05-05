@@ -14,37 +14,27 @@ public static class CharacterSkill4SetupTool
     private const string SO_FOLDER       = "Assets/_Game/Data/Skills/Character";
     private const string JSON_PATH       = "Assets/_Game/Balance/skill_balance.json";
     private const string PREFAB_SEARCH_LABEL = "t:Prefab";
-
-    // ─── 4종 스킬 데이터 (한 곳에서 관리) ──────────────────────────────
-    //
-    // 사용자가 준 표 기준:
-    //   뇌운    | 하율 | 전기 | dmg 5  | cd 4   | 시전1 | 레벨당 피해+10%/범위+10%
-    //   월참    | 하린 | 음   | dmg 15 | cd 3   | 시전1 | 레벨당 피해+10%
-    //   열참    | 하린 | 음   | dmg 15 | cd 3   | 시전1 | 레벨당 피해+15%
-    //   설빙탄  | 윤설 | 빙결 | dmg 15 | cd 3   | 시전2 | 레벨당 쿨-10%/피해+10%
-    //
-    // ※ 각성 효과는 인게임 레벨업이 아니라 퀘스트 보상으로만 발동된다.
-    //   별도 시스템(SkillAwakeningSO + QuestDefinitionSO + SkillAwakeningApplier)에서
-    //   처리되므로 이 툴은 각성 관련 필드를 다루지 않는다.
-    //
-    // ※ 프리팹의 baseDamage 가 모두 15 로 통일되어 있어 JSON 도 같은 값으로 맞춥니다.
-    //   damageAddPerLevel = round(baseDamage * percent)
+    
     private sealed class SkillData
     {
         public string id;                 // 예: "weapon_yeolcham"
         public string displayName;        // "열참"
         public string tagKr;              // "범위 · 음"
-        public int    maxLevel;           // 15 (뇌운만 5)
-        public string descLv1;            // 카드 Lv1 설명
-        // ※ 각성은 별도 시스템(SkillAwakeningSO + 퀘스트)으로 처리.
-        //   인게임 레벨업으로 발동되지 않으므로 descAwaken 같은 필드는 두지 않음.
+        public int    maxLevel;           // 8 (전용 스킬도 공통과 동일)
+        public string descLv1;            // 카드 Lv1 설명 (시각적 + 메커니즘 설명, 레벨 무관)
+        public string levelUpEffectKr;    // "레벨당 피해 +10%" — Add Info 자동 생성용
 
-        // JSON 밸런스
+        // JSON 밸런스 (1레벨 기준)
         public int    damage;
-        public int    damageAddPerLevel;
         public float  cooldown;
+        public int    castCount;          // 시전 횟수 (-1 = 의미 없음)
+
+        // 레벨당 증가량 (% → 절대값으로 환산해서 저장)
+        public int    damageAddPerLevel;
         public float  cooldownAddPerLevel;
-        public float  explosionRadius;             // 미사용 시 -1
+
+        // 범위 (-1 = 미사용)
+        public float  explosionRadius;
         public float  explosionRadiusAddPerLevel;
 
         // 프리팹 / 컴포넌트 매칭
@@ -54,67 +44,82 @@ public static class CharacterSkill4SetupTool
 
     private static readonly SkillData[] Skills = new SkillData[]
     {
+        // ─── 열참 (하린, 음, 데미지 15 / 쿨 3 / 시전1 / 레벨당 피해+15%) ───
         new SkillData
         {
             id = "weapon_yeolcham",
             displayName = "열참",
             tagKr = "범위 · 음",
-            maxLevel = 15,
-            descLv1 = "주변에 원형 검을 휘둘러 외곽에 더 큰 피해를 주고 흡혈한다.",
+            maxLevel = 8,
+            descLv1 = "다리우스 Q처럼 외곽에 맞으면 추가 피해를 입히고 생명력을 흡수한다.",
+            levelUpEffectKr = "피해량 +15%",
             damage = 15,
-            damageAddPerLevel = 2,        // 15 * 15% ≈ 2
             cooldown = 3f,
+            castCount = -1,
+            damageAddPerLevel = 2,            // 15 × 15% = 2.25 → 2 (반올림)
             cooldownAddPerLevel = 0f,
             explosionRadius = 3.0f,
-            explosionRadiusAddPerLevel = 0.1f,
+            explosionRadiusAddPerLevel = 0f,
             weaponPrefabName = "Weapon_Yeolcham",
             weaponComponentTypeName = "YeolchamWeapon2D",
         },
+
+        // ─── 월참(검기 발사) (하린, 음, 데미지 15 / 쿨 3 / 시전1 / 레벨당 피해+10%) ───
         new SkillData
         {
             id = "weapon_wolcham",
             displayName = "월참",
             tagKr = "관통 · 음",
-            maxLevel = 15,
-            descLv1 = "마우스 방향(또는 자동)으로 직선 관통하는 초승달 검기를 발사한다.",
+            maxLevel = 8,
+            descLv1 = "마우스 방향으로 직선으로 날아가며 관통하는 초승달형 검기를 발사한다.",
+            levelUpEffectKr = "피해량 +10%",
             damage = 15,
-            damageAddPerLevel = 2,        // 15 * 10% ≈ 2 (반올림)
             cooldown = 3f,
+            castCount = -1,
+            damageAddPerLevel = 2,            // 15 × 10% = 1.5 → 2 (반올림)
             cooldownAddPerLevel = 0f,
             explosionRadius = -1f,
             explosionRadiusAddPerLevel = 0f,
             weaponPrefabName = "Weapon_Wolcham",
             weaponComponentTypeName = "WolchamWeapon2D",
         },
+
+        // ─── 설빙탄(폭발 부착형 화살) (윤설, 빙결, 데미지 15 / 쿨 3 / 시전2 / 레벨당 쿨-10%·피해+10%) ───
         new SkillData
         {
             id = "weapon_seolbingtan",
             displayName = "설빙탄",
             tagKr = "범위 · 빙결",
-            maxLevel = 15,
-            descLv1 = "가장 가까운 적에 부착되어 1.5초 뒤 빙결 폭발한다. 시전 2회.",
+            maxLevel = 8,
+            descLv1 = "한 명의 대상에게 부착되는 화살을 발사한다. 부착 후 1.5초 뒤에 폭발한다.",
+            levelUpEffectKr = "재사용 -10%, 피해량 +10%",
             damage = 15,
-            damageAddPerLevel = 2,
             cooldown = 3f,
-            cooldownAddPerLevel = -0.3f,  // 레벨당 10% 감소 (3 * -10% = -0.3)
-            explosionRadius = 1.5f,
-            explosionRadiusAddPerLevel = 0.1f,
+            castCount = 2,
+            damageAddPerLevel = 2,            // 15 × 10% = 1.5 → 2
+            cooldownAddPerLevel = -0.3f,      // 3 × -10% = -0.3
+            explosionRadius = 2.0f,
+            explosionRadiusAddPerLevel = 0f,
             weaponPrefabName = "Weapon_Seolbing",
             weaponComponentTypeName = "SeolbingtanWeapon2D",
         },
+
+        // ─── 뇌운 (하율, 전기, 데미지 5 / 쿨 4 / 시전1 / 피해간격 0.5초 / 레벨당 피해+10%·범위+10%) ───
         new SkillData
         {
             id = "weapon_noeun",
             displayName = "뇌운",
             tagKr = "소환 · 전기",
-            maxLevel = 5,                 // ★ 뇌운만 Lv5
-            descLv1 = "가장 가까운 적 위에 구름을 소환, 0.5초마다 번개를 떨어뜨린다.",
-            damage = 5,                   // ★ 뇌운은 번개 1회 데미지가 작음
-            damageAddPerLevel = 1,        // 5 * 10% ≈ 1 (반올림)
+            maxLevel = 8,
+            descLv1 = "지속적으로 전기 공격을 가하는 구름을 소환한다. 정화구처럼 적을 추적하며 0.5초마다 번개를 떨어뜨린다.",
+            levelUpEffectKr = "피해량 +10%, 스킬 범위 +10%",
+            damage = 5,
             cooldown = 4f,
+            castCount = -1,
+            damageAddPerLevel = 1,            // 5 × 10% = 0.5 → 1 (올림, 정수 보장)
             cooldownAddPerLevel = 0f,
-            explosionRadius = 2.5f,       // 구름 영역
-            explosionRadiusAddPerLevel = 0.25f,  // 10%
+            explosionRadius = 2.5f,
+            explosionRadiusAddPerLevel = 0.25f,  // 2.5 × 10% = 0.25
             weaponPrefabName = "Weapon_Noeun",
             weaponComponentTypeName = "NoeunWeapon2D",
         },
@@ -247,15 +252,65 @@ public static class CharacterSkill4SetupTool
         if (typeProp != null && typeProp.propertyType == SerializedPropertyType.Enum)
             typeProp.enumValueIndex = 0; // Active
 
-        // 카드 설명 (Lv1 만 자동 입력)
-        // ※ 각성은 별도 시스템(SkillAwakeningSO + 퀘스트)에서 처리되므로
-        //   여기서는 각성 레벨 설명을 입력하지 않는다.
-        SetStringIfExists(sObj, "descLv1", sk.descLv1);
+        // 카드 설명 (Desc Lv1 ~ Lv{maxLevel}) — maxLevel 이상은 비워둠
+        // ※ Lv1: 메커니즘 설명. Lv2 이상: 레벨업 효과를 자동 생성해서 채움.
+        for (int lv = 1; lv <= 8; lv++)
+        {
+            string desc;
+            if (lv == 1)
+            {
+                desc = sk.descLv1;
+            }
+            else if (lv <= sk.maxLevel)
+            {
+                // Lv2 이상: 레벨업 효과 누적 표시 (예: "Lv2 — 피해량 +15%")
+                desc = $"Lv{lv} — {sk.levelUpEffectKr}";
+            }
+            else
+            {
+                desc = ""; // maxLevel 초과 영역은 비워둠
+            }
+            SetStringIfExists(sObj, $"descLv{lv}", desc);
+        }
+
+        // Add Info — Lv1 ~ Lv{maxLevel} 까지 실제 수치 자동 계산. 이상은 비워둠.
+        for (int lv = 1; lv <= 8; lv++)
+        {
+            string addInfo = lv <= sk.maxLevel ? BuildAddInfo(sk, lv) : "";
+            SetStringIfExists(sObj, $"addInfoLv{lv}", addInfo);
+        }
 
         sObj.ApplyModifiedPropertiesWithoutUndo();
         EditorUtility.SetDirty(so);
 
         return isNew;
+    }
+
+    /// <summary>레벨별 추가 정보 문자열 자동 생성 (예: "피해 17 · 쿨 2.7s · 시전 2회")</summary>
+    private static string BuildAddInfo(SkillData sk, int level)
+    {
+        int    dmg = sk.damage   + sk.damageAddPerLevel   * (level - 1);
+        float  cd  = sk.cooldown + sk.cooldownAddPerLevel * (level - 1);
+        if (cd < 0.1f) cd = 0.1f;  // 최소값 가드
+
+        var parts = new List<string>(4);
+        parts.Add($"피해 {dmg}");
+        parts.Add($"쿨 {cd:F1}s");
+        if (sk.castCount > 0) parts.Add($"시전 {sk.castCount}회");
+
+        if (sk.explosionRadius > 0f)
+        {
+            float r = sk.explosionRadius + sk.explosionRadiusAddPerLevel * (level - 1);
+            parts.Add($"범위 {r:F1}");
+        }
+
+        // Lv1 에는 레벨업 효과 안내 추가
+        if (level == 1 && !string.IsNullOrWhiteSpace(sk.levelUpEffectKr))
+        {
+            return string.Join(" · ", parts) + $"\n레벨업: {sk.levelUpEffectKr}";
+        }
+
+        return string.Join(" · ", parts);
     }
 
     private static void SetStringIfExists(SerializedObject obj, string fieldName, string value)

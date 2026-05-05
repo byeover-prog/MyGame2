@@ -17,23 +17,25 @@ MonoBehaviour:
   displayName: "\uC6D4\uCC38"
   icon: {fileID: 0}
   tagKr: "\uAD00\uD1B5 \xB7 \uC74C"
-  maxLevel: 15
-  descLv1: "\uB9C8\uC6B0\uC2A4 \uBC29\uD5A5(\uB610\uB294 \uC790\uB3D9)\uC73C\uB85C
-    \uC9C1\uC120 \uAD00\uD1B5\uD558\uB294 \uCD08\uC2B9\uB2EC \uAC80\uAE30\uB97C \uBC1C\uC0AC\uD55C\uB2E4."
-  descLv2: 
-  descLv3: 
-  descLv4: 
-  descLv5: 
-  descLv6: 
-  descLv7: 
-  descLv8: 
-  addInfoLv1: 
-  addInfoLv2: 
-  addInfoLv3: 
-  addInfoLv4: 
-  addInfoLv5: 
-  addInfoLv6: 
-  addInfoLv7: 
-  addInfoLv8: 
+  maxLevel: 8
+  descLv1: "\uB9C8\uC6B0\uC2A4 \uBC29\uD5A5\uC73C\uB85C \uC9C1\uC120\uC73C\uB85C
+    \uB0A0\uC544\uAC00\uBA70 \uAD00\uD1B5\uD558\uB294 \uCD08\uC2B9\uB2EC\uD615 \uAC80\uAE30\uB97C
+    \uBC1C\uC0AC\uD55C\uB2E4."
+  descLv2: "Lv2 \u2014 \uD53C\uD574\uB7C9 +10%"
+  descLv3: "Lv3 \u2014 \uD53C\uD574\uB7C9 +10%"
+  descLv4: "Lv4 \u2014 \uD53C\uD574\uB7C9 +10%"
+  descLv5: "Lv5 \u2014 \uD53C\uD574\uB7C9 +10%"
+  descLv6: "Lv6 \u2014 \uD53C\uD574\uB7C9 +10%"
+  descLv7: "Lv7 \u2014 \uD53C\uD574\uB7C9 +10%"
+  descLv8: "Lv8 \u2014 \uD53C\uD574\uB7C9 +10%"
+  addInfoLv1: "\uD53C\uD574 15 \xB7 \uCFE8 3.0s\n\uB808\uBCA8\uC5C5: \uD53C\uD574\uB7C9
+    +10%"
+  addInfoLv2: "\uD53C\uD574 17 \xB7 \uCFE8 3.0s"
+  addInfoLv3: "\uD53C\uD574 19 \xB7 \uCFE8 3.0s"
+  addInfoLv4: "\uD53C\uD574 21 \xB7 \uCFE8 3.0s"
+  addInfoLv5: "\uD53C\uD574 23 \xB7 \uCFE8 3.0s"
+  addInfoLv6: "\uD53C\uD574 25 \xB7 \uCFE8 3.0s"
+  addInfoLv7: "\uD53C\uD574 27 \xB7 \uCFE8 3.0s"
+  addInfoLv8: "\uD53C\uD574 29 \xB7 \uCFE8 3.0s"
   passiveStatType: 0
-  balanceData: {fileID: 0}
+  balanceData: {fileID: 11400000, guid: b55592b76151d5a4f80395948683e0b3, type: 2}
