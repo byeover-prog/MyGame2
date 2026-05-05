@@ -132,7 +132,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 65536
   element: 3
-  visualBehaviour: {fileID: 0}
+  visualBehaviour: {fileID: 2781865916107674707, guid: 999d6439c3b6c0a4589ba27b09e79dde,
+    type: 3}
   baseDamage: 15
   baseCooldown: 1
   balanceId: weapon_noeun

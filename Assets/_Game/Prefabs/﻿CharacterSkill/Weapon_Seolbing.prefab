@@ -83,7 +83,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 65536
   element: 1
-  visualBehaviour: {fileID: 0}
+  visualBehaviour: {fileID: 6092549339794069843, guid: 0b124d9872582a44d80b6fb03623ddfa,
+    type: 3}
   baseDamage: 15
   baseCooldown: 1
   balanceId: weapon_seolbingtan
