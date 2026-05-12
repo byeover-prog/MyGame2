@@ -82,11 +82,13 @@ public sealed class UltimateController2D : MonoBehaviour
         if (_cooldownTimer > 0f)
             _cooldownTimer -= Time.deltaTime;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (Input.GetKeyDown(KeyCode.F9))
         {
             _cooldownTimer = 0f;
             GameLogger.Log("[궁극기] F9 키 — 쿨다운 초기화");
         }
+#endif
 
         if (Input.GetKeyDown(ultimateKey))
             TryActivate();

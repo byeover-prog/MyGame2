@@ -107,11 +107,13 @@ public sealed class SupportUltimateController2D : MonoBehaviour
         if (_cooldownTimer > 0f)
             _cooldownTimer -= Time.deltaTime;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (Input.GetKeyDown(KeyCode.F10))
         {
             _cooldownTimer = 0f;
             GameLogger.Log("[지원 궁극기] F10 키 — 쿨다운 초기화");
         }
+#endif
 
         if (Input.GetKeyDown(supportKey))
             TryActivate();

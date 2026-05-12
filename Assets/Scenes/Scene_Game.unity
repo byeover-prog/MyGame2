@@ -829,7 +829,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1900860596}
-  - {fileID: 1776548394}
   - {fileID: 785189485}
   - {fileID: 1835682872}
   - {fileID: 260136714}
@@ -4824,7 +4823,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1829272062}
   - {fileID: 993341814}
   - {fileID: 991761963}
   - {fileID: 1738558156}
@@ -13716,54 +13714,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1771699545}
   m_CullTransparentMesh: 1
---- !u!1 &1776548393
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1776548394}
-  - component: {fileID: 1776548395}
-  m_Layer: 0
-  m_Name: DebugRuntimeHUD
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1776548394
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1776548393}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 33406060}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1776548395
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1776548393}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 109b0e0a82616294b9698c29d1dbb4a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DebugRuntimeHUD
-  playerExp: {fileID: 2030997280}
-  enemySpawner: {fileID: 1075071068}
-  visible: 1
-  toggleKey: 291
 --- !u!1 &1776668375
 GameObject:
   m_ObjectHideFlags: 0
@@ -13970,69 +13920,6 @@ MonoBehaviour:
   autoSave: 1
   autoSaveIntervalSeconds: 5
   log: 1
---- !u!1 &1829272061
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1829272062}
-  - component: {fileID: 1829272063}
-  m_Layer: 0
-  m_Name: LevelUpRuntimeHardResetOnPlay
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1829272062
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1829272061}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 656810170}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1829272063
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1829272061}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0239bcd8971588446b428c2783575a3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LevelUpRuntimeHardResetOnPlay
-  runtimeState: {fileID: 0}
-  typeNameContains:
-  - skillruntimestate
-  - runtimestate
-  resetMethodNames:
-  - ClearAll
-  - Reset
-  - ResetRuntime
-  - HardReset
-  fieldNameContains:
-  - level
-  - levels
-  - runtime
-  - state
-  - owned
-  - acquire
-  - slot
-  - slots
-  log: 0
 --- !u!1 &1835682871
 GameObject:
   m_ObjectHideFlags: 0
