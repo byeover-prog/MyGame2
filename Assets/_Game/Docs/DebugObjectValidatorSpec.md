@@ -32,9 +32,11 @@ Current enabled build scenes from `ProjectSettings/EditorBuildSettings.asset`:
 
 The validator must scan enabled build scenes first. Non-build scenes can be reported separately as warnings, but they must not block release unless they are later added to Build Settings.
 
-## Current Confirmed Findings
+## Historical Build-Scene Findings
 
-Evidence level: Confirmed
+Evidence level: Historical
+
+These findings were confirmed during the first debug audit, then partially resolved by scene cleanup and runtime hotkey gating. Keep them here as migration history, not as the current build-scene result. The current result must come from `Tools/Honryeom/Validation/Debug Object Validator`.
 
 | Scene/File | Evidence | Release Risk | Severity |
 |---|---|---|---|

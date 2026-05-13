@@ -27,10 +27,16 @@ public static class DebugObjectValidator
         "Input.GetKeyDown(KeyCode.F10)"
     };
 
-    private static readonly string[] DeveloperHotkeyComponentNames =
+    private static readonly DeveloperHotkeyRule[] DeveloperHotkeyRules =
     {
-        "WeaponLoadApplier2D",
-        "SkillBalanceBootstrap2D"
+        new DeveloperHotkeyRule(
+            "WeaponLoadApplier2D",
+            "Assets/_Game/Scripts/Skill/WeaponLoadApplier2D.cs",
+            "Developer save/load hotkeys are active in an enabled build scene."),
+        new DeveloperHotkeyRule(
+            "SkillBalanceBootstrap2D",
+            "Assets/_Game/Scripts/Core/Balance/SkillBalanceBootstrap2D.cs",
+            "Developer balance reload hotkey is active in an enabled build scene.")
     };
 
     private static readonly string[] GuardSymbols =
@@ -111,16 +117,17 @@ public static class DebugObjectValidator
                     rule.ReleaseRisk);
             }
 
-            foreach (string componentName in DeveloperHotkeyComponentNames)
+            foreach (DeveloperHotkeyRule developerRule in DeveloperHotkeyRules)
             {
-                AddSceneComponentFindings(
-                    report,
-                    scenePath,
-                    text,
-                    componentName,
+                int componentLine = FindSceneComponentLine(text, developerRule.TypeName);
+                if (componentLine <= 0) continue;
+                if (!ScriptHasUnguardedInputHotkey(developerRule.ScriptPath)) continue;
+
+                report.AddWarning(
                     "DBG005",
-                    ValidationSeverity.Warning,
-                    $"Developer hotkey component '{componentName}' is referenced by an enabled build scene. Verify it is disabled or development-gated.");
+                    scenePath,
+                    componentLine,
+                    $"{developerRule.Message} Component: {developerRule.TypeName}.");
             }
         }
     }
@@ -234,6 +241,39 @@ public static class DebugObjectValidator
         {
             report.Add(severity, ruleId, scenePath, objectNameLine, $"{message} Object name: {typeName}.");
         }
+    }
+
+    private static int FindSceneComponentLine(string sceneText, string typeName)
+    {
+        string classIdentifier = $"Assembly-CSharp::{typeName}";
+        int classLine = FindLineNumber(sceneText, classIdentifier);
+        if (classLine > 0) return classLine;
+
+        string scriptGuid = FindScriptGuid(typeName);
+        if (!string.IsNullOrWhiteSpace(scriptGuid))
+        {
+            int guidLine = FindLineNumber(sceneText, scriptGuid);
+            if (guidLine > 0) return guidLine;
+        }
+
+        return FindLineNumber(sceneText, $"m_Name: {typeName}");
+    }
+
+    private static bool ScriptHasUnguardedInputHotkey(string scriptPath)
+    {
+        string text = ReadAssetText(scriptPath);
+        if (string.IsNullOrEmpty(text)) return false;
+
+        string[] lines = SplitLines(text);
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string line = lines[i];
+            if (!ContainsOrdinal(line, "Input.GetKeyDown(")) continue;
+            if (IsLineDevelopmentGuarded(lines, i)) continue;
+            return true;
+        }
+
+        return false;
     }
 
     private static string FindScriptGuid(string typeName)
@@ -393,6 +433,20 @@ public static class DebugObjectValidator
 
         public int Depth { get; }
         public bool IsDevelopmentOnly { get; }
+    }
+
+    private readonly struct DeveloperHotkeyRule
+    {
+        public DeveloperHotkeyRule(string typeName, string scriptPath, string message)
+        {
+            TypeName = typeName;
+            ScriptPath = scriptPath;
+            Message = message;
+        }
+
+        public string TypeName { get; }
+        public string ScriptPath { get; }
+        public string Message { get; }
     }
 
     public enum ValidationSeverity

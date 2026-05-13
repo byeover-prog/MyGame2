@@ -42,18 +42,30 @@ public sealed class CharacterEquipmentSaveData
     public string characterId;
 
     /// <summary>8슬롯에 장착된 상점 아이템 ID 목록입니다. 빈 슬롯은 빈 문자열입니다.</summary>
-    public List<string> slotItemIds = new List<string>(8);
+    public List<string> slotItemIds = new List<string>(LegacyMaxSlots);
 
     /// <summary>보유 중인 아이템 ID → 수량 매핑입니다.</summary>
     public List<OwnedShopItemEntry> ownedItems = new List<OwnedShopItemEntry>(13);
 
+    public const int TargetTalismanSlots = 6;
+    public const int LegacyMaxSlots = 8;
+
+    // Keep the serialized slot capacity at 8 until the 8->6 migration policy is implemented.
     public const int MaxSlots = 8;
 
     /// <summary>슬롯 목록이 8칸인지 보장합니다.</summary>
     public void EnsureSlots()
     {
+        if (slotItemIds == null)
+            slotItemIds = new List<string>(LegacyMaxSlots);
+
         while (slotItemIds.Count < MaxSlots)
             slotItemIds.Add(string.Empty);
+    }
+
+    public void NormalizeSlotsForCurrentSchema()
+    {
+        EnsureSlots();
     }
 
     /// <summary>해당 슬롯에 아이템을 장착합니다.</summary>

@@ -24,6 +24,7 @@ This document is a decision baseline. Code changes, deletions, folder moves, and
 | Area | Current Evidence | Risk |
 |---|---|---|
 | Build scenes | `ProjectSettings/EditorBuildSettings.asset` currently includes `Scene_Lobby`, `Scene_Boot`, `Scene_Game`. | Target title/story/casual flow is not represented as an explicit build-scene flow. |
+| Title flow | Confirmed target entry is Story Mode, Casual Mode, Settings, and Quit, with Story Mode branching to Continue/New Game. | Current first scene still behaves like a generic Start route rather than an explicit mode router. |
 | Character data | `CharacterDefinitionSO` exists and owns ID, visuals, basic skill ID/config, ultimate, support buff, stats, upgrade tree. | It does not yet fully express the confirmed long-term character contract: 1 basic skill, 2 exclusive skills, 1 ultimate, 1 innate passive, support effect, future card grade rules. |
 | Skill data | `SkillDefinitionSO` exists for skill ID, type, UI, level text, passive stat type, and optional character skill balance data. | Skill execution, targeting, grade, card-pool source, and runtime behavior ownership are not fully separated. |
 | Card pool | `LevelUpCardGenerator` builds common, passive, and character exclusive candidates. It reads `SquadLoadoutRuntime.MainId/Support1Id/Support2Id`. | Card rules are embedded in a scene component instead of a reusable rule model. Future grade rules will be hard to verify. |
@@ -108,7 +109,7 @@ This document is a decision baseline. Code changes, deletions, folder moves, and
 | Candidate Patterns | Catalog, weighted random table, repository, policy. |
 | Why This Fits | 44 gacha items are small enough for a readable weighted table. Prices must be data-configurable. Currency ownership must be explicit. |
 | Avoid | Do not hardcode gacha price in UI or button handlers. Do not keep legacy shop and new equipment as equal sources of truth. |
-| Current Evidence | `GachaConfigSO` already owns rates and costs. `EquipmentDatabaseSO` exists. Legacy `ShopService` and shop database also exist. |
+| Current Evidence | `GachaConfigSO` already owns rates and costs, and 44 `EquipmentDefinitionSO` assets exist under `Assets/GameData/Equipments`. `EquipmentDatabaseSO` code exists, but the release-facing `EquipmentDatabase.asset` is currently missing. Legacy `ShopService` also exists. |
 | Validation | Talisman/Gacha Validator must check exactly 44 gacha entries, 6 equip slots, valid rates, configurable costs, duplicate policy, and Nyang/Soul usage boundaries. |
 | Migration | Choose whether talismans are the public name over equipment data or a separate domain. Then adapt legacy shop through a facade or mark it legacy-only. |
 

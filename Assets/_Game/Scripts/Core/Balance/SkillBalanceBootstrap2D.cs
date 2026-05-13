@@ -56,6 +56,7 @@ namespace _Game.Scripts.Core.Balance
             BuildIndex();
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         private void Update()
         {
             if (!allowReloadInPlay) return;
@@ -64,6 +65,7 @@ namespace _Game.Scripts.Core.Balance
             if (Input.GetKeyDown(reloadKey))
                 BuildIndex();
         }
+#endif
 
         /// <summary>
         /// JSON 로드 후 id로 인덱싱한다.
