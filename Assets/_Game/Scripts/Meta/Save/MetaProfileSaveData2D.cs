@@ -7,6 +7,9 @@ public sealed class MetaProfileSaveData2D
     /// <summary>보유 냥 (재화)입니다.</summary>
     public int nyang;
 
+    /// <summary>Official shared Soul currency for Story/Casual meta progression.</summary>
+    public int soul;
+
     /// <summary>편성 정보입니다.</summary>
     public FormationSaveData2D formation;
 
@@ -28,14 +31,19 @@ public sealed class MetaProfileSaveData2D
     /// <summary>기본값을 보장합니다.</summary>
     public void EnsureDefaults()
     {
+        if (nyang < 0) nyang = 0;
+        if (soul < 0) soul = 0;
+
         if (formation == null) formation = FormationSaveData2D.CreateDefault();
         formation.EnsureDefaults();
 
         if (upgrades == null) upgrades = new CharacterUpgradeCollectionSaveData2D();
         if (progression == null) progression = new CharacterProgressionCollectionSaveData2D();
         if (equipment == null) equipment = new CharacterEquipmentCollectionSaveData();
+        equipment.EnsureDefaults();
         if (questProgress == null) questProgress = new QuestProgressSaveData();
         if (stageProgress == null) stageProgress = new StageProgressSaveData();
+        stageProgress.EnsureDefaults();
     }
 
     public static MetaProfileSaveData2D CreateDefault()
@@ -43,6 +51,7 @@ public sealed class MetaProfileSaveData2D
         MetaProfileSaveData2D data = new MetaProfileSaveData2D
         {
             nyang = 0,
+            soul = 0,
         };
         data.EnsureDefaults();
         return data;

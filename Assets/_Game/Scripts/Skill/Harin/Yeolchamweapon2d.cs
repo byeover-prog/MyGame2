@@ -1,25 +1,35 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
+/// <summary>
+/// 열참 (熱斬) — 하린 전용 스킬 #1 (음 속성, 근접 원형 범위)
+///
+/// 컨셉: 플레이어 몸 기준 원형 검 휘두름.
+///   - 외곽 링(바깥쪽 30%) 적 = +30% 추가 데미지
+///   - 내부 적 = -30% 감소 데미지
+///   (LOL 다리우스 Q 메카닉)
+///
+/// 레벨 스케일링:
+///   - 레벨당 피해량 +15%
+///
+/// 각성 (Lv7+):
+///   - 외곽 적중 시 출혈 효과 부여
+///   - 재사용 대기시간 30% 감소
+///
+/// 프리팹 구조:
+///   Weapon_Yeolcham (프리팹 루트)
+///   ├── LevelableSkillMarker2D
+///   ├── YeolchamWeapon2D (이 스크립트, CharacterSkillWeaponBase 상속)
+///   └── Pool_Yeolcham (ProjectilePool2D + PF_YeolchamSlash)
+/// </summary>
 [DisallowMultipleComponent]
-public sealed class YeolchamWeapon2D : MonoBehaviour, ILevelableSkill
+public sealed class YeolchamWeapon2D : CharacterSkillWeaponBase
 {
-    [Header("참격 풀")]
-    [Tooltip("YeolchamSlash2D 투사체 풀입니다. 비워두면 자동 탐색합니다.")]
-    [SerializeField] private ProjectilePool2D pool;
+    [Header("열참 설정")]
+    [Tooltip("YeolchamSlash2D 투사체 풀입니다.")]
+    [SerializeField] private ProjectilePool2D slashPool;
 
-    [Header("타겟 설정")]
-    [Tooltip("적 레이어 마스크입니다.")]
-    [SerializeField] private LayerMask enemyMask;
-
-    [Header("기본 수치 (Lv1)")]
-    [Tooltip("기본 피해량입니다.")]
-    [SerializeField] private int baseDamage = 10;
-
-    [Tooltip("재사용 대기시간(초)입니다.")]
-    [SerializeField] private float baseCooldown = 4.0f;
-
-    [Tooltip("참격 반경(월드 유닛)입니다.")]
+    [Tooltip("참격 반경(월드 유닛)입니다. 외곽 링 포함 전체 반경.")]
     [SerializeField] private float baseSlashRadius = 3.0f;
 
     [Tooltip("참격 지속시간(초)입니다.")]
@@ -30,10 +40,10 @@ public sealed class YeolchamWeapon2D : MonoBehaviour, ILevelableSkill
     [Range(0.5f, 0.95f)]
     [SerializeField] private float outerRingRatio = 0.7f;
 
-    [Tooltip("외곽 링 적중 시 데미지 배율입니다.")]
+    [Tooltip("외곽 링 적중 시 데미지 배율입니다. 1.30 = +30% 추가.")]
     [SerializeField] private float outerDamageMultiplier = 1.30f;
 
-    [Tooltip("내부 영역 적중 시 데미지 배율입니다.")]
+    [Tooltip("내부 영역 적중 시 데미지 배율입니다. 0.70 = -30% 감소.")]
     [SerializeField] private float innerDamageMultiplier = 0.70f;
 
     [Header("레벨 스케일링")]
@@ -54,137 +64,94 @@ public sealed class YeolchamWeapon2D : MonoBehaviour, ILevelableSkill
     [SerializeField] private float awakeningBleedDpsRatio = 0.10f;
 
     [Header("디버그")]
-    [SerializeField] private bool enableLogs = false;
+    [SerializeField] private bool debugLog = false;
 
-    // ═══════════════════════════════════════════════
-    //  내부 상태
-    // ═══════════════════════════════════════════════
-
-    private Transform _owner;
-    private PlayerCombatStats2D _combatStats;
-    private float _cooldownTimer;
-    private int _currentLevel;
-    private bool _initialized;
-
-    // 현재 레벨 기준 계산값
-    private int _damage;
-    private float _cooldown;
-    private bool _awakened;
-
-    // ═══════════════════════════════════════════════
-    //  ILevelableSkill 구현
-    // ═══════════════════════════════════════════════
-
-    public void OnAttaced(Transform newOwner) => OnAttached(newOwner);
-
-    public void OnAttached(Transform owner)
+    protected override void Awake()
     {
-        _owner = owner;
-        _combatStats = owner != null ? owner.GetComponent<PlayerCombatStats2D>() : null;
+        base.Awake();
 
-        // 풀 자동 탐색
-        if (pool == null)
-        {
-            var allPools = FindObjectsByType<ProjectilePool2D>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None);
-            foreach (var p in allPools)
-            {
-                if (p.name.Contains("Yeolcham") || p.name.Contains("열참"))
-                { pool = p; break; }
-            }
-            if (pool == null)
-                Debug.LogError("[열참] 'Yeolcham' 풀을 찾을 수 없습니다!", this);
-        }
+        element = DamageElement2D.Dark;
+        baseDamage = 10;
+        baseCooldown = 4.0f;
+        balanceId = "weapon_yeolcham";  // JSON 밸런스 자동 로드
 
-        _cooldownTimer = 0f;
-
-        if (_currentLevel <= 0)
-            RecalculateStats(1);
-
-        _initialized = true;
-
-        if (enableLogs)
-            GameLogger.Log($"[열참] 무기 장착 완료 — owner={owner?.name}", this);
+        if (slashPool == null)
+            slashPool = GetComponentInChildren<ProjectilePool2D>(true);
     }
-
-    public void ApplyLevel(int newLevel)
-    {
-        _currentLevel = Mathf.Max(1, newLevel);
-        RecalculateStats(_currentLevel);
-
-        if (enableLogs)
-            GameLogger.Log(
-                $"[열참] Lv.{_currentLevel} — 피해량={_damage}, 쿨타임={_cooldown:F2}초, " +
-                $"각성={_awakened}", this);
-    }
-
-    private void RecalculateStats(int level)
-    {
-        // 레벨 스케일링: Lv1 = 1.0배, Lv2 = 1.15배 ...
-        float levelScale = 1f + damagePerLevel * (level - 1);
-        _damage = Mathf.RoundToInt(baseDamage * levelScale);
-        _cooldown = baseCooldown;
-
-        // 각성
-        _awakened = (level >= awakeningLevel);
-        if (_awakened)
-            _cooldown = baseCooldown * (1f - awakeningCooldownReduction);
-    }
-
-    // ═══════════════════════════════════════════════
-    //  Update — 자동 발동
-    // ═══════════════════════════════════════════════
 
     private void Update()
     {
-        if (!_initialized || _owner == null) return;
+        if (owner == null) return;
+        if (slashPool == null) return;
 
-        _cooldownTimer -= Time.deltaTime;
-        if (_cooldownTimer > 0f) return;
+        cooldownTimer -= Time.deltaTime;
+        if (cooldownTimer > 0f) return;
 
         Fire();
-        _cooldownTimer = _cooldown;
+        cooldownTimer = GetFinalCooldown();
     }
 
     private void Fire()
     {
-        if (pool == null) return;
+        Vector3 ownerPos = owner.position;
 
-        Vector3 ownerPos = _owner.position;
-        int finalDamage = _combatStats != null
-            ? Mathf.RoundToInt(_damage * _combatStats.DamageMul)
-            : _damage;
-
-        var slash = pool.Get<YeolchamSlash2D>(ownerPos, Quaternion.identity);
+        var slash = slashPool.Get<YeolchamSlash2D>(ownerPos, Quaternion.identity);
         if (slash == null) return;
 
         slash.Initialize(
-            damage: finalDamage,
-            radius: baseSlashRadius,
+            damage: GetFinalDamage(),
+            radius: GetFinalRadius(),
             lifetime: slashLifetime,
-            enemyMask: enemyMask,
-            owner: _owner,
+            owner: owner,
+            element: element,
             outerRingRatio: outerRingRatio,
             outerMultiplier: outerDamageMultiplier,
             innerMultiplier: innerDamageMultiplier,
-            awakened: _awakened,
+            awakened: IsAwakened(),
             bleedDuration: awakeningBleedDuration,
             bleedDpsRatio: awakeningBleedDpsRatio);
 
-        if (enableLogs)
-            CombatLog.Log($"[열참] 원형 검 휘두름! 피해량={finalDamage} 반경={baseSlashRadius:F1} 각성={_awakened}");
+        if (debugLog)
+            CombatLog.Log(
+                $"[열참] 휘두름! dmg={GetFinalDamage()} r={GetFinalRadius():F1} 각성={IsAwakened()}",
+                this);
+    }
+
+    // ── 계산 헬퍼 ──
+
+    private int GetFinalDamage()
+    {
+        int finalBase = GetBalanceDamage();
+        float levelScale = 1f + damagePerLevel * Mathf.Max(0, level - 1);
+        return ScaleDamage(finalBase * levelScale);
+    }
+
+    private float GetFinalCooldown()
+    {
+        float cd = GetBalanceCooldown();
+        if (IsAwakened())
+            cd *= (1f - awakeningCooldownReduction);
+        return ScaleCooldown(cd, 0.1f);
+    }
+
+    private float GetFinalRadius()
+    {
+        return ScaleRadius(baseSlashRadius, 0.5f);
+    }
+
+    private bool IsAwakened()
+    {
+        return level >= awakeningLevel;
     }
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        Vector3 c = _owner != null ? _owner.position : transform.position;
+        Vector3 c = owner != null ? owner.position : transform.position;
 
-        // 외곽 링 (빨강)
         Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.6f);
         Gizmos.DrawWireSphere(c, baseSlashRadius);
 
-        // 내부 (파랑)
         Gizmos.color = new Color(0.3f, 0.6f, 1f, 0.4f);
         Gizmos.DrawWireSphere(c, baseSlashRadius * outerRingRatio);
     }

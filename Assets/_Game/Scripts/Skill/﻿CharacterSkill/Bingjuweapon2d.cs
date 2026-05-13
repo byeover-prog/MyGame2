@@ -1,30 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 빙주입니다. (윤설 전용 / 빙결 속성 / 단일 타겟 핀포인트)
-/// 랜덤 적 1명을 예고 추적 후 얼음 기둥으로 직격합니다.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
 {
-    [Header("빙주 설정 (기획값)")]
+    [Header("빙주 설정 (Fallback 기본값)")]
     [Tooltip("빙주 풀입니다.")]
     [SerializeField] private ProjectilePool2D spikePool;
 
-    [Tooltip("빙주 적중 반경입니다. 기획=0.8 (추적 대상 사망 시 fallback 탐색용)")]
+    [Tooltip("빙주 적중 반경 fallback. SO에 hitRadius 키가 있으면 SO 우선. 기획=0.8")]
     [SerializeField] private float baseHitRadius = 0.8f;
 
-    [Tooltip("빙주 예고 시간입니다. 기획=0.3")]
+    [Tooltip("빙주 예고 시간 fallback. SO에 armDelay/delay 키가 있으면 SO 우선. 기획=0.3")]
     [SerializeField] private float armDelay = 0.3f;
 
-    [Tooltip("빙주 총 유지 시간입니다. 기획=0.7")]
+    [Tooltip("빙주 총 유지 시간 fallback. SO에 lifetime 키가 있으면 SO 우선. 기획=0.7")]
     [SerializeField] private float spikeLifetime = 0.7f;
 
-    [Tooltip("동상 지속 시간입니다. 기획=3.0")]
+    [Tooltip("동상 지속 시간 fallback. SO에 frostDuration/duration 키가 있으면 SO 우선. 기획=3.0")]
     [SerializeField] private float frostDuration = 3f;
 
-    [Tooltip("동상 이동속도 배율입니다. 기획=0.5 (50% 속도)")]
+    [Tooltip("동상 이동속도 배율 fallback. SO에 frostSlowMultiplier 키가 있으면 SO 우선. 기획=0.5")]
     [SerializeField] private float frostSlowMultiplier = 0.5f;
 
     [Header("디버그")]
@@ -40,10 +36,13 @@ public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
 
     protected override void Awake()
     {
+        // ★ v1 SO 전환:
+        //  base.Awake() 호출만 유지.
+        //  element / baseDamage / baseCooldown 직접 대입 제거됨.
+        //  → element는 SO에서 자동으로 읽힘 (CharacterSkillWeaponBase.SyncDefinitionBasicInfo).
+        //  → damage/cooldown은 사용 지점에서 GetBalance* 로 읽음.
+        //  → balanceId가 비어있으면 SO의 SkillId 사용. 미설정 시 인스펙터에서 직접 입력 가능.
         base.Awake();
-        element = DamageElement2D.Ice;
-        baseDamage = 15;
-        baseCooldown = 1.5f;
 
         if (spikePool == null)
             spikePool = GetComponentInChildren<ProjectilePool2D>(true);
@@ -54,7 +53,8 @@ public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
         Debug.Log(
             $"[빙주 진단] Start | owner={(owner == null ? "NULL" : owner.name)} " +
             $"| spikePool={(spikePool == null ? "★NULL★" : spikePool.name)} " +
-            $"| enemyMask.value={enemyMask.value}",
+            $"| enemyMask.value={enemyMask.value} " +
+            $"| element={element} (★ SO/Inspector 출처)",
             this);
 
         if (spikePool == null)
@@ -103,6 +103,14 @@ public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
 
         _diagNoEnemiesLogged = false;
 
+        // ★ v1 전환: 모든 수치를 SO 우선순위로 읽음
+        int dmg = GetSpikeDamage();
+        float hitRadius = GetHitRadius();
+        float curArmDelay = GetArmDelay();
+        float curLifetime = GetSpikeLifetime();
+        float curFrostDuration = GetFrostDuration();
+        float curFrostSlow = GetFrostSlowMultiplier();
+
         for (int i = 0; i < pickedCount; i++)
         {
             EnemyRegistryMember2D enemy = _pickedTargets[i];
@@ -126,13 +134,13 @@ public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
             spike.Init(
                 enemyMask: enemyMask,
                 damageElement: element,
-                damage: GetSpikeDamage(),
-                hitRadius: GetHitRadius(),
-                armDelay: armDelay,
-                lifetime: spikeLifetime,
+                damage: dmg,
+                hitRadius: hitRadius,
+                armDelay: curArmDelay,
+                lifetime: curLifetime,
                 impactPoint: impactPoint,
-                frostDuration: frostDuration,
-                frostSlowMultiplier: frostSlowMultiplier,
+                frostDuration: curFrostDuration,
+                frostSlowMultiplier: curFrostSlow,
                 enableLog: debugLog,
                 trackedEnemy: enemy
             );
@@ -140,26 +148,60 @@ public sealed class BingjuWeapon2D : CharacterSkillWeaponBase
 
         if (!_diagFirstSpawnLogged)
         {
-            Debug.Log($"[빙주 진단] 첫 발사 성공! 생성 {pickedCount}개", this);
+            Debug.Log(
+                $"[빙주 진단] 첫 발사 성공! 생성 {pickedCount}개 | " +
+                $"dmg={dmg} hitR={hitRadius:F2} arm={curArmDelay:F2} life={curLifetime:F2} " +
+                $"frostDur={curFrostDuration:F2} frostSlow={curFrostSlow:F2}",
+                this);
             _diagFirstSpawnLogged = true;
         }
 
         _pickedTargets.Clear();
-        cooldownTimer = ScaleCooldown(baseCooldown, 0.1f);
+
+        // ★ v1 전환: SO/JSON/fallback 우선순위로 쿨다운 결정
+        cooldownTimer = ScaleCooldown(GetBalanceCooldown(), 0.1f);
 
         if (debugLog)
-            CombatLog.Log($"[빙주] 생성 {pickedCount}개", this);
+            CombatLog.Log($"[빙주] 생성 {pickedCount}개 dmg={dmg} cd={cooldownTimer:F2}", this);
     }
 
-    // damageAddPerLevel = 0 — 레벨업해도 데미지 고정
+    // ════════════════════════════════════════════════════
+    //  수치 게터 — 모두 SO → JSON → 인스펙터 fallback 순서
+    // ════════════════════════════════════════════════════
+
+    /// <summary>피해량. SO/JSON > baseDamage</summary>
     private int GetSpikeDamage()
     {
-        return ScaleDamage(baseDamage);
+        return ScaleDamage(GetBalanceDamage());
     }
 
-    // explosionRadius = 0.8 고정 (ScaleRadius의 레벨업 보정은 유지해도 무방)
+    /// <summary>적중 반경. SO/JSON("hitRadius"/"radius") > baseHitRadius</summary>
     private float GetHitRadius()
     {
-        return ScaleRadius(baseHitRadius, 0.1f);
+        return ScaleRadius(GetBalanceFloat("hitRadius", baseHitRadius), 0.1f);
+    }
+
+    /// <summary>예고 시간. SO("armDelay"/"delay") > armDelay</summary>
+    private float GetArmDelay()
+    {
+        return GetBalanceFloat("armDelay", armDelay);
+    }
+
+    /// <summary>스파이크 유지 시간. SO("lifetime") > spikeLifetime</summary>
+    private float GetSpikeLifetime()
+    {
+        return GetBalanceFloat("lifetime", spikeLifetime);
+    }
+
+    /// <summary>동상 지속 시간. SO("frostDuration"/"duration") > frostDuration</summary>
+    private float GetFrostDuration()
+    {
+        return GetBalanceFloat("frostDuration", frostDuration);
+    }
+
+    /// <summary>동상 이속 배율. SO("frostSlowMultiplier"/"slowRate") > frostSlowMultiplier</summary>
+    private float GetFrostSlowMultiplier()
+    {
+        return GetBalanceFloat("frostSlowMultiplier", frostSlowMultiplier);
     }
 }

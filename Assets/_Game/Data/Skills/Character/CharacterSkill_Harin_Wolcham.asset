@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb8772ffb9d174d4c85439490a66424a, type: 3}
+  m_Name: CharacterSkill_Harin_Wolcham
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterSkillDefinitionSO
+  skillId: weapon_wolcham
+  displayName: "\uC6D4\uCC38"
+  ownerCharacterId: harin
+  icon: {fileID: 0}
+  weaponPrefab: {fileID: 1898139017280662815, guid: c8e998f4d2e6f4f4ab46a1d534f38176,
+    type: 3}
+  element: 8
+  maxLevel: 8
+  levelBalances:
+  - level: 1
+  - level: 2
+  - level: 3
+  - level: 4
+  - level: 5
+  - level: 6
+  - level: 7
+  - level: 8
+  levelDescriptions:
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  levelAddInfos:
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 

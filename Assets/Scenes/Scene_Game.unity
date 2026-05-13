@@ -829,7 +829,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1900860596}
-  - {fileID: 1776548394}
   - {fileID: 785189485}
   - {fileID: 1835682872}
   - {fileID: 260136714}
@@ -4824,7 +4823,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1829272062}
   - {fileID: 993341814}
   - {fileID: 991761963}
   - {fileID: 1738558156}
@@ -13445,10 +13443,24 @@ MonoBehaviour:
     - definition: {fileID: 11400000, guid: 8f3b7150a6772dd48833356cfa7f81b4, type: 2}
       prefab: {fileID: 5649188341972359735, guid: 0d39f86ffea50df43bdae7965a0fc6da,
         type: 3}
+    - definition: {fileID: 11400000, guid: ba7b8cc4d969123409c57042acfaefe8, type: 2}
+      prefab: {fileID: 3912402837701340767, guid: c922daa6a352e924c97f68557ead3406,
+        type: 3}
   - characterId: yoonseol
     skills:
     - definition: {fileID: 11400000, guid: 5a919af6feb5f0b42b44d7e9784a7b21, type: 2}
       prefab: {fileID: 5243818757162806966, guid: e4520b4cf630ce64bbe77cea38120ebf,
+        type: 3}
+    - definition: {fileID: 11400000, guid: 176470f9fc9725a4b8173c2da88f92dd, type: 2}
+      prefab: {fileID: 3991592632795931640, guid: c4b93b65964da2d45ba0c8d30ca331ff,
+        type: 3}
+  - characterId: harin
+    skills:
+    - definition: {fileID: 11400000, guid: ee2b804efe815c046ae2c7842c496ab0, type: 2}
+      prefab: {fileID: 6848772423557377901, guid: 761a1ec71d3c7d341ba88dcadf479959,
+        type: 3}
+    - definition: {fileID: 11400000, guid: 5de8bd979f3f75741837719ddb516701, type: 2}
+      prefab: {fileID: 1898139017280662815, guid: c8e998f4d2e6f4f4ab46a1d534f38176,
         type: 3}
   totalCardCount: 5
   exclusiveWeightMultiplier: 1.5
@@ -13696,54 +13708,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1771699545}
   m_CullTransparentMesh: 1
---- !u!1 &1776548393
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1776548394}
-  - component: {fileID: 1776548395}
-  m_Layer: 0
-  m_Name: DebugRuntimeHUD
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1776548394
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1776548393}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 33406060}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1776548395
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1776548393}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 109b0e0a82616294b9698c29d1dbb4a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DebugRuntimeHUD
-  playerExp: {fileID: 2030997280}
-  enemySpawner: {fileID: 1075071068}
-  visible: 1
-  toggleKey: 291
 --- !u!1 &1776668375
 GameObject:
   m_ObjectHideFlags: 0
@@ -13950,69 +13914,6 @@ MonoBehaviour:
   autoSave: 1
   autoSaveIntervalSeconds: 5
   log: 1
---- !u!1 &1829272061
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1829272062}
-  - component: {fileID: 1829272063}
-  m_Layer: 0
-  m_Name: LevelUpRuntimeHardResetOnPlay
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1829272062
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1829272061}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 656810170}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1829272063
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1829272061}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0239bcd8971588446b428c2783575a3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LevelUpRuntimeHardResetOnPlay
-  runtimeState: {fileID: 0}
-  typeNameContains:
-  - skillruntimestate
-  - runtimestate
-  resetMethodNames:
-  - ClearAll
-  - Reset
-  - ResetRuntime
-  - HardReset
-  fieldNameContains:
-  - level
-  - levels
-  - runtime
-  - state
-  - owned
-  - acquire
-  - slot
-  - slots
-  log: 0
 --- !u!1 &1835682871
 GameObject:
   m_ObjectHideFlags: 0
@@ -14699,55 +14600,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1895592328}
   m_CullTransparentMesh: 1
---- !u!1 &1898693001
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1898693002}
-  - component: {fileID: 1898693003}
-  m_Layer: 0
-  m_Name: Pool_Yeolcham
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1898693002
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1898693001}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2032508134}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1898693003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1898693001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e9332755d83020b4f949b987fa5bbcfb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectilePool2D
-  prefab: {fileID: 6179709262402554135, guid: 27b61891cda39b84ba0b06c3120391fb, type: 3}
-  prewarmCount: 20
-  prewarmPerFrame: 3
-  prewarmOnStart: 1
-  maxCount: 200
 --- !u!1 &1900860595
 GameObject:
   m_ObjectHideFlags: 0
@@ -15743,96 +15595,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da8da4174cd31514f9a6c6a6cdb70f44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDashController
---- !u!1 &2032508131
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2032508134}
-  - component: {fileID: 2032508133}
-  - component: {fileID: 2032508132}
-  m_Layer: 0
-  m_Name: Weapon_Yeolcham
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2032508132
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2032508131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f90665054930c0c4fba04cd93318594f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::YeolchamWeapon2D
-  pool: {fileID: 1898693003}
-  enemyMask:
-    serializedVersion: 2
-    m_Bits: 65536
-  baseDamage: 10
-  baseCooldown: 4
-  baseSlashRadius: 3
-  slashLifetime: 0.5
-  outerRingRatio: 0.7
-  outerDamageMultiplier: 1.3
-  innerDamageMultiplier: 0.7
-  damagePerLevel: 0.15
-  awakeningLevel: 7
-  awakeningCooldownReduction: 0.3
-  awakeningBleedDuration: 3
-  awakeningBleedDpsRatio: 0.1
-  enableLogs: 0
---- !u!114 &2032508133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2032508131}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad65d65a81b9e4f409c9d653e688da83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LevelableSkillMarker2D
-  debugSkillId: yeolcham
-  maxLevel: 8
-  level: 0
-  forwardLevelToChildren: 1
-  forwardMethodNames:
-  - ApplyLevel
-  - SetLevel
-  - SetSkillLevel
-  - UpgradeLevel
-  - OnLevelChanged
-  - OnAttached
-  - OnAttaced
-  - SetConfig
-  - Initialize
-  log: 1
---- !u!4 &2032508134
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2032508131}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1898693002}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2039012561
 GameObject:
   m_ObjectHideFlags: 0
@@ -17006,4 +16768,3 @@ SceneRoots:
   - {fileID: 353430432}
   - {fileID: 1687929295}
   - {fileID: 1584220755}
-  - {fileID: 2032508134}

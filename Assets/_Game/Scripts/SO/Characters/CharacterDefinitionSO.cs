@@ -73,6 +73,10 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     [Tooltip("궁극기 실행 로직 프리팹입니다.")]
     [SerializeField] private GameObject ultimateResolverPrefab;
 
+    [Header("Unique Passive")]
+    [Tooltip("Unique starting passive ID for this character. Runtime is still bridged by CharacterPassiveManager2D during migration.")]
+    [SerializeField] private string uniquePassiveId;
+
     // ─── 지원 캐릭터 전용 ──────────────────────────────
 
     [Header("지원 캐릭터 전용")]
@@ -149,6 +153,7 @@ public sealed class CharacterDefinitionSO : ScriptableObject
     public string UltimateSkillId => ultimateSkillId;
     public UltimateDataSO UltimateData => ultimateData;
     public GameObject UltimateResolverPrefab => ultimateResolverPrefab;
+    public string UniquePassiveId => uniquePassiveId;
     public float SupportDamageMultiplier => supportDamageMultiplier;
     public GameObject SupportVisualPrefab => supportVisualPrefab;
     public SupportBuffData2D SupportBuff => supportBuff;

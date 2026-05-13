@@ -19,15 +19,28 @@ public sealed class StageProgressSaveData
     /// <summary>해금된 캐릭터 ID 목록입니다.</summary>
     public List<string> unlockedCharacterIds = new List<string>(8);
 
+    /// <summary>Saved Story Continue point. This is the source for the title Continue button.</summary>
+    public StoryContinueCheckpointSaveData continueCheckpoint = StoryContinueCheckpointSaveData.None();
+
+    public void EnsureDefaults()
+    {
+        if (clearedStages == null) clearedStages = new List<int>(13);
+        if (unlockedCharacterIds == null) unlockedCharacterIds = new List<string>(8);
+        if (continueCheckpoint == null) continueCheckpoint = StoryContinueCheckpointSaveData.None();
+        continueCheckpoint.EnsureDefaults();
+    }
+
     /// <summary>해당 스테이지가 클리어되었는지 확인합니다.</summary>
     public bool IsCleared(int stageIndex)
     {
+        EnsureDefaults();
         return clearedStages.Contains(stageIndex);
     }
 
     /// <summary>스테이지 클리어를 기록합니다.</summary>
     public void MarkCleared(int stageIndex)
     {
+        EnsureDefaults();
         if (!clearedStages.Contains(stageIndex))
             clearedStages.Add(stageIndex);
 
@@ -38,6 +51,7 @@ public sealed class StageProgressSaveData
     /// <summary>캐릭터 해금을 기록합니다.</summary>
     public void UnlockCharacter(string characterId)
     {
+        EnsureDefaults();
         if (string.IsNullOrWhiteSpace(characterId)) return;
         if (!unlockedCharacterIds.Contains(characterId))
             unlockedCharacterIds.Add(characterId);
@@ -46,6 +60,7 @@ public sealed class StageProgressSaveData
     /// <summary>해당 캐릭터가 해금되었는지 확인합니다.</summary>
     public bool IsCharacterUnlocked(string characterId)
     {
+        EnsureDefaults();
         if (string.IsNullOrWhiteSpace(characterId)) return false;
         return unlockedCharacterIds.Contains(characterId);
     }
@@ -53,7 +68,43 @@ public sealed class StageProgressSaveData
     /// <summary>해당 스테이지에 진입 가능한지 확인합니다.</summary>
     public bool CanEnter(int stageIndex)
     {
+        EnsureDefaults();
         if (stageIndex <= 0) return true;
         return stageIndex <= maxReachedStage;
     }
+}
+
+[Serializable]
+public sealed class StoryContinueCheckpointSaveData
+{
+    public StoryContinueCheckpointKind checkpointKind = StoryContinueCheckpointKind.None;
+    public int stageIndex = -1;
+    public string sceneName;
+    public string storyId;
+
+    public static StoryContinueCheckpointSaveData None()
+    {
+        return new StoryContinueCheckpointSaveData
+        {
+            checkpointKind = StoryContinueCheckpointKind.None,
+            stageIndex = -1,
+            sceneName = string.Empty,
+            storyId = string.Empty
+        };
+    }
+
+    public void EnsureDefaults()
+    {
+        if (stageIndex < -1) stageIndex = -1;
+        if (sceneName == null) sceneName = string.Empty;
+        if (storyId == null) storyId = string.Empty;
+    }
+}
+
+public enum StoryContinueCheckpointKind
+{
+    None = 0,
+    StageStart = 1,
+    StoryLobby = 2,
+    StoryScene = 3
 }

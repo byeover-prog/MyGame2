@@ -1,151 +1,152 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 뇌운입니다.
-/// 가장 가까운 적 위치에 고정 구름을 소환하고, 구름이 범위 틱 피해를 줍니다.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class NoeunWeapon2D : CharacterSkillWeaponBase
 {
-    [Header("뇌운 설정")]
-    [Tooltip("구름 풀입니다.")]
+    [Header("뇌운 설정 — 풀 2개")]
+    [Tooltip("구름 본체 풀입니다.")]
     [SerializeField] private ProjectilePool2D cloudPool;
 
-    [Tooltip("1레벨 기준 구름 반경입니다. (기획: 1.0)")]
-    [SerializeField] private float cloudRadius = 1.0f;
+    [Tooltip("번개 자식 풀입니다. NoeunCloud2D로 전달됨.")]
+    [SerializeField] private ProjectilePool2D boltPool;
 
-    [Tooltip("구름이 피해를 주는 간격입니다. (기획: 0.5초)")]
-    [SerializeField] private float cloudTickInterval = 0.5f;
+    [Header("기본 수치")]
+    [Tooltip("번개 폭발 범위(유닛)입니다. 레벨당 +10% 증가.")]
+    [SerializeField] private float baseBoltRadius = 1.0f;
 
-    [Tooltip("구름 지속 시간입니다.")]
-    [SerializeField] private float baseDuration = 4f;
+    [Tooltip("구름 지속 시간(초)입니다.")]
+    [SerializeField] private float cloudLifetime = 5.0f;
 
-    [Tooltip("기본 동시 활성 구름 수입니다.")]
-    [SerializeField] private int baseCloudCount = 1;
+    [Tooltip("번개 발사 간격(초)입니다.")]
+    [SerializeField] private float boltInterval = 0.5f;
 
-    [Tooltip("구름 위치를 적 중심보다 살짝 위로 띄웁니다.")]
-    [SerializeField] private float cloudYOffset = 1.1f;
+    [Tooltip("구름이 적을 따라가는 속도(유닛/초). 적보다 살짝 빠르게.")]
+    [SerializeField] private float cloudFollowSpeed = 4.0f;
 
-    [Tooltip("레벨당 피해 증가 비율입니다. (기획: +10%)")]
+    [Tooltip("초기 구름 스폰 시 플레이어로부터의 반경(유닛). 0이면 플레이어 위치.")]
+    [SerializeField] private float spawnRadius = 1.5f;
+
+    [Tooltip("구름 초기 타겟 탐색 최대 반경입니다.")]
+    [SerializeField] private float initialSeekRadius = 12f;
+
+    [Header("레벨 스케일링")]
+    [Tooltip("레벨당 피해량 증가 비율입니다. 0.10 = +10%.")]
     [SerializeField] private float damagePerLevel = 0.10f;
 
-    [Tooltip("레벨당 범위 증가 비율입니다. (기획: +10%)")]
+    [Tooltip("레벨당 번개 폭발 범위 증가 비율입니다. 0.10 = +10%.")]
     [SerializeField] private float radiusPerLevel = 0.10f;
 
-    [Header("각성")]
-    [Tooltip("이 레벨부터 추가 구름 수를 적용합니다.")]
+    [Header("각성 (Lv7+)")]
     [SerializeField] private int awakeningLevel = 7;
 
-    [Tooltip("각성 시 증가하는 동시 활성 구름 수입니다.")]
-    [SerializeField] private int awakeningExtraCount = 2;
+    [Tooltip("각성 시 추가 시전 횟수.")]
+    [SerializeField] private int awakeningExtraCasts = 3;
 
     [Header("디버그")]
     [SerializeField] private bool debugLog = false;
 
-    private readonly List<NoeunCloudArea2D> _activeClouds = new List<NoeunCloudArea2D>(8);
-
     protected override void Awake()
     {
         base.Awake();
+
         element = DamageElement2D.Electric;
         baseDamage = 5;
-        baseCooldown = 4.0f;
+        baseCooldown = 5.0f;
+        balanceId = "weapon_noeun";
 
-        if (cloudPool == null)
-            cloudPool = GetComponentInChildren<ProjectilePool2D>(true);
-    }
-
-    protected override void OnOwnerBound()
-    {
-        CleanupCloudList();
+        // 풀 자동 탐색 (이름 기반)
+        if (cloudPool == null || boltPool == null)
+        {
+            ProjectilePool2D[] pools = GetComponentsInChildren<ProjectilePool2D>(true);
+            for (int i = 0; i < pools.Length; i++)
+            {
+                ProjectilePool2D p = pools[i];
+                if (p == null) continue;
+                if (cloudPool == null && (p.name.Contains("Cloud") || p.name.Contains("구름")))
+                    cloudPool = p;
+                else if (boltPool == null && (p.name.Contains("Bolt") || p.name.Contains("번개")))
+                    boltPool = p;
+            }
+        }
     }
 
     private void Update()
     {
         if (owner == null) return;
-        if (cloudPool == null) return;
-
-        CleanupCloudList();
-
-        if (_activeClouds.Count >= GetMaxCloudCount())
-            return;
+        if (cloudPool == null || boltPool == null) return;
 
         cooldownTimer -= Time.deltaTime;
         if (cooldownTimer > 0f) return;
 
-        if (!TryGetNearestEnemy(out EnemyRegistryMember2D target) || target == null)
-            return;
-
-        SpawnCloud(target);
-        cooldownTimer = ScaleCooldown(baseCooldown, 0.1f);
+        Fire();
+        cooldownTimer = ScaleCooldown(GetBalanceCooldown(), 0.1f);
     }
 
-    private void SpawnCloud(EnemyRegistryMember2D target)
+    private void Fire()
     {
-        Vector3 spawnPos = target.Transform != null
-            ? target.Transform.position + Vector3.up * cloudYOffset
-            : (Vector3)target.Position + Vector3.up * cloudYOffset;
+        Vector3 ownerPos = owner.position;
+        int finalDamage = GetFinalDamage();
+        float finalRadius = GetFinalRadius();
+        int castCount = GetCastCount();
 
-        NoeunCloudArea2D cloud = cloudPool.Get<NoeunCloudArea2D>(spawnPos, Quaternion.identity);
-        if (cloud == null)
-            return;
+        for (int i = 0; i < castCount; i++)
+        {
+            // 다발 발사 시 플레이어 주위에 분산
+            Vector3 spawnPos = ownerPos;
+            if (castCount > 1)
+            {
+                float angle = (i / (float)castCount) * 2f * Mathf.PI;
+                spawnPos += new Vector3(
+                    Mathf.Cos(angle) * spawnRadius,
+                    Mathf.Sin(angle) * spawnRadius,
+                    0f);
+            }
+            else if (spawnRadius > 0.01f)
+            {
+                spawnPos += new Vector3(0f, spawnRadius, 0f);
+            }
 
-        cloud.BindReturnCallback(HandleCloudReturned);
-        cloud.Init(
-            enemyMask: enemyMask,
-            damageElement: element,
-            tickDamage: GetCloudDamage(),
-            tickInterval: cloudTickInterval,
-            radius: GetCloudRadius(),
-            duration: baseDuration,
-            startPosition: spawnPos,
-            enableLog: debugLog
-        );
+            var cloud = cloudPool.Get<NoeunCloud2D>(spawnPos, Quaternion.identity);
+            if (cloud == null) continue;
 
-        _activeClouds.Add(cloud);
+            cloud.Initialize(
+                damage: finalDamage,
+                boltRadius: finalRadius,
+                lifetime: cloudLifetime,
+                boltInterval: boltInterval,
+                followSpeed: cloudFollowSpeed,
+                seekRadius: initialSeekRadius,
+                element: element,
+                boltPool: boltPool);
+        }
 
         if (debugLog)
-            CombatLog.Log($"[뇌운] 구름 소환 | active={_activeClouds.Count}/{GetMaxCloudCount()}", this);
+            CombatLog.Log(
+                $"[뇌운] 구름 {castCount}개 소환! dmg={finalDamage} 범위={finalRadius:F2}",
+                this);
     }
 
-    private void HandleCloudReturned(NoeunCloudArea2D returnedCloud)
+    // ── 계산 헬퍼 ──
+
+    private int GetFinalDamage()
     {
-        for (int i = _activeClouds.Count - 1; i >= 0; i--)
-        {
-            if (_activeClouds[i] == null || _activeClouds[i] == returnedCloud)
-                _activeClouds.RemoveAt(i);
-        }
+        int finalBase = GetBalanceDamage();
+        float levelScale = 1f + damagePerLevel * Mathf.Max(0, level - 1);
+        return ScaleDamage(finalBase * levelScale);
     }
 
-    private void CleanupCloudList()
+    private float GetFinalRadius()
     {
-        for (int i = _activeClouds.Count - 1; i >= 0; i--)
-        {
-            NoeunCloudArea2D cloud = _activeClouds[i];
-            if (cloud == null || !cloud.gameObject.activeInHierarchy)
-                _activeClouds.RemoveAt(i);
-        }
+        float radiusScale = 1f + radiusPerLevel * Mathf.Max(0, level - 1);
+        return ScaleRadius(baseBoltRadius * radiusScale, 0.2f);
     }
 
-    private int GetCloudDamage()
+    private int GetCastCount()
     {
-        float damage = baseDamage * (1f + damagePerLevel * Mathf.Max(0, level - 1));
-        return ScaleDamage(damage);
-    }
-
-    private float GetCloudRadius()
-    {
-        float radius = cloudRadius * (1f + radiusPerLevel * Mathf.Max(0, level - 1));
-        return ScaleRadius(radius, 0.2f);
-    }
-
-    private int GetMaxCloudCount()
-    {
-        int count = baseCloudCount;
+        int count = 1;
         if (level >= awakeningLevel)
-            count += awakeningExtraCount;
-
+            count += awakeningExtraCasts;
         return Mathf.Max(1, count);
     }
 }

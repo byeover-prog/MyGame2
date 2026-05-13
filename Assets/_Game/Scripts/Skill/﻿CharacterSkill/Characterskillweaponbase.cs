@@ -1,34 +1,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 캐릭터 전용 스킬 공통 베이스입니다.
-/// owner / 레벨 / 비주얼 / 플레이어 스탯 접근만 공통으로 처리합니다.
-/// </summary>
 [DisallowMultipleComponent]
 public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
 {
     [Header("공통 설정")]
+    [Tooltip("이 스킬의 원본 SO입니다. 비워두면 기존 JSON 또는 fallback 수치를 사용합니다.")]
+    [SerializeField] protected CharacterSkillDefinitionSO skillDefinition;
+
     [Tooltip("적 레이어 마스크입니다.")]
     [SerializeField] protected LayerMask enemyMask;
 
-    [Tooltip("이 스킬이 사용하는 속성입니다.")]
+    [Tooltip("이 스킬이 사용하는 속성입니다. SO가 있으면 SO의 속성으로 덮어씁니다.")]
     [SerializeField] protected DamageElement2D element = DamageElement2D.Physical;
 
     [Header("비주얼")]
     [Tooltip("ISkillVisual 구현체가 붙은 자식 컴포넌트입니다. 비워두면 자동 탐색합니다.")]
     [SerializeField] protected Component visualBehaviour;
 
-    [Header("밸런스(기본값 / Fallback)")]
-    [Tooltip("1레벨 기준 피해량입니다. skill_balance.json이 있으면 덮어씁니다.")]
+    [Header("밸런스 기본값 / Fallback")]
+    [Tooltip("1레벨 기준 피해량입니다. SO 또는 skill_balance.json 값이 있으면 덮어씁니다.")]
     [SerializeField] protected int baseDamage = 15;
 
-    [Tooltip("1레벨 기준 쿨다운입니다. skill_balance.json이 있으면 덮어씁니다.")]
+    [Tooltip("1레벨 기준 쿨다운입니다. SO 또는 skill_balance.json 값이 있으면 덮어씁니다.")]
     [SerializeField] protected float baseCooldown = 1.0f;
 
-    [Tooltip("skill_balance.json에서 찾을 ID입니다. 비우면 JSON 오버라이드를 사용하지 않습니다.\n" +
-             "예: weapon_bingju, weapon_noeun")]
+    [Tooltip("skill_balance.json에서 찾을 ID입니다. 비우면 SO의 SkillId를 사용합니다.")]
     [SerializeField] protected string balanceId;
+
+    [Header("진단")]
+    [Tooltip("SO/JSON 밸런스 적용 상태를 로그로 출력합니다.")]
+    [SerializeField] protected bool balanceDebugLog = false;
 
     protected Transform owner;
     protected int level = 1;
@@ -37,7 +39,12 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
     protected PlayerCombatStats2D ownerStats;
     protected PlayerHealth ownerHealth;
 
-    // JSON 밸런스에서 읽은 레벨별 최종값. -1이면 미적용(fallback 사용).
+    // SO 밸런스 캐시
+    protected SkillLevelBalanceData2D soBalance;
+    protected bool soBalanceApplied;
+
+    // JSON 밸런스 캐시 — ★ 타입 SkillBalanceDB2D.SkillRow2D (서비스 시그니처 기준)
+    protected SkillBalanceDB2D.SkillRow2D jsonRow;
     protected int jsonDamage = -1;
     protected float jsonCooldown = -1f;
     protected bool jsonBalanceApplied;
@@ -45,6 +52,7 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
     protected virtual void Awake()
     {
         ResolveVisual();
+        SyncDefinitionBasicInfo();
     }
 
     protected virtual void OnDisable()
@@ -52,7 +60,6 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
         if (visual != null)
             visual.Stop();
     }
-    
 
     public virtual void OnAttached(Transform newOwner)
     {
@@ -60,12 +67,12 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
         cooldownTimer = 0f;
         CacheOwnerRefs();
         ResolveVisual();
+        RefreshBalanceCache();
         OnOwnerBound();
     }
 
     /// <summary>
-    /// 인터페이스 오타 대응(OnAttaced). 프로젝트 ILevelableSkill이 이 이름으로 정의되어 있어
-    /// 파생 클래스가 어느 쪽을 오버라이드하든 동작하도록 두 메서드 모두 구현합니다.
+    /// 인터페이스 오타(OnAttaced) 대응. 둘 다 유지.
     /// </summary>
     public virtual void OnAttaced(Transform newOwner)
     {
@@ -75,44 +82,74 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
     public virtual void ApplyLevel(int newLevel)
     {
         level = Mathf.Max(1, newLevel);
-
-        // skill_balance.json 값을 읽어 baseDamage/baseCooldown 오버라이드
-        TryLoadJsonBalance();
-
+        RefreshBalanceCache();
         OnLevelApplied();
     }
 
     protected virtual void OnOwnerBound() { }
     protected virtual void OnLevelApplied() { }
-    
-    // JSON 밸런스 로드
-    /// <summary>
-    /// skill_balance.json에서 현재 level 기준 최종 damage/cooldown을 계산해
-    /// jsonDamage / jsonCooldown에 저장합니다.
-    /// balanceId가 비어있거나 서비스가 로드되지 않았으면 fallback(baseDamage/baseCooldown)을 그대로 사용.
-    /// </summary>
+
+    protected void RefreshBalanceCache()
+    {
+        SyncDefinitionBasicInfo();
+        TryLoadSoBalance();
+        TryLoadJsonBalance();
+
+        if (balanceDebugLog)
+        {
+            string soState = soBalanceApplied ? "SO 적용" : "SO 없음";
+            string jsonState = jsonBalanceApplied ? "JSON 적용" : "JSON 없음";
+            Debug.Log($"[전용 스킬 밸런스] {name} | id={GetBalanceId()} | lv={level} | {soState} | {jsonState}", this);
+        }
+    }
+
+    private void SyncDefinitionBasicInfo()
+    {
+        if (skillDefinition == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(balanceId))
+            balanceId = skillDefinition.SkillId;
+
+        element = skillDefinition.Element;
+    }
+
+    private void TryLoadSoBalance()
+    {
+        soBalance = null;
+        soBalanceApplied = false;
+
+        if (skillDefinition == null)
+            return;
+
+        soBalance = skillDefinition.GetLevelBalance(level);
+        soBalanceApplied = soBalance != null;
+    }
+
     private void TryLoadJsonBalance()
     {
         jsonBalanceApplied = false;
+        jsonRow = null;
         jsonDamage = -1;
         jsonCooldown = -1f;
 
-        if (string.IsNullOrEmpty(balanceId)) return;
+        string id = GetBalanceId();
+        if (string.IsNullOrWhiteSpace(id)) return;
         if (!SkillBalanceService2D.IsLoaded) return;
 
-        if (!SkillBalanceService2D.TryGet(balanceId, out var row) || row == null)
+        if (!SkillBalanceService2D.TryGet(id, out var row) || row == null)
             return;
+
+        jsonRow = row;
 
         int lvMinus1 = Mathf.Max(0, level - 1);
 
-        // damage
         if (row.damage >= 0)
         {
             int final = row.damage + row.damageAddPerLevel * lvMinus1;
             jsonDamage = Mathf.Max(0, final);
         }
 
-        // cooldown
         if (row.cooldown >= 0f)
         {
             float final = row.cooldown + row.cooldownAddPerLevel * lvMinus1;
@@ -122,23 +159,243 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
         jsonBalanceApplied = (jsonDamage >= 0) || (jsonCooldown >= 0f);
     }
 
-    /// <summary>
-    /// JSON 우선, 없으면 코드 fallback. 파생 클래스에서 피해 계산 시 이 값을 기준으로 사용.
-    /// </summary>
-    protected int GetBalanceDamage()
+    protected string GetBalanceId()
     {
-        return jsonDamage >= 0 ? jsonDamage : baseDamage;
+        if (!string.IsNullOrWhiteSpace(balanceId))
+            return balanceId;
+
+        if (skillDefinition != null)
+            return skillDefinition.SkillId;
+
+        return string.Empty;
     }
 
     /// <summary>
-    /// JSON 우선, 없으면 코드 fallback. 파생 클래스에서 쿨다운 계산 시 이 값을 기준으로 사용.
+    /// 1순위: SO  /  2순위: JSON  /  3순위: baseDamage (fallback)
+    /// </summary>
+    protected int GetBalanceDamage()
+    {
+        if (TryGetBalanceInt("damage", out int soOrJsonDamage))
+            return soOrJsonDamage;
+
+        if (jsonDamage >= 0)
+            return jsonDamage;
+
+        return baseDamage;
+    }
+
+    /// <summary>
+    /// 1순위: SO  /  2순위: JSON  /  3순위: baseCooldown (fallback)
     /// </summary>
     protected float GetBalanceCooldown()
     {
-        return jsonCooldown >= 0f ? jsonCooldown : baseCooldown;
+        if (TryGetBalanceFloat("cooldown", out float soOrJsonCooldown))
+            return Mathf.Max(0.01f, soOrJsonCooldown);
+
+        if (jsonCooldown >= 0f)
+            return jsonCooldown;
+
+        return baseCooldown;
     }
-    
-    // 내부 유틸
+
+    protected float GetBalanceFloat(string key, float fallback)
+    {
+        if (TryGetBalanceFloat(key, out float value))
+            return value;
+
+        return fallback;
+    }
+
+    protected int GetBalanceInt(string key, int fallback)
+    {
+        if (TryGetBalanceInt(key, out int value))
+            return value;
+
+        return fallback;
+    }
+
+    protected bool GetBalanceBool(string key, bool fallback)
+    {
+        if (soBalance != null && soBalance.TryGetBool(key, out bool value))
+            return value;
+
+        return fallback;
+    }
+
+    protected string GetBalanceString(string key, string fallback)
+    {
+        if (soBalance != null && soBalance.TryGetString(key, out string value))
+            return value;
+
+        return fallback;
+    }
+
+    protected bool TryGetBalanceFloat(string key, out float value)
+    {
+        value = 0f;
+
+        if (soBalance != null && soBalance.TryGetFloat(key, out value))
+            return true;
+
+        if (TryGetJsonFloat(key, out value))
+            return true;
+
+        return false;
+    }
+
+    protected bool TryGetBalanceInt(string key, out int value)
+    {
+        value = 0;
+
+        if (soBalance != null && soBalance.TryGetInt(key, out value))
+            return true;
+
+        if (TryGetJsonInt(key, out value))
+            return true;
+
+        return false;
+    }
+
+    private bool TryGetJsonFloat(string key, out float value)
+    {
+        value = 0f;
+
+        if (jsonRow == null)
+            return false;
+
+        int lvMinus1 = Mathf.Max(0, level - 1);
+        string normalized = NormalizeKey(key);
+
+        switch (normalized)
+        {
+            case "cooldown":
+                return TryUseJsonFloat(jsonRow.cooldown, jsonRow.cooldownAddPerLevel, lvMinus1, out value);
+
+            case "speed":
+            case "projectilespeed":
+            case "arrowspeed":
+                return TryUseJsonFloat(jsonRow.speed, jsonRow.speedAddPerLevel, lvMinus1, out value);
+
+            case "life":
+            case "lifetime":
+            case "projectilelifetime":
+            case "arrowmaxflighttime":
+                return TryUseJsonFloat(jsonRow.life, jsonRow.lifeAddPerLevel, lvMinus1, out value);
+
+            case "hitinterval":
+            case "interval":
+            case "boltinterval":
+                return TryUseJsonFloat(jsonRow.hitInterval, jsonRow.hitIntervalAddPerLevel, lvMinus1, out value);
+
+            case "orbitradius":
+                return TryUseJsonFloat(jsonRow.orbitRadius, jsonRow.orbitRadiusAddPerLevel, lvMinus1, out value);
+
+            case "orbitspeed":
+                return TryUseJsonFloat(jsonRow.orbitSpeed, jsonRow.orbitSpeedAddPerLevel, lvMinus1, out value);
+
+            case "active":
+                return TryUseJsonFloat(jsonRow.active, jsonRow.activeAddPerLevel, lvMinus1, out value);
+
+            case "burstinterval":
+                return TryUseJsonFloat(jsonRow.burstInterval, jsonRow.burstIntervalAddPerLevel, lvMinus1, out value);
+
+            case "spindps":
+                return TryUseJsonFloat(jsonRow.spinDps, jsonRow.spinDpsAddPerLevel, lvMinus1, out value);
+
+            case "radius":
+            case "explosionradius":
+            case "hitradius":
+            case "boltradius":
+                return TryUseJsonFloat(jsonRow.explosionRadius, jsonRow.explosionRadiusAddPerLevel, lvMinus1, out value);
+
+            case "explodedistance":
+                return TryUseJsonFloat(jsonRow.explodeDistance, jsonRow.explodeDistanceAddPerLevel, lvMinus1, out value);
+
+            case "childspeed":
+                return TryUseJsonFloat(jsonRow.childSpeed, jsonRow.childSpeedAddPerLevel, lvMinus1, out value);
+
+            case "slowrate":
+            case "frostslowmultiplier":
+                return TryUseJsonFloat(jsonRow.slowRate, jsonRow.slowRateAddPerLevel, lvMinus1, out value);
+
+            case "slowseconds":
+            case "slowduration":
+            case "frostduration":
+            case "duration":
+                return TryUseJsonFloat(jsonRow.slowSeconds, jsonRow.slowSecondsAddPerLevel, lvMinus1, out value);
+        }
+
+        return false;
+    }
+
+    private bool TryGetJsonInt(string key, out int value)
+    {
+        value = 0;
+
+        if (jsonRow == null)
+            return false;
+
+        int lvMinus1 = Mathf.Max(0, level - 1);
+        string normalized = NormalizeKey(key);
+
+        switch (normalized)
+        {
+            case "damage":
+                return TryUseJsonInt(jsonRow.damage, jsonRow.damageAddPerLevel, lvMinus1, out value);
+
+            case "count":
+            case "castcount":
+            case "shotcount":
+            case "projectilecount":
+                return TryUseJsonInt(jsonRow.count, jsonRow.countAddPerLevel, lvMinus1, out value);
+
+            case "bouncecount":
+                return TryUseJsonInt(jsonRow.bounceCount, jsonRow.bounceAddPerLevel, lvMinus1, out value);
+
+            case "chaincount":
+                return TryUseJsonInt(jsonRow.chainCount, jsonRow.chainAddPerLevel, lvMinus1, out value);
+
+            case "splitcount":
+                return TryUseJsonInt(jsonRow.splitCount, jsonRow.splitAddPerLevel, lvMinus1, out value);
+        }
+
+        return false;
+    }
+
+    private static bool TryUseJsonFloat(float baseValue, float addPerLevel, int lvMinus1, out float value)
+    {
+        value = 0f;
+
+        if (baseValue < 0f)
+            return false;
+
+        value = baseValue + addPerLevel * lvMinus1;
+        return true;
+    }
+
+    private static bool TryUseJsonInt(int baseValue, int addPerLevel, int lvMinus1, out int value)
+    {
+        value = 0;
+
+        if (baseValue < 0)
+            return false;
+
+        value = baseValue + addPerLevel * lvMinus1;
+        return true;
+    }
+
+    private static string NormalizeKey(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return string.Empty;
+
+        return key
+            .Trim()
+            .Replace("_", "")
+            .Replace("-", "")
+            .Replace(" ", "")
+            .ToLowerInvariant();
+    }
 
     protected void CacheOwnerRefs()
     {
@@ -179,8 +436,6 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
 
         visual = null;
     }
-    
-    // PlayerCombatStats2D 배율 접근자
 
     protected float DamageMul => ownerStats != null ? Mathf.Max(0.01f, ownerStats.DamageMul) : 1f;
     protected float CooldownMul => ownerStats != null ? Mathf.Max(0.01f, ownerStats.CooldownMul) : 1f;
@@ -200,8 +455,6 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
     {
         return Mathf.Max(minimum, levelScaledRadius * AreaMul);
     }
-    
-    // 적 조회 (EnemyRegistry2D 직접 경유 — O(N), Physics 쿼리 없음)
 
     protected bool TryGetNearestEnemy(out EnemyRegistryMember2D enemy)
     {
@@ -221,10 +474,6 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
         return EnemyRegistry2D.TryGetFarthest(owner.position, out enemy);
     }
 
-    /// <summary>
-    /// 주어진 중심/반경 안의 적들을 results 리스트에 채워 반환합니다.
-    /// GC 0을 위해 호출자가 List를 재사용해야 합니다.
-    /// </summary>
     protected int CollectEnemiesInRadius(Vector2 center, float radius, List<EnemyRegistryMember2D> results)
     {
         if (results == null) return 0;
@@ -247,10 +496,6 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
         return results.Count;
     }
 
-    /// <summary>
-    /// 활성화된 적 중 랜덤하게 count명을 고릅니다.
-    /// Fisher-Yates 셔플. results/scratch는 호출자가 재사용합니다.
-    /// </summary>
     protected int PickRandomEnemies(int count, List<EnemyRegistryMember2D> results, List<EnemyRegistryMember2D> scratch)
     {
         if (results == null || scratch == null) return 0;
@@ -280,23 +525,15 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
         scratch.Clear();
         return results.Count;
     }
-    
-    // 피해 적용 (DamageUtil2D 경유 원칙 준수)
-    /// <summary>
-    /// 적에게 피해를 적용합니다. 항상 DamageUtil2D를 경유해 속성 시너지/팝업/흡혈 이벤트가 발동합니다.
-    /// </summary>
+
     protected bool TryApplyDamageToEnemy(EnemyRegistryMember2D enemy, int damage)
     {
         if (enemy == null || !enemy.IsValidTarget) return false;
         if (damage <= 0) return false;
 
-        // EnemyRegistryMember2D는 적 루트에 붙어 있으므로 GameObject 버전으로 바로 호출
         return DamageUtil2D.TryApplyDamage(enemy.gameObject, damage, element);
     }
 
-    /// <summary>
-    /// Collider 기반 피해 적용(OverlapCircle 결과 등). Collider가 팝업 위치 계산에 활용됩니다.
-    /// </summary>
     protected bool TryApplyDamageToCollider(Collider2D col, int damage)
     {
         if (col == null) return false;
@@ -304,10 +541,7 @@ public abstract class CharacterSkillWeaponBase : MonoBehaviour, ILevelableSkill
 
         return DamageUtil2D.TryApplyDamage(col, damage, element);
     }
-    
-    /// <summary>
-    /// 적이 가진 IStatusReceiver 들에게 상태이상을 브로드캐스트합니다.
-    /// </summary>
+
     protected void ApplyStatus(EnemyRegistryMember2D enemy, StatusEffectInfo info)
     {
         if (enemy == null) return;

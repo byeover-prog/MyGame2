@@ -3704,52 +3704,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1990065393
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1990065395}
-  - component: {fileID: 1990065394}
-  m_Layer: 0
-  m_Name: UIRaycastProbe
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1990065394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1990065393}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7706f6dd1cfacf74aa930e78c25b424d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIRaycastProbe
-  mouseButton: 0
-  maxLogCount: 15
---- !u!4 &1990065395
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1990065393}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 970.46594, y: 673.96277, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1996056559
 GameObject:
   m_ObjectHideFlags: 0
@@ -4142,7 +4096,6 @@ GameObject:
   - component: {fileID: 2068763432}
   - component: {fileID: 2068763431}
   - component: {fileID: 2068763430}
-  - component: {fileID: 2068763434}
   m_Layer: 0
   m_Name: Btn_Start
   m_TagString: Untagged
@@ -4264,18 +4217,6 @@ RectTransform:
   m_AnchoredPosition: {x: -5.0200195, y: -3.26}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2068763434
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2068763429}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb1b4fc1ef03742408eeb8c245830919, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIButtonPointerProbe
 --- !u!1 &2078996521
 GameObject:
   m_ObjectHideFlags: 0
@@ -4564,7 +4505,6 @@ SceneRoots:
   - {fileID: 1533046841}
   - {fileID: 1175664419}
   - {fileID: 1645697063}
-  - {fileID: 1990065395}
   - {fileID: 2014446449}
   - {fileID: 1762927040}
   - {fileID: 33821112}

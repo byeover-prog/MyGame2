@@ -1,11 +1,3 @@
-// ──────────────────────────────────────────────
-// SkillDefinitionSO.cs
-// 모든 스킬(Active / Passive)의 공통 정의 SO
-//
-// 패시브 밸런스 수치는 PassiveBalanceTableSO에서 관리.
-// 이 SO는 스킬 정체성 + UI 표시 정보를 담당한다.
-// ──────────────────────────────────────────────
-
 using UnityEngine;
 
 namespace _Game.Skills
@@ -108,6 +100,16 @@ namespace _Game.Skills
         [SerializeField, Tooltip("패시브일 때 적용할 능력치 종류 (수치는 PassiveBalanceTableSO에서 관리)")]
         private PassiveStatType passiveStatType = PassiveStatType.None;
 
+        // ── D 패치: 게임플레이 수치 SO 연결 ──────────────
+
+        [Header("=== 게임플레이 수치 (수치 SO 연결) ===")]
+
+        [SerializeField, Tooltip(
+            "이 스킬의 게임플레이 수치를 담은 SO입니다.\n" +
+            "캐릭터 전용 스킬에만 사용합니다 (빙주, 뇌은, 설빙탄, 월첨, 검기, 폭발화살).\n" +
+            "공통 스킬과 패시브는 이 슬롯을 비워두세요.")]
+        private CharacterSkillDefinitionSO balanceData;
+
         // ── 프로퍼티 (읽기 전용) ───────────────────
 
         public string SkillId              => skillId;
@@ -117,6 +119,12 @@ namespace _Game.Skills
         public string TagKr                => tagKr;
         public int MaxLevel                => maxLevel;
         public PassiveStatType PassiveStatType => passiveStatType;
+
+        /// <summary>
+        /// D 패치: 캐릭터 전용 스킬 수치 SO.
+        /// 공통 스킬/패시브에서는 null. 캐릭터 전용 스킬만 값을 가짐.
+        /// </summary>
+        public CharacterSkillDefinitionSO BalanceData => balanceData;
 
         // ── 레벨별 설명 조회 ──────────────────────
 

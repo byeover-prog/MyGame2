@@ -22,14 +22,15 @@ MonoBehaviour:
     type: 3}
   animatorController: {fileID: 9100000, guid: d95c239ca35920741bd8007736940892, type: 2}
   basicSkillIcon: {fileID: 21300000, guid: 5c5b97ecbd09aa9498e31fa51f4f49cb, type: 3}
-  basicSkillId: 
+  basicSkillId: weapon_nakroebu
   startingSkill: {fileID: 11400000, guid: dc37c8bf22f65f64ebe0a1e1ecc24c0f, type: 2}
   ultimateSkillIcon: {fileID: 2102040697523899506, guid: f6efd088fb53b1c48b8e95cc6a591514,
     type: 3}
-  ultimateSkillId: 
+  ultimateSkillId: ult_hayul_thunder
   ultimateData: {fileID: 11400000, guid: 582d2343d81583741b553c80eaba6694, type: 2}
   ultimateResolverPrefab: {fileID: 4368902744537951787, guid: 1c2d85e0139b10d468742b714b3f44ca,
     type: 3}
+  uniquePassiveId: passive_hayul_dosa
   supportDamageMultiplier: 0.55
   supportVisualPrefab: {fileID: 2448833564552998235, guid: 4fef947d26cdffb4295575391fab7191,
     type: 3}
