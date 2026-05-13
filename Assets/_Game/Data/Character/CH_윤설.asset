@@ -28,6 +28,7 @@ MonoBehaviour:
   ultimateData: {fileID: 11400000, guid: 7d24d5eee34b41f47b5f089f3bfd1ae9, type: 2}
   ultimateResolverPrefab: {fileID: 3538057671869789501, guid: e6e848649e0ea16498e3fd9e18213e9c,
     type: 3}
+  uniquePassiveId: passive_yoonseol_hokhan
   supportDamageMultiplier: 0.55
   supportVisualPrefab: {fileID: 4612122562724480527, guid: 97de675c8da170447ac345cfdf15b906,
     type: 3}

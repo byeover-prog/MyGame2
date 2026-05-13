@@ -40,6 +40,7 @@ public sealed class MetaProfileSaveData2D
         if (upgrades == null) upgrades = new CharacterUpgradeCollectionSaveData2D();
         if (progression == null) progression = new CharacterProgressionCollectionSaveData2D();
         if (equipment == null) equipment = new CharacterEquipmentCollectionSaveData();
+        equipment.EnsureDefaults();
         if (questProgress == null) questProgress = new QuestProgressSaveData();
         if (stageProgress == null) stageProgress = new StageProgressSaveData();
         stageProgress.EnsureDefaults();

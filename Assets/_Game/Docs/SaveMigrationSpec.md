@@ -105,32 +105,30 @@ Current serialized capacity:
 8 legacy slots
 ```
 
-Decision for this step:
+Decision:
 
-Do not shrink saved slot data yet.
+The active equipped talisman slot count is now 6.
 
 Reason:
 
-There may already be test or future player saves with items in slots 6 and 7. Removing those slots now would either lose data or require an ownership policy that has not been implemented yet.
+The confirmed game rule is 6 equipped talismans. Keeping 8 active slots would keep gameplay, UI, and validators in conflict.
 
-Temporary rule:
+Compatibility rule:
 
-- Keep `CharacterEquipmentSaveData.MaxSlots` at 8 for save compatibility.
+- `CharacterEquipmentSaveData.MaxSlots` is 6.
 - Declare `CharacterEquipmentSaveData.TargetTalismanSlots = 6`.
-- UI and future RunSetup should eventually use the target 6 slots.
-- Migration must later decide what happens to items in legacy slots 6 and 7.
+- Old 8-slot saves are normalized during `EnsureDefaults()`.
+- Items found in legacy slots 6 and 7 are unequipped, not deleted.
+- If an overflow slot contains an item ID that is not represented in owned items, the migration preserves at least one owned count for that item.
 
-Final migration options:
+Rejected options:
 
 | Option | Behavior | Risk |
 |---|---|---|
-| Move extras to inventory | Unequip slots 6 and 7, keep owned counts. | Safest for players, requires official inventory owner. |
-| Keep hidden legacy slots | Save keeps 8, gameplay reads first 6 only. | Avoids data loss, but can confuse tools. |
+| Keep hidden legacy slots | Save keeps 8, gameplay reads first 6 only. | Avoids immediate loss, but keeps tools and designers confused. |
 | Delete extras | Drop slots 6 and 7. | Not acceptable without explicit user-facing reset policy. |
 
-Recommended future decision:
-
-Move extras to inventory after Equipment/Talisman ownership is unified.
+The current policy is the safe version of "move extras to inventory" using the existing owned item list until the Equipment/Talisman ownership is fully unified.
 
 ## Known Legacy Save Stores
 
@@ -156,5 +154,5 @@ After this baseline:
 - `SCV011` should stop failing because a migration path exists.
 - `SCV022` should stop failing because `soul` exists.
 - `SCV031` should stop failing because `continueCheckpoint` exists.
-- `SCV041` and `SCV042` should still fail until the 8->6 slot migration is implemented.
+- `SCV041` and `SCV042` should stop failing because the active save slot count is now 6 and legacy overflow slots are normalized.
 - `SCV050` should still fail until PlayerPrefs currency is migrated or retired.

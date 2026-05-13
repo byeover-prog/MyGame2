@@ -13443,28 +13443,22 @@ MonoBehaviour:
     - definition: {fileID: 11400000, guid: 8f3b7150a6772dd48833356cfa7f81b4, type: 2}
       prefab: {fileID: 5649188341972359735, guid: 0d39f86ffea50df43bdae7965a0fc6da,
         type: 3}
+    - definition: {fileID: 11400000, guid: ba7b8cc4d969123409c57042acfaefe8, type: 2}
+      prefab: {fileID: 3912402837701340767, guid: c922daa6a352e924c97f68557ead3406,
+        type: 3}
   - characterId: yoonseol
     skills:
     - definition: {fileID: 11400000, guid: 5a919af6feb5f0b42b44d7e9784a7b21, type: 2}
       prefab: {fileID: 5243818757162806966, guid: e4520b4cf630ce64bbe77cea38120ebf,
         type: 3}
-  - characterId: yoonseol
-    skills:
     - definition: {fileID: 11400000, guid: 176470f9fc9725a4b8173c2da88f92dd, type: 2}
       prefab: {fileID: 3991592632795931640, guid: c4b93b65964da2d45ba0c8d30ca331ff,
-        type: 3}
-  - characterId: hayul
-    skills:
-    - definition: {fileID: 11400000, guid: ba7b8cc4d969123409c57042acfaefe8, type: 2}
-      prefab: {fileID: 3912402837701340767, guid: c922daa6a352e924c97f68557ead3406,
         type: 3}
   - characterId: harin
     skills:
     - definition: {fileID: 11400000, guid: ee2b804efe815c046ae2c7842c496ab0, type: 2}
       prefab: {fileID: 6848772423557377901, guid: 761a1ec71d3c7d341ba88dcadf479959,
         type: 3}
-  - characterId: harin
-    skills:
     - definition: {fileID: 11400000, guid: 5de8bd979f3f75741837719ddb516701, type: 2}
       prefab: {fileID: 1898139017280662815, guid: c8e998f4d2e6f4f4ab46a1d534f38176,
         type: 3}

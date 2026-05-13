@@ -16,7 +16,8 @@ MonoBehaviour:
   displayName: "\uBE59\uC8FC"
   ownerCharacterId: yoonseol
   icon: {fileID: 0}
-  weaponPrefab: {fileID: 0}
+  weaponPrefab: {fileID: 5243818757162806966, guid: e4520b4cf630ce64bbe77cea38120ebf,
+    type: 3}
   element: 1
   maxLevel: 8
   levelBalances:

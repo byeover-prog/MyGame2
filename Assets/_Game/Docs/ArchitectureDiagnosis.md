@@ -37,9 +37,9 @@ The most important structural issue is not script count. The issue is that sever
 | Continue | Stage progress cleared/max reached fields | Explicit checkpoint data | Continue cannot restore Stage 0 start, Stage 1 start, or Story Lobby by meaning. |
 | Character contract | `CharacterDefinitionSO` plus loose skill assets and scene arrays | Character-centered contract with validator | Adding characters requires searching multiple systems. |
 | Exclusive card pool | `LevelUpCardGenerator.characterSkillSets` scene array | Data-owned character skill sets from `RunSetup` | Duplicate character entries can hide later skills. |
-| Talisman/gacha | 44 equipment assets, no database asset, legacy shop save path | One talisman/equipment catalog plus gacha service | Items can exist without being drawable, saved, or applied. |
+| Talisman/gacha | 44 equipment assets, `EquipmentDatabase.asset`, 6 active slots, legacy shop save path | One talisman/equipment catalog plus gacha service | The official item catalog and active slot count now exist, but draw and combat effect ownership are still split. |
 | Currency | Meta Nyang/Soul plus legacy PlayerPrefs Nyang/Spirit and runtime Spirit | One wallet/economy owner | Story/Casual shared currency can drift until legacy paths are retired. |
-| Save migration | Root version and first migration skeleton | Versioned migration functions | The baseline exists, but 8-slot to 6-slot and legacy currency migration still need implementation. |
+| Save migration | Root version, migration skeleton, 8-slot to 6-slot normalization | Versioned migration functions | The baseline exists, but legacy currency migration still needs implementation. |
 | Debug/release safety | Debug scripts and historical scene refs | Validator-gated release checks | Debug tools can return to build scenes without a guard. |
 
 ## Highest Risks
@@ -47,8 +47,8 @@ The most important structural issue is not script count. The issue is that sever
 1. Continue is not a first-class saved checkpoint.
 2. Run start has no single validated input model.
 3. Exclusive skill card pool is scene-owned and can silently ignore skills.
-4. Talisman/gacha data exists but is not wired as the combat/save owner.
-5. Save compatibility now has a baseline, but 8-slot to 6-slot and legacy currency migration are still unresolved.
+4. Talisman/gacha catalog exists but is not wired as the combat/save owner.
+5. Save compatibility now has a baseline, but legacy currency migration is still unresolved.
 
 ## Migration Posture
 

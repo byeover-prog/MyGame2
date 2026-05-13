@@ -25,7 +25,7 @@ This document is a decision baseline. Code changes, deletions, folder moves, and
 |---|---|---|
 | Build scenes | `ProjectSettings/EditorBuildSettings.asset` currently includes `Scene_Lobby`, `Scene_Boot`, `Scene_Game`. | Target title/story/casual flow is not represented as an explicit build-scene flow. |
 | Title flow | Confirmed target entry is Story Mode, Casual Mode, Settings, and Quit, with Story Mode branching to Continue/New Game. | Current first scene still behaves like a generic Start route rather than an explicit mode router. |
-| Character data | `CharacterDefinitionSO` exists and owns ID, visuals, basic skill ID/config, ultimate, support buff, stats, upgrade tree. | It does not yet fully express the confirmed long-term character contract: 1 basic skill, 2 exclusive skills, 1 ultimate, 1 innate passive, support effect, future card grade rules. |
+| Character data | `CharacterDefinitionSO` exists and owns ID, visuals, basic skill ID/config, ultimate, unique passive ID, support buff, stats, upgrade tree. | It still does not fully express the confirmed long-term character contract because 2 exclusive skills and future card grade rules are not yet centered on the character definition. |
 | Skill data | `SkillDefinitionSO` exists for skill ID, type, UI, level text, passive stat type, and optional character skill balance data. | Skill execution, targeting, grade, card-pool source, and runtime behavior ownership are not fully separated. |
 | Card pool | `LevelUpCardGenerator` builds common, passive, and character exclusive candidates. It reads `SquadLoadoutRuntime.MainId/Support1Id/Support2Id`. | Card rules are embedded in a scene component instead of a reusable rule model. Future grade rules will be hard to verify. |
 | Squad data | `SquadLoadoutRuntime` stores static main/support IDs and writes formation to save. | Useful bridge, but it is not a complete run-start snapshot. Battle still needs a single immutable `RunSetup`. |
@@ -70,7 +70,7 @@ This document is a decision baseline. Code changes, deletions, folder moves, and
 | Candidate Patterns | Data-driven definition, catalog, validator, composition. |
 | Why This Fits | Character addition should be a checklist around one definition, not a search across prefabs, generator arrays, scene fields, and hardcoded IDs. |
 | Avoid | Do not encode character-exclusive skills only in a card generator array. Do not hardcode innate passives per character without a definition reference. |
-| Current Evidence | `CharacterDefinitionSO` already owns basic skill and ultimate data, but not the full confirmed long-term contract. |
+| Current Evidence | `CharacterDefinitionSO` owns basic skill, ultimate data, and `uniquePassiveId`. Exclusive level-up skills and future card grade rules are still outside the character-centered contract. |
 | Validation | Character/Squad Validator must check 1 basic skill, 2 exclusive skills, 1 ultimate, 1 innate passive, support effect, icons, resolver prefab, and unique ID. |
 | Migration | Extend definition shape carefully after catalog audit. Add validator before requiring every existing character to satisfy the full future contract. |
 
@@ -109,7 +109,7 @@ This document is a decision baseline. Code changes, deletions, folder moves, and
 | Candidate Patterns | Catalog, weighted random table, repository, policy. |
 | Why This Fits | 44 gacha items are small enough for a readable weighted table. Prices must be data-configurable. Currency ownership must be explicit. |
 | Avoid | Do not hardcode gacha price in UI or button handlers. Do not keep legacy shop and new equipment as equal sources of truth. |
-| Current Evidence | `GachaConfigSO` already owns rates and costs, and 44 `EquipmentDefinitionSO` assets exist under `Assets/GameData/Equipments`. `EquipmentDatabaseSO` code exists, but the release-facing `EquipmentDatabase.asset` is currently missing. Legacy `ShopService` also exists. |
+| Current Evidence | `GachaConfigSO` already owns rates and costs, 44 `EquipmentDefinitionSO` assets exist under `Assets/GameData/Equipments`, and `Assets/GameData/EquipmentDatabase.asset` now owns the release-facing item list. Legacy `ShopService` also exists. |
 | Validation | Talisman/Gacha Validator must check exactly 44 gacha entries, 6 equip slots, valid rates, configurable costs, duplicate policy, and Nyang/Soul usage boundaries. |
 | Migration | Choose whether talismans are the public name over equipment data or a separate domain. Then adapt legacy shop through a facade or mark it legacy-only. |
 
