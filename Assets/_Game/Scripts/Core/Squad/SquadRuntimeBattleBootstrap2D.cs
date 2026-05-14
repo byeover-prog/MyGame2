@@ -44,8 +44,16 @@ public sealed class SquadRuntimeBattleBootstrap2D : MonoBehaviour
     [ContextMenu("런타임 편성 다시 적용")]
     public void ApplyRuntimeLoadout()
     {
-        SquadLoadoutRuntime.LoadFromSave();
-        SquadLoadoutRuntime.Loadout runtime = SquadLoadoutRuntime.Current;
+        RunSetup runSetup = RunSetupHolder.GetOrCreateFromCurrentState();
+        string invalidReason = string.Empty;
+        if (runSetup == null || !runSetup.IsValid(out invalidReason))
+        {
+            GameLogger.LogWarning($"[SquadRuntimeBattleBootstrap2D] RunSetup invalid: {invalidReason}", this);
+            return;
+        }
+
+        FormationSaveData2D formation = runSetup.ToFormationSaveData();
+        SquadLoadoutRuntime.CopyFromSave(formation);
 
         if (catalog == null)
         {
@@ -59,9 +67,9 @@ public sealed class SquadRuntimeBattleBootstrap2D : MonoBehaviour
             return;
         }
 
-        CharacterDefinitionSO main = Resolve(runtime.mainId);
-        CharacterDefinitionSO support1 = Resolve(runtime.support1Id);
-        CharacterDefinitionSO support2 = Resolve(runtime.support2Id);
+        CharacterDefinitionSO main = Resolve(runSetup.mainId);
+        CharacterDefinitionSO support1 = Resolve(runSetup.support1Id);
+        CharacterDefinitionSO support2 = Resolve(runSetup.support2Id);
 
         if (main == null)
         {
@@ -72,7 +80,7 @@ public sealed class SquadRuntimeBattleBootstrap2D : MonoBehaviour
         squadLoadout.SetLoadout(main, support1, support2);
 
         if (buildMetaSnapshot)
-            RebuildMetaSnapshot();
+            RebuildMetaSnapshot(formation);
 
         if (playerDash != null)
             playerDash.Initialize(HasWindAttribute(main, support1, support2));
@@ -85,13 +93,13 @@ public sealed class SquadRuntimeBattleBootstrap2D : MonoBehaviour
         }
     }
 
-    private void RebuildMetaSnapshot()
+    private void RebuildMetaSnapshot(FormationSaveData2D formation)
     {
         if (catalog == null)
             return;
 
         CharacterMetaResolver2D resolver = new CharacterMetaResolver2D(catalog, SaveManager2D.Instance);
-        MetaBattleSnapshotRuntime2D.SetCurrent(resolver.BuildCurrentSquadSnapshot());
+        MetaBattleSnapshotRuntime2D.SetCurrent(resolver.BuildSquadSnapshot(formation));
     }
 
     private CharacterDefinitionSO Resolve(string characterId)

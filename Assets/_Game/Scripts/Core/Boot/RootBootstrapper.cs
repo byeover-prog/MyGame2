@@ -18,6 +18,10 @@ public sealed class RootBootstrapper : MonoBehaviour
     [Tooltip("스킬 루트 설정 SO입니다. LevelUpSystem2D/CommonSkillManager에서 참조합니다.")]
     [SerializeField] private SkillRootSO skillRoot;
 
+    [Header("Equipment/Gacha")]
+    [SerializeField] private EquipmentDatabaseSO equipmentDatabase;
+    [SerializeField] private GachaConfigSO gachaConfig;
+
     /// <summary>싱글톤 인스턴스입니다.</summary>
     public static RootBootstrapper Instance { get; private set; }
 
@@ -30,6 +34,10 @@ public sealed class RootBootstrapper : MonoBehaviour
     /// <summary>스킬 루트 설정 SO입니다.</summary>
     public SkillRootSO SkillRoot => skillRoot;
 
+    public EquipmentDatabaseSO EquipmentDatabase => equipmentDatabase;
+
+    public GachaConfigSO GachaConfig => gachaConfig;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -38,6 +46,8 @@ public sealed class RootBootstrapper : MonoBehaviour
             return;
         }
         Instance = this;
+        EquipmentDatabaseSO.RuntimeInstance = equipmentDatabase;
+        GachaConfigSO.RuntimeInstance = gachaConfig;
 
         // 세이브에서 편성 로드
         SquadLoadoutRuntime.LoadFromSave();
@@ -46,6 +56,8 @@ public sealed class RootBootstrapper : MonoBehaviour
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
+        if (EquipmentDatabaseSO.RuntimeInstance == equipmentDatabase) EquipmentDatabaseSO.RuntimeInstance = null;
+        if (GachaConfigSO.RuntimeInstance == gachaConfig) GachaConfigSO.RuntimeInstance = null;
     }
 }
 

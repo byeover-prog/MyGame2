@@ -5,12 +5,17 @@ public sealed class CharacterMetaResolver2D
 {
     private readonly CharacterCatalogSO _catalog;
     private readonly SaveManager2D _saveManager;
+    private readonly EquipmentDatabaseSO _equipmentDatabase;
     private readonly CharacterProgressionService2D _progressionService;
 
-    public CharacterMetaResolver2D(CharacterCatalogSO catalog, SaveManager2D saveManager = null)
+    public CharacterMetaResolver2D(
+        CharacterCatalogSO catalog,
+        SaveManager2D saveManager = null,
+        EquipmentDatabaseSO equipmentDatabase = null)
     {
         _catalog = catalog;
         _saveManager = saveManager != null ? saveManager : SaveManager2D.Instance;
+        _equipmentDatabase = equipmentDatabase != null ? equipmentDatabase : EquipmentDatabaseSO.RuntimeInstance;
         _progressionService = new CharacterProgressionService2D(catalog, _saveManager);
     }
 
@@ -108,16 +113,21 @@ public sealed class CharacterMetaResolver2D
             CharacterEquipmentSaveData equipState = meta.equipment.GetOrCreate(definition.CharacterId);
             if (equipState != null && equipState.slotItemIds != null)
             {
-                ShopDatabaseSO shopDb = ShopDatabaseSO.RuntimeInstance;
-                if (shopDb != null)
+                EquipmentDatabaseSO equipmentDb = _equipmentDatabase != null
+                    ? _equipmentDatabase
+                    : EquipmentDatabaseSO.RuntimeInstance;
+
+                if (equipmentDb != null)
                 {
                     for (int s = 0; s < equipState.slotItemIds.Count; s++)
                     {
                         string itemId = equipState.slotItemIds[s];
                         if (string.IsNullOrWhiteSpace(itemId)) continue;
-                        if (!shopDb.TryFindById(itemId, out ShopItemSO item) || item == null) continue;
+                        EquipmentDefinitionSO equipment = equipmentDb.FindById(itemId);
+                        if (equipment == null || equipment.effects == null) continue;
 
-                        ApplyModifier(ref snapshot, item.ModifierKind, item.ModifierValue);
+                        for (int e = 0; e < equipment.effects.Count; e++)
+                            ApplyEquipmentEffect(ref snapshot, equipment.effects[e]);
                     }
                 }
             }
@@ -191,12 +201,86 @@ public sealed class CharacterMetaResolver2D
                 snapshot.coreStats.PickupRangePercent += value;
                 break;
             case OutgameModifierKind2D.MaxHpPercent:
-                // MaxHpFlat과 별도로 % 계산은 런타임에서 처리
-                // 여기서는 coreStats에 합산
-                snapshot.coreStats.AttackPowerPercent += 0f; // placeholder
+                snapshot.maxHpPercent += value;
                 break;
             case OutgameModifierKind2D.CooldownReductionPercent:
                 snapshot.cooldownReductionPercent += value;
+                break;
+        }
+    }
+
+    private static void ApplyEquipmentEffect(ref MetaCharacterBonusSnapshot2D snapshot, EquipmentEffect effect)
+    {
+        switch (effect.type)
+        {
+            case EquipmentEffectType.AttackDamagePercent:
+                snapshot.coreStats.AttackPowerPercent += effect.value;
+                break;
+            case EquipmentEffectType.DefenseFlat:
+                snapshot.defenseFlat += Mathf.RoundToInt(effect.value);
+                break;
+            case EquipmentEffectType.DefensePercent:
+                snapshot.coreStats.DefensePercent += effect.value;
+                break;
+            case EquipmentEffectType.MaxHpPercent:
+                snapshot.maxHpPercent += effect.value;
+                break;
+            case EquipmentEffectType.MoveSpeedPercent:
+                snapshot.coreStats.MoveSpeedPercent += effect.value;
+                break;
+            case EquipmentEffectType.CritChancePercent:
+                snapshot.critChancePercent += effect.value;
+                break;
+            case EquipmentEffectType.CritDamagePercent:
+                snapshot.critDamagePercent += effect.value;
+                break;
+            case EquipmentEffectType.HpRegenFlat:
+                snapshot.hpRegenFlat += Mathf.RoundToInt(effect.value);
+                break;
+            case EquipmentEffectType.ExpGainPercent:
+                snapshot.coreStats.ExpGainPercent += effect.value;
+                break;
+            case EquipmentEffectType.GoldGainPercent:
+                snapshot.nyangGainPercent += effect.value;
+                break;
+            case EquipmentEffectType.PickupRangePercent:
+                snapshot.coreStats.PickupRangePercent += effect.value;
+                break;
+            case EquipmentEffectType.ProjectileCountFlat:
+                snapshot.castCountFlat += Mathf.RoundToInt(effect.value);
+                break;
+            case EquipmentEffectType.SkillHasteFlat:
+                snapshot.skillAccelerationFlat += effect.value;
+                break;
+            case EquipmentEffectType.SkillAreaPercent:
+                snapshot.coreStats.SkillAreaPercent += effect.value;
+                break;
+            case EquipmentEffectType.ProjectileSpeedPercent:
+                snapshot.projectileSpeedPercent += effect.value;
+                break;
+            case EquipmentEffectType.StartingSkillDamagePercent:
+                snapshot.startingSkillDamagePercent += effect.value;
+                break;
+            case EquipmentEffectType.DamageTakenReducePercent:
+                snapshot.damageTakenReducePercent += effect.value;
+                break;
+            case EquipmentEffectType.DamageTakenIncreasePercent:
+                snapshot.damageTakenIncreasePercent += effect.value;
+                break;
+            case EquipmentEffectType.DashCooldownReducePercent:
+                snapshot.dashCooldownReductionPercent += effect.value;
+                break;
+            case EquipmentEffectType.IceDamageBonusPercent:
+                snapshot.iceDamageBonusPercent += effect.value;
+                break;
+            case EquipmentEffectType.ElectricDamageBonusPercent:
+                snapshot.electricDamageBonusPercent += effect.value;
+                break;
+            case EquipmentEffectType.FireDamageBonusPercent:
+                snapshot.fireDamageBonusPercent += effect.value;
+                break;
+            case EquipmentEffectType.YinYangEffectBonusPercent:
+                snapshot.yinYangEffectBonusPercent += effect.value;
                 break;
         }
     }

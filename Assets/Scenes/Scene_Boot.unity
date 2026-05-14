@@ -3582,6 +3582,8 @@ MonoBehaviour:
   characterRoot: {fileID: 11400000, guid: ea16860725d2b5f45bd7d264a578ed1b, type: 2}
   skillRoot: {fileID: 11400000, guid: 4f6ce6d4b63dc9946841b538867044e6, type: 2}
   levelUpRoot: {fileID: 11400000, guid: 367f454b55e8f7a4691562134f57e891, type: 2}
+  equipmentDatabase: {fileID: 11400000, guid: 65e83307695640c7b3d3c0919c17f774, type: 2}
+  gachaConfig: {fileID: 11400000, guid: c9dfbd53999b690419e162035a329097, type: 2}
 --- !u!4 &1762927040
 Transform:
   m_ObjectHideFlags: 0

@@ -93,11 +93,26 @@ public sealed class GameManager2D : MonoBehaviour
     /// </summary>
     public void StartGame()
     {
+        StartGame(RunSetupHolder.GetOrCreateFromCurrentState());
+    }
+
+    public void StartGame(RunSetup runSetup)
+    {
         if (_gameStarted)
         {
             if (log) GameLogger.LogWarning("[GameManager2D] 이미 게임이 시작된 상태입니다.", this);
             return;
         }
+
+        string invalidReason = string.Empty;
+        if (runSetup == null || !runSetup.IsValid(out invalidReason))
+        {
+            if (log) GameLogger.LogWarning($"[GameManager2D] RunSetup invalid: {invalidReason}", this);
+            return;
+        }
+
+        RunSetupHolder.Set(runSetup);
+        SquadLoadoutRuntime.CopyFromSave(runSetup.ToFormationSaveData());
 
         _gameStarted = true;
 
@@ -111,7 +126,7 @@ public sealed class GameManager2D : MonoBehaviour
 
         // 3) 스테이지 시작
         if (stageManager != null)
-            stageManager.BeginStage();
+            stageManager.BeginStage(runSetup);
 
         // 4) 전역 신호 발행 (스포너 등이 구독)
         RunSignals.RaiseStageStarted();

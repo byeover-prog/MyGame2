@@ -7,6 +7,8 @@ using UnityEngine;
     order = 201)]
 public class EquipmentDatabaseSO : ScriptableObject
 {
+    public static EquipmentDatabaseSO RuntimeInstance { get; set; }
+
     [Header("전체 장비 목록 (44종)")]
     [Tooltip("모든 장비 SO를 여기에 드래그 등록. Editor 툴로 자동 채울 수 있음")]
     public List<EquipmentDefinitionSO> allEquipments = new List<EquipmentDefinitionSO>();

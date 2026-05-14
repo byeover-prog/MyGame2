@@ -11,6 +11,8 @@ using UnityEngine;
     order = 200)]
 public class GachaConfigSO : ScriptableObject
 {
+    public static GachaConfigSO RuntimeInstance { get; set; }
+
     [Header("등급별 기본 확률 (총합 1.0)")]
     [Tooltip("에픽 드랍 확률 (0.03 = 3%)")]
     [Range(0f, 1f)]

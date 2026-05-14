@@ -263,6 +263,17 @@ public sealed class SquadFormationController : MonoBehaviour
             return;
         }
 
+        RunSetup runSetup = RunSetupFactory.CreateFromCurrentState();
+        string invalidReason = string.Empty;
+        if (runSetup == null || !runSetup.IsValid(out invalidReason))
+        {
+            if (hintText != null) hintText.text = "게임 시작 정보가 올바르지 않습니다.";
+            if (debugLog) GameLogger.LogWarning($"[SquadFormation] Blocked: RunSetup invalid. {invalidReason}");
+            return;
+        }
+
+        RunSetupHolder.Set(runSetup);
+
         if (debugLog) GameLogger.Log($"[SquadFormation] LoadScene => {nextSceneName}");
         SceneManager.LoadScene(nextSceneName);
     }

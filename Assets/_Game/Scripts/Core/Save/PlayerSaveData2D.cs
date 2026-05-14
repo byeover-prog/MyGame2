@@ -4,7 +4,7 @@ using UnityEngine;
 [Serializable]
 public sealed class PlayerSaveData2D
 {
-    public const int CurrentVersion = 3;
+    public const int CurrentVersion = 4;
 
     [Header("버전")]
     [Tooltip("세이브 데이터 버전. 필드 구조가 바뀌면 올린다.")]
@@ -69,6 +69,9 @@ public sealed class PlayerSaveData2D
         if (fromVersion < 3)
             MigrateToVersion3();
 
+        if (fromVersion < 4)
+            MigrateToVersion4();
+
         version = CurrentVersion;
     }
 
@@ -79,6 +82,12 @@ public sealed class PlayerSaveData2D
     }
 
     private void MigrateToVersion3()
+    {
+        if (metaProfile == null) metaProfile = MetaProfileSaveData2D.CreateDefault();
+        metaProfile.EnsureDefaults();
+    }
+
+    private void MigrateToVersion4()
     {
         if (metaProfile == null) metaProfile = MetaProfileSaveData2D.CreateDefault();
         metaProfile.EnsureDefaults();

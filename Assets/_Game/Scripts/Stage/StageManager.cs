@@ -145,11 +145,20 @@ public sealed class StageManager2D : MonoBehaviour
     /// </summary>
     public void BeginStage()
     {
-        // 로비에서 설정한 스테이지 인덱스 확인
-        if (StageSelectBridge.HasSelection)
+        BeginStage(RunSetupHolder.GetOrCreateFromCurrentState());
+    }
+
+    public void BeginStage(RunSetup runSetup)
+    {
+        string invalidReason = string.Empty;
+        if (runSetup != null && runSetup.IsValid(out invalidReason))
         {
-            currentStageIndex = StageSelectBridge.SelectedStageIndex;
-            StageSelectBridge.Clear();
+            currentStageIndex = runSetup.stageIndex;
+            RunSetupHolder.Set(runSetup);
+        }
+        else if (runSetup != null)
+        {
+            Log($"RunSetup invalid: {invalidReason}");
         }
 
         _elapsed = 0f;
@@ -377,32 +386,5 @@ public sealed class StageManager2D : MonoBehaviour
     private static void ResetStatic()
     {
         Instance = null;
-    }
-}
-
-/// <summary>
-/// 로비 → 인게임 씬 전환 시 선택한 스테이지 인덱스를 전달하는 브릿지입니다.
-/// </summary>
-public static class StageSelectBridge
-{
-    public static int SelectedStageIndex { get; private set; }
-    public static bool HasSelection { get; private set; }
-
-    public static void Select(int stageIndex)
-    {
-        SelectedStageIndex = stageIndex;
-        HasSelection = true;
-    }
-
-    public static void Clear()
-    {
-        HasSelection = false;
-    }
-
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetStatic()
-    {
-        SelectedStageIndex = 0;
-        HasSelection = false;
     }
 }

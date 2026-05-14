@@ -22,8 +22,8 @@ Evidence levels:
 | Stage start save | Failing | `ContinueCheckpointValidator`: `StageManager.BeginStage` does not save a checkpoint at stage start. | Death/retry and Continue can diverge from target flow. | Confirmed |
 | Story Lobby | Unclear | No target Story Lobby button structure found in build flow. | Lobby duties are not verified. | Needs Verification |
 | Casual Lobby | Unclear | No target Casual Lobby map/difficulty flow found in build flow. | Casual mode cannot be validated separately. | Needs Verification |
-| RunSetup | Failing | `RunSetupValidator`: no explicit `RunSetup` owner; `GameManager2D.StartGame` starts without one. | Battle input is spread across save/static/scene state. | Confirmed |
-| Squad data flow | Risk | `RunSetupValidator`, `CharacterSquadValidator`: battle and card generator read globals. | User team choices are hard to replay or validate. | Confirmed |
+| RunSetup | Baseline added | `RunSetup`, `RunSetupHolder`, and `RunSetupFactory` exist; `GameManager2D.StartGame(RunSetup)` validates before starting; `StageManager2D.BeginStage(RunSetup)` consumes the stage target. | Battle start now has one snapshot owner. Some consumers still read legacy globals until the next migration step. | Confirmed |
+| Squad data flow | Partially migrated | `RunSetup` captures `mainId`, `support1Id`, and `support2Id`; `SquadLoadoutRuntime` remains as a compatibility bridge. | User team choices are now snapshotted at run start, but battle bootstrap and card pool still need to consume the snapshot directly. | Confirmed |
 | Character catalog | Baseline corrected | `SO_CharacterCatalog.asset` registers yoonseol, hayul, and harin. | Current character assets can be found through the official catalog. | Confirmed |
 | Character skill contract | Baseline added | Each current character has 2 `CharacterSkillDefinitionSO` assets and one `CharacterSkillSetSO`. | Adding characters now has a clearer data checklist, but `LevelUpCardGenerator` still needs migration away from scene arrays. | Confirmed |
 | Unique passive | Baseline added | `CharacterDefinitionSO.uniquePassiveId` exists and current character assets have unique passive IDs. Runtime activation is still bridged by `CharacterPassiveManager2D`. | The character contract now has a data field, but the runtime manager still needs migration away from hardcoded registration. | Confirmed |
@@ -31,10 +31,10 @@ Evidence levels:
 | Common skill card pool | Baseline corrected | `Pool_CommonSkillLevelUpCards.asset` references 8 `CommonSkillCardSO` assets backed by the common skill catalog. | The pool no longer depends on missing card GUIDs, but card weight/balance still needs design validation. | Confirmed |
 | Talisman slots | Baseline migrated | `CharacterEquipmentSaveData.MaxSlots = TargetTalismanSlots`; legacy overflow slots are normalized into owned item data. | Active equipped talisman slots now match the confirmed 6-slot rule without deleting old overflow item IDs. | Confirmed |
 | Gacha item count | Partially passing | 44 `EquipmentDefinitionSO` assets exist. | Raw item set exists. | Confirmed |
-| Equipment database | Baseline added | `Assets/GameData/EquipmentDatabase.asset` references 44 `EquipmentDefinitionSO` assets. | The official release-facing item catalog exists; runtime gacha/equip wiring is still pending. | Confirmed |
-| Gacha runtime wiring | Failing | `TalismanGachaValidator`: no runtime service consumes `GachaConfigSO`. | Data-driven prices exist but draw flow is not wired. | Confirmed |
-| Legacy shop coexistence | Risk | `TalismanGachaValidator`: `ShopService`/`ShopItemSO` coexist with new equipment. | Equip effects can come from the wrong system. | Confirmed |
-| Nyang/Soul economy | Partially migrated | `MetaProfileSaveData2D.soul` exists, but PlayerPrefs/runtime Spirit paths still exist. | Story/Casual shared currency can drift until legacy currency is retired. | Confirmed |
+| Equipment database | Baseline wired | `RootBootstrapper` registers `EquipmentDatabaseSO.RuntimeInstance`; `CharacterMetaResolver2D` resolves equipped IDs through `EquipmentDefinitionSO`. | The official release-facing item catalog now has a runtime path; UI wiring still needs follow-up. | Confirmed |
+| Gacha runtime wiring | Baseline added | `EquipmentGachaService` consumes `GachaConfigSO`, `EquipmentDatabaseSO`, `MetaWalletService2D`, and save-backed pity state. | Prices, rarity, pity, duplicate refund, and ownership now have a runtime service, but no final shop UI has been migrated yet. | Confirmed |
+| Legacy shop coexistence | Risk | `ShopService` still exists beside new `EquipmentGachaService`. | Purchase/equip UI must choose the new equipment path before the old shop path can be retired. | Confirmed |
+| Nyang/Soul economy | Baseline migrated | `MetaWalletService2D` owns both `nyang` and `soul`; `CurrencyManager` now stages clear rewards through `SaveManager2D` instead of PlayerPrefs. | Story/Casual shared currency has one save owner. `PlayerSpirit2D` still needs classification as battle-only UI or official Soul UI. | Confirmed |
 | Save migration | Baseline added | `PlayerSaveData2D.CurrentVersion` and migration methods exist; `SaveMigrationSpec.md` documents policy. | Future migrations now have a starting point, but legacy stores still need cleanup. | Confirmed |
 | Asset integrity | Passing | `AssetIntegrityValidator` passes after `PassiveBalanceTable.asset` repair. | No current missing script assets found by this validator. | Confirmed |
 | Debug release safety | Passing with warnings | `DebugObjectValidator`: errors 0, warnings remain in non-build scenes and debug script inventory. | Build scenes are cleaner, but non-build scene debug inventory still exists. | Confirmed |
@@ -43,10 +43,10 @@ Evidence levels:
 ## Current Top Release Blockers
 
 1. No explicit Story/Continue checkpoint model.
-2. No `RunSetup` battle-start snapshot.
-3. Character/skill/card-pool data is not authoring-friendly.
+2. Story flow still needs explicit title/new/continue/lobby routing.
+3. Card-pool consumers still need migration from globals to `RunSetup`.
 4. Talisman/gacha ownership now has a catalog, but runtime behavior is still split between new equipment and legacy shop systems.
-5. Save migration still needs legacy currency ownership cleanup.
+5. Save migration still needs atomic write/backup policy and legacy secondary save classification.
 
 ## Non-Blocking But Important
 

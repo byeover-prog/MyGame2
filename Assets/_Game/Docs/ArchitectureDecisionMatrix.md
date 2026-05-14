@@ -57,9 +57,9 @@ This document is a decision baseline. Code changes, deletions, folder moves, and
 | Candidate Patterns | DTO, Builder, immutable snapshot, facade. |
 | Why This Fits | Main/support characters, talismans, mode, stage/map, difficulty, progression upgrades, and card-pool inputs must be frozen before battle starts. This makes battle reproducible and debuggable. |
 | Avoid | Do not let battle systems independently read live static state, scene objects, and save data whenever they need something. |
-| Current Evidence | `SquadLoadoutRuntime` and `RunConfigHolder` exist separately. `LevelUpCardGenerator` reads static squad IDs directly. |
+| Current Evidence | `RunSetup`, `RunSetupHolder`, and `RunSetupFactory` now capture mode, stage, squad IDs, talisman slots, continue checkpoint, and optional `RunConfigSO`. `GameManager2D` and `StageManager2D` consume the setup at run start. `LevelUpCardGenerator` still reads static squad IDs directly. |
 | Validation | RunSetup Validator must verify required fields, IDs, 6 talismans, mode, stage/map, difficulty, and generated card-pool inputs. |
-| Migration | Keep existing `SquadLoadoutRuntime` as a bridge. Add `RunSetup` as a read model first. Move battle bootstrapping to consume `RunSetup` after validators pass. |
+| Migration | Keep existing `SquadLoadoutRuntime` as a bridge. `RunSetup` is now the run-start read model. Next, move battle bootstrapping and card-pool generation to consume `RunSetupHolder.Current` instead of live globals. |
 
 ### 3. Character Definition
 
@@ -109,9 +109,9 @@ This document is a decision baseline. Code changes, deletions, folder moves, and
 | Candidate Patterns | Catalog, weighted random table, repository, policy. |
 | Why This Fits | 44 gacha items are small enough for a readable weighted table. Prices must be data-configurable. Currency ownership must be explicit. |
 | Avoid | Do not hardcode gacha price in UI or button handlers. Do not keep legacy shop and new equipment as equal sources of truth. |
-| Current Evidence | `GachaConfigSO` already owns rates and costs, 44 `EquipmentDefinitionSO` assets exist under `Assets/GameData/Equipments`, and `Assets/GameData/EquipmentDatabase.asset` now owns the release-facing item list. Legacy `ShopService` also exists. |
+| Current Evidence | `GachaConfigSO` owns rates and costs, 44 `EquipmentDefinitionSO` assets exist under `Assets/GameData/Equipments`, `Assets/GameData/EquipmentDatabase.asset` owns the release-facing item list, and `EquipmentGachaService` now consumes that data with save-backed pity state. Legacy `ShopService` also exists. |
 | Validation | Talisman/Gacha Validator must check exactly 44 gacha entries, 6 equip slots, valid rates, configurable costs, duplicate policy, and Nyang/Soul usage boundaries. |
-| Migration | Choose whether talismans are the public name over equipment data or a separate domain. Then adapt legacy shop through a facade or mark it legacy-only. |
+| Migration | Use equipment-backed talismans as the current data owner. Migrate purchase/equip UI to `EquipmentGachaService` and `EquipmentDefinitionSO`, then mark legacy shop as compatibility-only or remove it after validator coverage. |
 
 ### 7. Save And Continue
 

@@ -41,5 +41,16 @@ public struct MetaCharacterBonusSnapshot2D
     /// <summary>재사용 대기시간 % 감소</summary>
     public float cooldownReductionPercent;
 
+    public float maxHpPercent;
+    public float projectileSpeedPercent;
+    public float startingSkillDamagePercent;
+    public float damageTakenReducePercent;
+    public float damageTakenIncreasePercent;
+    public float dashCooldownReductionPercent;
+    public float iceDamageBonusPercent;
+    public float electricDamageBonusPercent;
+    public float fireDamageBonusPercent;
+    public float yinYangEffectBonusPercent;
+
     public static MetaCharacterBonusSnapshot2D Empty => default;
 }

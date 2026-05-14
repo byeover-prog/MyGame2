@@ -33,6 +33,7 @@ PlayerSaveData2D.CurrentVersion = 3
 | 1 or missing | Legacy/default shape before the current meta profile became stable. |
 | 2 | Existing save baseline before Soul and Continue checkpoint fields. |
 | 3 | Adds official `soul` currency and `StageProgressSaveData.continueCheckpoint`. |
+| 4 | Adds official equipment gacha state for pity tracking. |
 
 All loaded saves must pass through:
 
@@ -65,6 +66,16 @@ Default for old saves:
 Reason:
 
 Soul is the confirmed shared Story/Casual meta currency for growth, ultimate upgrade choices, and passive upgrade choices.
+
+`MetaWalletService2D` is the official runtime service for both `nyang` and `soul`. UI code that stages or spends these currencies should go through that service or a domain service that uses it.
+
+### Equipment Gacha
+
+```text
+MetaProfileSaveData2D.equipmentGacha.pullsSinceEpic
+```
+
+This field stores the official gacha pity counter. It is versioned because pity affects paid player progression and must not be reset silently when the gacha UI is connected.
 
 ### Story Continue Checkpoint
 

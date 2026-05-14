@@ -22,6 +22,8 @@ public sealed class MetaProfileSaveData2D
     /// <summary>캐릭터별 장비 장착 상태입니다.</summary>
     public CharacterEquipmentCollectionSaveData equipment;
 
+    public EquipmentGachaSaveData equipmentGacha;
+
     /// <summary>퀘스트 진행 상태입니다.</summary>
     public QuestProgressSaveData questProgress;
 
@@ -41,6 +43,8 @@ public sealed class MetaProfileSaveData2D
         if (progression == null) progression = new CharacterProgressionCollectionSaveData2D();
         if (equipment == null) equipment = new CharacterEquipmentCollectionSaveData();
         equipment.EnsureDefaults();
+        if (equipmentGacha == null) equipmentGacha = new EquipmentGachaSaveData();
+        equipmentGacha.EnsureDefaults();
         if (questProgress == null) questProgress = new QuestProgressSaveData();
         if (stageProgress == null) stageProgress = new StageProgressSaveData();
         stageProgress.EnsureDefaults();
@@ -55,6 +59,17 @@ public sealed class MetaProfileSaveData2D
         };
         data.EnsureDefaults();
         return data;
+    }
+}
+
+[Serializable]
+public sealed class EquipmentGachaSaveData
+{
+    public int pullsSinceEpic;
+
+    public void EnsureDefaults()
+    {
+        if (pullsSinceEpic < 0) pullsSinceEpic = 0;
     }
 }
 

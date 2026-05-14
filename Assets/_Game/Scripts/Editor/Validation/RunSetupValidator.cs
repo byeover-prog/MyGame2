@@ -249,7 +249,7 @@ public static class RunSetupValidator
     {
         if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(methodName)) return string.Empty;
 
-        int methodIndex = text.IndexOf(methodName, StringComparison.Ordinal);
+        int methodIndex = FindMethodDeclarationIndex(text, methodName);
         if (methodIndex < 0) return string.Empty;
 
         int openBraceIndex = text.IndexOf('{', methodIndex);
@@ -271,6 +271,18 @@ public static class RunSetupValidator
         }
 
         return string.Empty;
+    }
+
+    private static int FindMethodDeclarationIndex(string text, string methodName)
+    {
+        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(methodName)) return -1;
+
+        string escaped = Regex.Escape(methodName);
+        Match match = Regex.Match(
+            text,
+            @"\b(?:public|private|protected|internal)\s+(?:static\s+)?[\w<>\[\],\s]+\s+" + escaped + @"\s*\(");
+
+        return match.Success ? match.Index : text.IndexOf(methodName, StringComparison.Ordinal);
     }
 
     private static string ReadAssetText(string assetPath)

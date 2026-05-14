@@ -207,9 +207,10 @@ namespace _Game.LevelUp
             }
 
             // 2) 파티 전원(메인+지원1+지원2)의 전용 스킬
-            string mainId     = SquadLoadoutRuntime.MainId;
-            string support1Id = SquadLoadoutRuntime.Support1Id;
-            string support2Id = SquadLoadoutRuntime.Support2Id;
+            RunSetup runSetup = RunSetupHolder.GetOrCreateFromCurrentState();
+            string mainId     = runSetup != null ? runSetup.mainId : string.Empty;
+            string support1Id = runSetup != null ? runSetup.support1Id : string.Empty;
+            string support2Id = runSetup != null ? runSetup.support2Id : string.Empty;
 
             GameLogger.Log(
                 $"[CardGen] 파티 전용 스킬 탐색 — 메인='{mainId}' 지원1='{support1Id}' 지원2='{support2Id}' | characterSkillSets수={characterSkillSets.Length}",
