@@ -5,6 +5,9 @@ using TMPro;
 [DisallowMultipleComponent]
 public class UltimateHUDController : MonoBehaviour
 {
+    [Header("Scene Context")]
+    [SerializeField] private GameSceneContext sceneContext;
+
     // ══════════════════════════════════════════════
     //  참조
     // ══════════════════════════════════════════════
@@ -103,14 +106,34 @@ public class UltimateHUDController : MonoBehaviour
 
     private void AutoResolveReferences()
     {
+        ResolveSceneContext();
+
+        if (loadout == null && sceneContext != null)
+            loadout = sceneContext.GetPlayerComponent<SquadLoadout2D>();
+
         if (loadout == null)
             loadout = FindFirstObjectByType<SquadLoadout2D>();
+
+        if (ultimateController == null && sceneContext != null)
+            ultimateController = sceneContext.GetPlayerComponent<UltimateController2D>();
 
         if (ultimateController == null)
             ultimateController = FindFirstObjectByType<UltimateController2D>();
 
+        if (supportController == null && sceneContext != null)
+            supportController = sceneContext.GetPlayerComponent<SupportUltimateController2D>();
+
         if (supportController == null)
             supportController = FindFirstObjectByType<SupportUltimateController2D>();
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+            sceneContext.ResolveMissingReferences();
     }
 
     /// <summary>

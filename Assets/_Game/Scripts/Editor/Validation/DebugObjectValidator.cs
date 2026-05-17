@@ -73,8 +73,7 @@ public static class DebugObjectValidator
 
         HashSet<string> enabledBuildScenes = GetEnabledBuildScenes();
         ScanBuildScenes(report, enabledBuildScenes);
-        ScanNonBuildScenes(report, enabledBuildScenes);
-        ScanRuntimeHotkeys(report);
+        ScanRuntimeHotkeys(report, enabledBuildScenes);
 
         report.Sort();
         return report;
@@ -159,7 +158,7 @@ public static class DebugObjectValidator
         }
     }
 
-    private static void ScanRuntimeHotkeys(ValidationReport report)
+    private static void ScanRuntimeHotkeys(ValidationReport report, HashSet<string> enabledBuildScenes)
     {
         string[] scriptGuids = AssetDatabase.FindAssets("t:MonoScript", new[] { RuntimeScriptRoot });
         Array.Sort(scriptGuids, StringComparer.Ordinal);
@@ -194,10 +193,12 @@ public static class DebugObjectValidator
             if (ContainsOrdinal(text, "private void OnGUI()")
                 || ContainsOrdinal(text, "void OnGUI()"))
             {
-                bool isKnownDebugComponent = ContainsAny(text, "class DebugRuntimeHUD", "class UIRaycastProbe", "class UIButtonPointerProbe");
-                ValidationSeverity severity = isKnownDebugComponent ? ValidationSeverity.Warning : ValidationSeverity.Info;
+                string typeName = Path.GetFileNameWithoutExtension(scriptPath);
+                if (!IsTypeReferencedByEnabledBuildScene(typeName, enabledBuildScenes))
+                    continue;
+
                 report.Add(
-                    severity,
+                    ValidationSeverity.Warning,
                     "DBG003",
                     scriptPath,
                     FindLineNumber(lines, "OnGUI"),
@@ -290,6 +291,22 @@ public static class DebugObjectValidator
         }
 
         return null;
+    }
+
+    private static bool IsTypeReferencedByEnabledBuildScene(string typeName, HashSet<string> enabledBuildScenes)
+    {
+        if (string.IsNullOrWhiteSpace(typeName) || enabledBuildScenes == null)
+            return false;
+
+        foreach (string scenePath in enabledBuildScenes)
+        {
+            string sceneText = ReadAssetText(scenePath);
+            if (string.IsNullOrEmpty(sceneText)) continue;
+            if (FindSceneComponentLine(sceneText, typeName) > 0)
+                return true;
+        }
+
+        return false;
     }
 
     private static bool IsLineDevelopmentGuarded(string[] lines, int targetLineIndex)

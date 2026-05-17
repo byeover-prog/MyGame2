@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using _Game.Scripts.Core.Session;
 
 public sealed class StageManager2D : MonoBehaviour
@@ -14,10 +15,13 @@ public sealed class StageManager2D : MonoBehaviour
 
     [Header("참조")]
     [Tooltip("적 스포너입니다.")]
-    [SerializeField] private EnemySpawnerTimeline2D spawner;
+    [SerializeField] private EnemySpawner2D spawner;
 
     [Tooltip("세션 매니저입니다.")]
     [SerializeField] private SessionGameManager2D sessionManager;
+
+    [Tooltip("Scene_Game의 런타임 참조 컨텍스트입니다. 비워두면 씬에서 자동 탐색합니다.")]
+    [SerializeField] private GameSceneContext sceneContext;
 
     [Tooltip("비워두면 SaveManager2D.Instance를 자동 사용합니다.")]
     [SerializeField] private SaveManager2D saveManager;
@@ -86,11 +90,7 @@ public sealed class StageManager2D : MonoBehaviour
         if (saveManager == null)
             saveManager = SaveManager2D.Instance;
 
-        if (sessionManager == null)
-            sessionManager = FindFirstObjectByType<SessionGameManager2D>();
-
-        if (spawner == null)
-            spawner = FindFirstObjectByType<EnemySpawnerTimeline2D>();
+        ResolveSceneReferences();
     }
 
     void OnDestroy()
@@ -155,6 +155,7 @@ public sealed class StageManager2D : MonoBehaviour
         {
             currentStageIndex = runSetup.stageIndex;
             RunSetupHolder.Set(runSetup);
+            SaveContinueCheckpointAtStageStart(runSetup);
         }
         else if (runSetup != null)
         {
@@ -255,11 +256,13 @@ public sealed class StageManager2D : MonoBehaviour
     {
         if (spawner == null || _currentStage == null) return;
 
-        // TODO: EnemySpawnerTimeline2D에 SetStageData() 메서드 추가 후 연결
-        // spawner.SetStageData(_currentStage.SpawnTimeline, _currentStage.EnemyRoot,
-        //                      _currentStage.BaseSpawnInterval, _currentStage.MaxEnemies);
+        spawner.SetStageData(
+            _currentStage.EnemyRoot,
+            _currentStage.SpawnTimeline,
+            _currentStage.BaseSpawnInterval,
+            _currentStage.MaxEnemies);
 
-        Log("스포너 설정 — TODO: SetStageData() 연결 필요");
+        Log("스포너 설정 완료");
     }
 
     private void SpawnBoss()
@@ -361,6 +364,15 @@ public sealed class StageManager2D : MonoBehaviour
             saveManager.Save();
     }
 
+    private void SaveContinueCheckpointAtStageStart(RunSetup runSetup)
+    {
+        if (runSetup == null || runSetup.mode != RunSetupMode.Story)
+            return;
+
+        string sceneName = SceneManager.GetActiveScene().name;
+        StoryContinueCheckpointService.SaveStageStartCheckpoint(runSetup.stageIndex, sceneName, saveManager);
+    }
+
     private void ApplyTutorialSettings()
     {
         Log("튜토리얼 모드 활성화 — 사망 불가 등");
@@ -380,6 +392,29 @@ public sealed class StageManager2D : MonoBehaviour
     {
         if (debugLog)
             GameLogger.Log($"[StageManager] {msg}");
+    }
+
+    private void ResolveSceneReferences()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+        {
+            sceneContext.ResolveMissingReferences();
+
+            if (sessionManager == null)
+                sessionManager = sceneContext.SessionManager;
+
+            if (spawner == null)
+                spawner = sceneContext.EnemySpawner;
+        }
+
+        if (sessionManager == null)
+            sessionManager = FindFirstObjectByType<SessionGameManager2D>();
+
+        if (spawner == null)
+            spawner = FindFirstObjectByType<EnemySpawner2D>();
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

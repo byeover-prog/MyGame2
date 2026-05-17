@@ -6,6 +6,7 @@ using UnityEngine;
 public sealed class SkillRuntimeHub : MonoBehaviour
 {
     [Header("허브")]
+    [SerializeField] private GameSceneContext sceneContext;
     [SerializeField] private EventHub eventHub;
 
     [Header("참조(선택: 자동 탐색)")]
@@ -14,11 +15,26 @@ public sealed class SkillRuntimeHub : MonoBehaviour
 
     private void Awake()
     {
+        ResolveSceneContext();
+
         if (eventHub == null) eventHub = EventHub.Instance;
+        if (eventHub == null && sceneContext != null) eventHub = sceneContext.GetSystemsComponent<EventHub>();
         if (eventHub == null) eventHub = FindFirstObjectByType<EventHub>();
 
+        if (shooter == null && sceneContext != null) shooter = sceneContext.GetPlayerComponent<WeaponShooterSystem2D>();
         if (shooter == null) shooter = FindFirstObjectByType<WeaponShooterSystem2D>();
+
+        if (commonSkillManager == null && sceneContext != null) commonSkillManager = sceneContext.GetSystemsComponent<CommonSkillManager2D>();
         if (commonSkillManager == null) commonSkillManager = FindFirstObjectByType<CommonSkillManager2D>();
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+            sceneContext.ResolveMissingReferences();
     }
     
     // Squad

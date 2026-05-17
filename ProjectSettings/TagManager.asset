@@ -25,8 +25,8 @@ TagManager:
   - Boss
   - Projectile
   - Enemy
-  - 
-  - 
+  - PlayerBody
+  - Obstacle
   - 
   - Layer 1
   - Layer 2

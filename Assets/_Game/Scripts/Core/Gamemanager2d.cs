@@ -5,64 +5,47 @@ using _Game.Scripts.Core.Session;
 [DisallowMultipleComponent]
 public sealed class GameManager2D : MonoBehaviour
 {
-    // ───────── 싱글톤 ─────────
     public static GameManager2D Instance { get; private set; }
 
-    // ───────── 인스펙터 참조 ─────────
-    [Header("매니저 참조 (비면 자동 탐색)")]
-    [Tooltip("세션 상태 FSM을 관리하는 매니저입니다.")]
+    [Header("Manager References")]
     [SerializeField] private SessionGameManager2D sessionManager;
-
-    [Tooltip("킬 카운트를 집계하는 컴포넌트입니다.")]
     [SerializeField] private KillCountSource killCountSource;
-
-    [Tooltip("스테이지 진행을 관리하는 매니저입니다.")]
     [SerializeField] private StageManager2D stageManager;
 
-    [Header("게임 시작 설정")]
-    [Tooltip("Awake 직후 자동으로 게임을 시작할지 여부입니다.\n편성(로비) 씬에서 넘어오는 구조면 false로 두세요.")]
+    [Tooltip("Scene_Game start-flow references. If empty, the runtime resolves this from the existing scene references.")]
+    [SerializeField] private GameSceneContext sceneContext;
+
+    [Header("Game Start")]
     [SerializeField] private bool autoStartOnAwake = true;
 
-    [Header("디버그")]
+    [Header("Debug")]
     [SerializeField] private bool log = true;
-    
-    [Header("")]
 
-    // 런타임 상태
-    private bool _gameStarted;
+    private GameSceneRuntime _runtime;
 
-    /// <summary> 현재 런이 진행 중인지 </summary>
-    public bool IsGameRunning => _gameStarted
-        && sessionManager != null
-        && sessionManager.CurrentState == SessionState.Playing;
+    public bool IsGameRunning => _runtime != null && _runtime.IsGameRunning;
 
-    /// <summary> 현재 킬 수 </summary>
-    public int KillCount => killCountSource != null ? killCountSource.KillCount : 0;
-
-    // ───────── 생명주기 ─────────
+    public int KillCount => _runtime != null ? _runtime.KillCount : 0;
 
     private void Awake()
     {
-        // 싱글턴
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
 
-        // 자동 탐색
-        if (sessionManager == null) sessionManager = FindFirstObjectByType<SessionGameManager2D>();
-        if (killCountSource == null) killCountSource = FindFirstObjectByType<KillCountSource>();
-        if (stageManager == null) stageManager = FindFirstObjectByType<StageManager2D>();
+        ResolveLegacyReferences();
+        ResolveRuntime();
 
         if (sessionManager == null)
-            Debug.LogError("[GameManager2D] SessionGameManager2D를 찾지 못했습니다. 씬에 반드시 있어야 합니다.", this);
+            Debug.LogError("[GameManager2D] SessionGameManager2D is missing in Scene_Game.", this);
     }
 
     private void Start()
     {
-        // 로비 미경유 시 편성 데이터 강제 로드
         if (string.IsNullOrWhiteSpace(SquadLoadoutRuntime.MainId))
             SquadLoadoutRuntime.LoadFromSave();
 
@@ -79,18 +62,12 @@ public sealed class GameManager2D : MonoBehaviour
     {
         RunSignals.PlayerDead -= OnPlayerDead;
     }
-    
+
     private void OnClickRetry()
     {
-        GameManager2D.Instance.RestartGame();
+        Instance?.RestartGame();
     }
 
-    // 공개 API
-
-    /// <summary>
-    /// 게임(런) 시작. 로비에서 게임 씬 진입 시 1회 호출합니다.
-    /// 순서: 킬 카운트 리셋 → 세션 시작 → 스테이지 시작 신호
-    /// </summary>
     public void StartGame()
     {
         StartGame(RunSetupHolder.GetOrCreateFromCurrentState());
@@ -98,97 +75,65 @@ public sealed class GameManager2D : MonoBehaviour
 
     public void StartGame(RunSetup runSetup)
     {
-        if (_gameStarted)
-        {
-            if (log) GameLogger.LogWarning("[GameManager2D] 이미 게임이 시작된 상태입니다.", this);
-            return;
-        }
-
-        string invalidReason = string.Empty;
-        if (runSetup == null || !runSetup.IsValid(out invalidReason))
-        {
-            if (log) GameLogger.LogWarning($"[GameManager2D] RunSetup invalid: {invalidReason}", this);
-            return;
-        }
-
-        RunSetupHolder.Set(runSetup);
-        SquadLoadoutRuntime.CopyFromSave(runSetup.ToFormationSaveData());
-
-        _gameStarted = true;
-
-        // 1) 킬 카운트 리셋
-        if (killCountSource != null)
-            killCountSource.ResetKill();
-
-        // 2) 세션 FSM → Playing
-        if (sessionManager != null)
-            sessionManager.StartSession();
-
-        // 3) 스테이지 시작
-        if (stageManager != null)
-            stageManager.BeginStage(runSetup);
-
-        // 4) 전역 신호 발행 (스포너 등이 구독)
-        RunSignals.RaiseStageStarted();
-
-        if (log) GameLogger.Log("[GameManager2D] 게임 시작", this);
+        EnsureRuntime();
+        _runtime.StartGame(runSetup);
     }
 
-    /// <summary>
-    /// 게임 종료 (패배). PlayerDead 신호에 의해 자동 호출됩니다.
-    /// </summary>
     public void EndGame_Defeat()
     {
-        if (!_gameStarted) return;
-
-        if (sessionManager != null)
-            sessionManager.GameOver();
-
-        if (stageManager != null)
-            stageManager.EndStage();
-
-        _gameStarted = false;
-
-        if (log) GameLogger.Log($"[GameManager2D] 게임 종료 (패배) — 킬 수: {KillCount}", this);
+        EnsureRuntime();
+        _runtime.EndDefeat();
     }
 
-    /// <summary>
-    /// 게임 종료 (승리). 보스 처치 등 외부에서 호출합니다.
-    /// </summary>
     public void EndGame_Victory()
     {
-        if (!_gameStarted) return;
-
-        if (sessionManager != null)
-            sessionManager.Victory();
-
-        if (stageManager != null)
-            stageManager.EndStage();
-
-        _gameStarted = false;
-
-        if (log) GameLogger.Log($"[GameManager2D] 게임 종료 (승리) — 킬 수: {KillCount}", this);
+        EnsureRuntime();
+        _runtime.EndVictory();
     }
 
-    /// <summary>
-    /// 게임 재시작 (같은 씬 리로드).
-    /// </summary>
     public void RestartGame()
     {
-        _gameStarted = false;
-
-        // 구독 정리 (씬 리로드 시 이벤트 누수 방지)
-        RunSignals.ClearAllSubscribers();
-
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+        EnsureRuntime();
+        _runtime.RestartCurrentScene();
     }
-
-    // 이벤트 핸들러
 
     private void OnPlayerDead()
     {
-        if (log) GameLogger.Log("[GameManager2D] PlayerDead 신호 수신 → 패배 처리", this);
+        if (log)
+            GameLogger.Log("[GameManager2D] PlayerDead received. Ending run as defeat.", this);
+
         EndGame_Defeat();
+    }
+
+    private void EnsureRuntime()
+    {
+        if (_runtime == null)
+            ResolveRuntime();
+    }
+
+    private void ResolveRuntime()
+    {
+        sceneContext = GameSceneContext.ResolveFor(this, sceneContext, sessionManager, killCountSource, stageManager);
+
+        if (sceneContext != null)
+        {
+            sessionManager = sceneContext.SessionManager;
+            killCountSource = sceneContext.KillCountSource;
+            stageManager = sceneContext.StageManager;
+        }
+
+        _runtime = new GameSceneRuntime(sceneContext, this, log);
+    }
+
+    private void ResolveLegacyReferences()
+    {
+        if (sessionManager == null)
+            sessionManager = FindFirstObjectByType<SessionGameManager2D>();
+
+        if (killCountSource == null)
+            killCountSource = FindFirstObjectByType<KillCountSource>();
+
+        if (stageManager == null)
+            stageManager = FindFirstObjectByType<StageManager2D>();
     }
 }

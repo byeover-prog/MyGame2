@@ -8,6 +8,10 @@ namespace _Game.LevelUp
 
     public sealed class LevelUpRewardApplier : MonoBehaviour
     {
+        [Header("=== Scene Context ===")]
+        [SerializeField, Tooltip("Scene_Game의 런타임 참조 컨텍스트입니다. 비우면 씬에서 자동 탐색합니다.")]
+        private GameSceneContext sceneContext;
+
         [Header("=== 플레이어 참조 ===")]
         [SerializeField, Tooltip("기본 플레이어 스킬 로드아웃입니다.")]
         private PlayerSkillLoadout loadout;
@@ -40,15 +44,40 @@ namespace _Game.LevelUp
 
         private void Awake()
         {
+            ResolveSceneContext();
+
+            if (loadout == null && sceneContext != null) loadout = sceneContext.GetPlayerComponent<PlayerSkillLoadout>();
             if (loadout == null) loadout = FindFirstObjectByType<PlayerSkillLoadout>();
+
+            if (statRuntimeApplier == null && sceneContext != null) statRuntimeApplier = sceneContext.GetPlayerComponent<PlayerStatRuntimeApplier2D>();
             if (statRuntimeApplier == null) statRuntimeApplier = FindFirstObjectByType<PlayerStatRuntimeApplier2D>();
+
+            if (playerHealth == null && sceneContext != null) playerHealth = sceneContext.GetPlayerComponent<PlayerHealth>();
             if (playerHealth == null) playerHealth = FindFirstObjectByType<PlayerHealth>();
+
+            if (playerExp == null && sceneContext != null) playerExp = sceneContext.GetPlayerComponent<PlayerExp>();
             if (playerExp == null) playerExp = FindFirstObjectByType<PlayerExp>();
+
+            if (playerCurrency == null && sceneContext != null) playerCurrency = sceneContext.GetPlayerComponent<PlayerCurrency2D>();
             if (playerCurrency == null) playerCurrency = FindFirstObjectByType<PlayerCurrency2D>();
+
+            if (commonSkillManager == null && sceneContext != null) commonSkillManager = sceneContext.GetSystemsComponent<CommonSkillManager2D>();
             if (commonSkillManager == null) commonSkillManager = FindFirstObjectByType<CommonSkillManager2D>();
+
+            if (skillRunner == null && sceneContext != null) skillRunner = sceneContext.GetSystemsComponent<SkillRunner>();
             if (skillRunner == null) skillRunner = FindFirstObjectByType<SkillRunner>();
+
             if (commonSkillCatalog == null && commonSkillManager != null)
                 commonSkillCatalog = commonSkillManager.Catalog;
+        }
+
+        private void ResolveSceneContext()
+        {
+            if (sceneContext == null)
+                sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+            if (sceneContext != null)
+                sceneContext.ResolveMissingReferences();
         }
 
         public void SetRuntimeLoadout(PlayerSkillLoadout value)
@@ -178,8 +207,10 @@ namespace _Game.LevelUp
         private bool ApplyCharacterSkillCard(LevelUpCardData cardData)
         {
             PlayerSkillLoadout targetLoadout = runtimeLoadout != null ? runtimeLoadout : loadout;
+            CharacterSkillDefinitionSO characterDefinition = cardData.CharacterSkillDefinition;
+            SkillDefinitionSO legacyDefinition = cardData.SkillDefinition;
 
-            if (targetLoadout == null || cardData.SkillDefinition == null)
+            if (targetLoadout == null || (characterDefinition == null && legacyDefinition == null))
             {
                 GameLogger.LogWarning("[RewardApplier] loadout 또는 SkillDefinition 누락 (전용)", this);
                 return false;
@@ -191,9 +222,10 @@ namespace _Game.LevelUp
                 return false;
             }
 
-            SkillDefinitionSO definition = cardData.SkillDefinition;
-            string skillId = definition.SkillId;
+            string skillId = characterDefinition != null ? characterDefinition.SkillId : legacyDefinition.SkillId;
             GameObject prefab = cardData.CharacterSkillPrefab;
+            if (prefab == null && characterDefinition != null)
+                prefab = characterDefinition.WeaponPrefab;
 
             // 1) PlayerSkillLoadout에 기록 (슬롯 추적)
             bool alreadyOwned = targetLoadout.HasSkill(skillId);
@@ -210,7 +242,9 @@ namespace _Game.LevelUp
             }
             else
             {
-                changed = targetLoadout.TryAddSkill(definition);
+                changed = characterDefinition != null
+                    ? targetLoadout.TryAddSkill(characterDefinition)
+                    : targetLoadout.TryAddSkill(legacyDefinition);
                 if (!changed)
                 {
                     GameLogger.Log($"[RewardApplier] 전용 스킬 획득 실패(슬롯 가득): {cardData.Title}", this);

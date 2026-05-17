@@ -74,7 +74,7 @@ public static class RunSetupValidator
         string levelUpCardGeneratorText = ReadAssetText(LevelUpCardGeneratorPath);
 
         ValidateRunSetupOwner(report, runtimeText, runConfigText);
-        ValidateRunConfigScope(report, runConfigText, runConfigHolderText);
+        ValidateRunConfigScope(report, runtimeText, runConfigText, runConfigHolderText);
         ValidateStageSelection(report, stageManagerText);
         ValidateGameStartContract(report, gameManagerText, stageManagerText);
         ValidateFormationStartContract(report, squadFormationText);
@@ -117,6 +117,7 @@ public static class RunSetupValidator
 
     private static void ValidateRunConfigScope(
         ValidationReport report,
+        string runtimeText,
         string runConfigText,
         string runConfigHolderText)
     {
@@ -126,14 +127,25 @@ public static class RunSetupValidator
             return;
         }
 
-        if (ContainsAll(runConfigText, "mode_id", "casual_spawn_curve")
+        bool runSetupOwnsLaunchSnapshot = ContainsAll(
+            runtimeText,
+            "public RunConfigSO runConfig",
+            "stageIndex",
+            "mainId",
+            "support1Id",
+            "support2Id",
+            "talismanItemIds",
+            "continueCheckpoint");
+
+        if (!runSetupOwnsLaunchSnapshot
+            && ContainsAll(runConfigText, "mode_id", "casual_spawn_curve")
             && !ContainsAny(runConfigText, "stageIndex", "mainId", "support1Id", "support2Id", "talisman", "checkpoint"))
         {
             report.AddWarning(
                 "RSU004",
                 RunConfigPath,
                 FindLineNumber(runConfigText, "public sealed class RunConfigSO"),
-                "RunConfigSO currently covers mode/spawn tuning only. It does not own the selected stage, squad, talismans, or Continue checkpoint.");
+                "RunConfigSO covers mode/spawn tuning, but no RunSetup owner was found for selected stage, squad, talismans, and Continue checkpoint.");
         }
 
         if (ContainsAll(runConfigHolderText, "public static RunConfigSO Current", "DontDestroyOnLoad"))

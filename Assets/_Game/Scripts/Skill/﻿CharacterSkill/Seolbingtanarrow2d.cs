@@ -128,7 +128,9 @@ public sealed class SeolbingtanArrow2D : PooledObject2D
         _phase = Phase.Done;
         _attachedTarget = null;
         _attachedDamageable = null;
-        transform.SetParent(null, false);
+
+        if (rb != null) rb.linearVelocity = Vector2.zero;
+        if (hitCollider != null) hitCollider.enabled = true;
     }
 
     private void Update()

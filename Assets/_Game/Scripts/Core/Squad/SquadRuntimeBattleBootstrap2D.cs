@@ -13,6 +13,7 @@ using UnityEngine;
 public sealed class SquadRuntimeBattleBootstrap2D : MonoBehaviour
 {
     [Header("참조")]
+    [SerializeField] private GameSceneContext sceneContext;
     [SerializeField] private SquadLoadout2D squadLoadout;
     [SerializeField] private PlayerDashController playerDash;
     [SerializeField] private CharacterCatalogSO catalog;
@@ -23,14 +24,22 @@ public sealed class SquadRuntimeBattleBootstrap2D : MonoBehaviour
 
     private void Awake()
     {
+        ResolveSceneContext();
+
         if (squadLoadout == null)
             squadLoadout = GetComponent<SquadLoadout2D>();
+
+        if (squadLoadout == null && sceneContext != null && sceneContext.Player != null)
+            squadLoadout = sceneContext.Player.GetComponentInChildren<SquadLoadout2D>(true);
 
         if (squadLoadout == null)
             squadLoadout = FindFirstObjectByType<SquadLoadout2D>();
 
         if (playerDash == null)
             playerDash = GetComponent<PlayerDashController>();
+
+        if (playerDash == null && sceneContext != null && sceneContext.Player != null)
+            playerDash = sceneContext.Player.GetComponentInChildren<PlayerDashController>(true);
 
         if (playerDash == null)
             playerDash = FindFirstObjectByType<PlayerDashController>();
@@ -39,6 +48,15 @@ public sealed class SquadRuntimeBattleBootstrap2D : MonoBehaviour
             catalog = RootBootstrapper.Instance.CharacterRoot.catalog;
 
         ApplyRuntimeLoadout();
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+            sceneContext.ResolveMissingReferences();
     }
 
     [ContextMenu("런타임 편성 다시 적용")]

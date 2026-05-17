@@ -20,6 +20,9 @@ using UnityEngine;
 public sealed class BattleBuffController2D : MonoBehaviour
 {
     [Header("참조")]
+    [Tooltip("Scene_Game의 런타임 참조 컨텍스트입니다. 비워두면 씬에서 자동 탐색합니다.")]
+    [SerializeField] private GameSceneContext sceneContext;
+
     [Tooltip("전투 스탯 컴포넌트입니다. 비워두면 자동 탐색합니다.")]
     [SerializeField] private PlayerCombatStats2D combatStats;
 
@@ -246,13 +249,26 @@ public sealed class BattleBuffController2D : MonoBehaviour
 
     private void EnsureTargets()
     {
+        ResolveSceneContext();
+
         if (combatStats == null) combatStats = GetComponent<PlayerCombatStats2D>();
         if (combatStats == null) combatStats = GetComponentInParent<PlayerCombatStats2D>();
+        if (combatStats == null && sceneContext != null) combatStats = sceneContext.GetPlayerComponent<PlayerCombatStats2D>();
         if (combatStats == null) combatStats = FindFirstObjectByType<PlayerCombatStats2D>();
 
         if (statApplier == null) statApplier = GetComponent<PlayerStatRuntimeApplier2D>();
         if (statApplier == null) statApplier = GetComponentInParent<PlayerStatRuntimeApplier2D>();
+        if (statApplier == null && sceneContext != null) statApplier = sceneContext.GetPlayerComponent<PlayerStatRuntimeApplier2D>();
         if (statApplier == null) statApplier = FindFirstObjectByType<PlayerStatRuntimeApplier2D>();
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+            sceneContext.ResolveMissingReferences();
     }
 
     private void OnDisable()

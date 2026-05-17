@@ -128,6 +128,24 @@ public sealed class EnemySpawner2D : MonoBehaviour
     public void SetSpawnRateMultiplier(float multiplier)
         => _spawnRateMultiplier = Mathf.Clamp(multiplier, 0.1f, 10f);
 
+    public void SetStageData(
+        EnemyRootSO stageEnemyRoot,
+        EnemySpawnTimelineSO stageTimeline,
+        float baseSpawnInterval,
+        int stageMaxEnemies)
+    {
+        enemyRoot = stageEnemyRoot;
+        timeline = stageTimeline;
+        spawnRatePerSec = 1f / Mathf.Max(0.01f, baseSpawnInterval);
+        maxAliveEnemies = Mathf.Max(1, stageMaxEnemies);
+
+        _stageElapsed = 0f;
+        _stageIndex = 0;
+        _timeUntilNextSpawn = 0f;
+
+        BuildEnemyIndex();
+    }
+
     public void NotifyEnemyBecameAlive(object enemy)
     {
         _aliveCount = Mathf.Max(0, _aliveCount + 1);

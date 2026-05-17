@@ -142,7 +142,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9332755d83020b4f949b987fa5bbcfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectilePool2D
-  prefab: {fileID: 0}
+  prefab: {fileID: 1392082254610218919, guid: b439e78f68133414b9d88032f50ff159, type: 3}
   prewarmCount: 20
   prewarmPerFrame: 3
   prewarmOnStart: 1

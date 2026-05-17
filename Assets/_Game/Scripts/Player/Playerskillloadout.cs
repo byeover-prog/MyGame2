@@ -75,6 +75,14 @@ namespace _Game.Player
             };
         }
 
+        public bool TryAddSkill(CharacterSkillDefinitionSO skill)
+        {
+            if (skill == null)
+                return false;
+
+            return TryAddToContainer(skill, activeSlots, activeById);
+        }
+
         /// <summary>
         /// 보유 중인 스킬의 레벨을 1 올린다.
         /// </summary>
@@ -152,6 +160,19 @@ namespace _Game.Player
             return state.CanLevelUp();
         }
 
+        public bool CanAppearAsCard(CharacterSkillDefinitionSO skill)
+        {
+            if (skill == null)
+                return false;
+
+            RuntimeSkillState state = GetSkill(skill.SkillId);
+
+            if (state == null)
+                return HasEmptySlot(activeSlots);
+
+            return state.CanLevelUp();
+        }
+
         /// <summary>
         /// 카드에 표시할 설명 텍스트를 생성한다.
         /// SO에 레벨별 설명이 있으면 그것을 사용, 없으면 기본 텍스트.
@@ -185,6 +206,23 @@ namespace _Game.Player
         /// 모든 패시브 슬롯을 순회하여 합산된 보너스 스탯을 반환한다.
         /// 수치는 PassiveBalanceTableSO에서 읽어온다.
         /// </summary>
+        public string BuildCardDescription(CharacterSkillDefinitionSO skill)
+        {
+            if (skill == null) return string.Empty;
+
+            RuntimeSkillState state = GetSkill(skill.SkillId);
+            int nextLevel = state == null ? 1 : state.Level + 1;
+
+            string soDesc = skill.GetDescriptionForLevel(nextLevel);
+            if (!string.IsNullOrWhiteSpace(soDesc))
+                return soDesc;
+
+            if (state == null)
+                return "새로 획득";
+
+            return $"Lv.{state.Level} -> Lv.{nextLevel}";
+        }
+
         public PlayerStatSnapshot BuildStatSnapshot()
         {
             PlayerStatSnapshot snapshot = new PlayerStatSnapshot();
@@ -220,6 +258,33 @@ namespace _Game.Player
             RuntimeSkillState[] slots,
             Dictionary<string, RuntimeSkillState> byId)
         {
+            if (byId.ContainsKey(skill.SkillId))
+                return false;
+
+            for (int i = 0; i < slots.Length; i++)
+            {
+                if (slots[i] == null)
+                {
+                    var state = new RuntimeSkillState(skill);
+
+                    slots[i] = state;
+                    byId.Add(skill.SkillId, state);
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool TryAddToContainer(
+            CharacterSkillDefinitionSO skill,
+            RuntimeSkillState[] slots,
+            Dictionary<string, RuntimeSkillState> byId)
+        {
+            if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId))
+                return false;
+
             if (byId.ContainsKey(skill.SkillId))
                 return false;
 

@@ -13,6 +13,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class SkillRunner : MonoBehaviour
 {
+    [SerializeField] private GameSceneContext sceneContext;
+
     [Header("오너(플레이어)")]
     [Tooltip("비우면 Awake에서 PlayerExp(있으면) -> self 순으로 찾습니다.")]
     [SerializeField] private Transform owner;
@@ -34,10 +36,17 @@ public sealed class SkillRunner : MonoBehaviour
 
     private void Awake()
     {
+        ResolveSceneContext();
+
         if (owner == null)
         {
-            var pe = FindFirstObjectByType<PlayerExp>();
-            owner = pe != null ? pe.transform : transform;
+            owner = sceneContext != null ? sceneContext.Player : null;
+        }
+
+        if (owner == null)
+        {
+            PlayerExp playerExp = FindFirstObjectByType<PlayerExp>();
+            owner = playerExp != null ? playerExp.transform : transform;
         }
 
         EnsureMount();
@@ -65,6 +74,12 @@ public sealed class SkillRunner : MonoBehaviour
 
         if (enableLogs)
             GameLogger.Log("[SkillRunner] SkillMount 자동 생성", this);
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
     }
 
     public void AttachSkillPrefab(string id, GameObject prefab)

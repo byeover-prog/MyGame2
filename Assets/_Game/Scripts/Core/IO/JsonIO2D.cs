@@ -61,7 +61,7 @@ public static class JsonIO2D
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
 
-            File.WriteAllText(path, text, Encoding.UTF8);
+            WriteTextAtomically(path, text);
             return true;
         }
         catch (Exception ex)
@@ -116,7 +116,7 @@ public static class JsonIO2D
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
 
-            File.WriteAllText(path, json, Encoding.UTF8);
+            WriteTextAtomically(path, json);
             return true;
         }
         catch (Exception ex)
@@ -143,5 +143,23 @@ public static class JsonIO2D
             error = ex.Message;
             return false;
         }
+    }
+
+    private static void WriteTextAtomically(string path, string text)
+    {
+        string dir = Path.GetDirectoryName(path);
+        string fileName = Path.GetFileName(path);
+        string tempPath = Path.Combine(dir, fileName + ".tmp");
+        string backupPath = Path.Combine(dir, fileName + ".bak");
+
+        File.WriteAllText(tempPath, text, Encoding.UTF8);
+
+        if (File.Exists(path))
+        {
+            File.Replace(tempPath, path, backupPath, ignoreMetadataErrors: true);
+            return;
+        }
+
+        File.Move(tempPath, path);
     }
 }

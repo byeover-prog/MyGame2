@@ -122,8 +122,14 @@ public static class ContinueCheckpointValidator
         }
 
         string beginStageBody = ExtractMethodBody(stageManagerText, "BeginStage");
-        if (!ContainsAny(beginStageBody, StageStartSaveTokens)
-            && !ContainsAll(beginStageBody, "SaveManager2D", "Save("))
+        bool savesCheckpointAtStageStart = ContainsAny(beginStageBody, StageStartSaveTokens)
+            || ContainsAll(beginStageBody, "SaveManager2D", "Save(")
+            || ContainsAll(
+                stageManagerText,
+                "SaveContinueCheckpointAtStageStart(runSetup)",
+                "StoryContinueCheckpointService.SaveStageStartCheckpoint");
+
+        if (!savesCheckpointAtStageStart)
         {
             report.AddError(
                 "CCV005",
@@ -133,7 +139,7 @@ public static class ContinueCheckpointValidator
         }
 
         string saveProgressBody = ExtractMethodBody(stageManagerText, "SaveProgress");
-        if (ContainsAll(saveProgressBody, "MarkCleared", "Save("))
+        if (!savesCheckpointAtStageStart && ContainsAll(saveProgressBody, "MarkCleared", "Save("))
         {
             report.AddWarning(
                 "CCV006",

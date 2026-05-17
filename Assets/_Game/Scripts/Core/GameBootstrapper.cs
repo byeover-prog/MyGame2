@@ -2,23 +2,40 @@ using UnityEngine;
 
 public sealed class GameBootstrapper : MonoBehaviour
 {
-    [Header("여기에 씬 오브젝트를 드래그로 연결")]
-    [SerializeField] private Transform player;      // YounSeol
-    [SerializeField] private Transform systemsRoot; // 00_Systems
+    [Header("Compatibility")]
+    [SerializeField] private GameSceneContext sceneContext;
+    [SerializeField] private Transform player;
+    [SerializeField] private Transform systemsRoot;
 
     private void Awake()
     {
-        if (player == null) { Debug.LogError("[Bootstrapper] player 비어있음 → YounSeol 연결", this); return; }
-        if (systemsRoot == null) { Debug.LogError("[Bootstrapper] systemsRoot 비어있음 → 00_Systems 연결", this); return; }
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
 
-        var shooter = player.GetComponentInChildren<WeaponShooterSystem2D>(true);
-        if (shooter == null)
+        if (sceneContext != null)
+            return;
+
+        PrepareLegacyPlayerLoadout();
+    }
+
+    private void PrepareLegacyPlayerLoadout()
+    {
+        if (player == null)
         {
-            Debug.LogError("[Bootstrapper] WeaponShooterSystem2D 없음 → 플레이어 프리팹에 컴포넌트 추가 필요", this);
+            Debug.LogError("[GameBootstrapper] player is missing. Assign the player Transform or use GameSceneContext.", this);
             return;
         }
 
-        // 프리팹에서 slots를 비워두는 운영이면, 여기서 1회 보장해도 됨(중복 안전).
+        if (systemsRoot == null)
+            Debug.LogWarning("[GameBootstrapper] systemsRoot is missing. GameSceneContext should own Scene_Game roots.", this);
+
+        WeaponShooterSystem2D shooter = player.GetComponentInChildren<WeaponShooterSystem2D>(true);
+        if (shooter == null)
+        {
+            Debug.LogError("[GameBootstrapper] WeaponShooterSystem2D is missing on the player prefab.", this);
+            return;
+        }
+
         shooter.EnsureDefaultLoadoutIfEmpty();
     }
 }

@@ -90,7 +90,10 @@ public sealed class CasualSpawnRateScaler : MonoBehaviour
     {
         if (spawner == null) return;
 
-        RunConfigSO cfg = RunConfigHolder.Current;
+        RunSetup runSetup = RunSetupHolder.HasCurrent ? RunSetupHolder.Current : null;
+        RunConfigSO cfg = runSetup != null && runSetup.runConfig != null
+            ? runSetup.runConfig
+            : RunConfigHolder.FindSceneConfig();
 
         // 런 설정이 없으면 기본 배율
         if (cfg == null)

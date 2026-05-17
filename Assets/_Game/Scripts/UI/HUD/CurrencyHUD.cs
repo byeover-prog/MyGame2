@@ -3,6 +3,9 @@ using TMPro;
 
 public class CurrencyHUD : MonoBehaviour
 {
+    [Header("Scene Context")]
+    [SerializeField] private GameSceneContext sceneContext;
+
     [Header("냥")]
     [SerializeField] private TextMeshProUGUI txtNyang;
     [SerializeField] private PlayerCurrency2D playerCurrency;
@@ -13,26 +16,49 @@ public class CurrencyHUD : MonoBehaviour
 
     private void Awake()
     {
+        ResolveSceneContext();
+
+        if (playerCurrency == null && sceneContext != null)
+            playerCurrency = sceneContext.GetPlayerComponent<PlayerCurrency2D>();
+
         if (playerCurrency == null)
             playerCurrency = FindFirstObjectByType<PlayerCurrency2D>();
+
+        if (playerSpirit == null && sceneContext != null)
+            playerSpirit = sceneContext.GetPlayerComponent<PlayerSpirit2D>();
+
         if (playerSpirit == null)
             playerSpirit = FindFirstObjectByType<PlayerSpirit2D>();
     }
 
     private void OnEnable()
     {
-        playerCurrency.OnGoldChanged   += OnNyangChanged;
-        playerSpirit.OnSpiritChanged   += OnSoulChanged;
+        if (playerCurrency != null)
+            playerCurrency.OnGoldChanged += OnNyangChanged;
 
-        // 초기값 표시
-        UpdateNyang(playerCurrency.CurrentGold);
-        UpdateSoul(playerSpirit.CurrentSpirit);
+        if (playerSpirit != null)
+            playerSpirit.OnSpiritChanged += OnSoulChanged;
+
+        UpdateNyang(playerCurrency != null ? playerCurrency.CurrentGold : 0);
+        UpdateSoul(playerSpirit != null ? playerSpirit.CurrentSpirit : 0);
     }
 
     private void OnDisable()
     {
-        playerCurrency.OnGoldChanged   -= OnNyangChanged;
-        playerSpirit.OnSpiritChanged   -= OnSoulChanged;
+        if (playerCurrency != null)
+            playerCurrency.OnGoldChanged -= OnNyangChanged;
+
+        if (playerSpirit != null)
+            playerSpirit.OnSpiritChanged -= OnSoulChanged;
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+            sceneContext.ResolveMissingReferences();
     }
 
     private void OnNyangChanged(int total, int delta) => UpdateNyang(total);

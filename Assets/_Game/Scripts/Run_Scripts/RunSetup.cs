@@ -122,7 +122,7 @@ public static class RunSetupFactory
             mainId = loadout.mainId,
             support1Id = loadout.support1Id,
             support2Id = loadout.support2Id,
-            runConfig = runConfig != null ? runConfig : RunConfigHolder.Current,
+            runConfig = runConfig != null ? runConfig : RunConfigHolder.FindSceneConfig(),
             continueCheckpoint = CloneCheckpoint(meta != null ? meta.stageProgress?.continueCheckpoint : null),
             talismanItemIds = BuildTalismanSnapshot(meta, loadout.mainId)
         };

@@ -13,6 +13,9 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
     [SerializeField] private PlayerBaseStatProfileSO baseStatProfile;
 
     [Header("=== 참조 ===")]
+    [SerializeField, Tooltip("Scene_Game의 런타임 참조 컨텍스트입니다. 비우면 씬에서 자동 탐색합니다.")]
+    private GameSceneContext sceneContext;
+
     [SerializeField, Tooltip("새 스킬/패시브 런타임 상태를 보관하는 로드아웃")]
     private PlayerSkillLoadout loadout;
 
@@ -21,12 +24,6 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
 
     [SerializeField, Tooltip("최대 HP 보너스를 반영할 플레이어 체력 컴포넌트")]
     private PlayerHealth playerHealth;
-
-    [Header("=== 동작 옵션 ===")]
-    [Tooltip("이 값은 사용하지 않습니다. 최대 HP 증가분만큼만 회복하도록 고정합니다.")]
-#pragma warning disable 0414
-    [SerializeField] private bool healToFullWhenMaxHpChanges = false;
-#pragma warning restore 0414
 
     [Tooltip("적용 로그를 보고 싶을 때만 켜세요")]
     [SerializeField] private bool debugLog = false;
@@ -71,8 +68,11 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
 
     private void EnsureTargets()
     {
+        ResolveSceneContext();
+
         if (loadout == null) loadout = GetComponent<PlayerSkillLoadout>();
         if (loadout == null) loadout = GetComponentInParent<PlayerSkillLoadout>();
+        if (loadout == null && sceneContext != null) loadout = sceneContext.GetPlayerComponent<PlayerSkillLoadout>();
         if (loadout == null) loadout = FindFirstObjectByType<PlayerSkillLoadout>();
 
         if (combatStats == null) combatStats = GetComponent<PlayerCombatStats2D>();
@@ -81,7 +81,17 @@ public sealed class PlayerStatRuntimeApplier2D : MonoBehaviour
 
         if (playerHealth == null) playerHealth = GetComponent<PlayerHealth>();
         if (playerHealth == null) playerHealth = GetComponentInParent<PlayerHealth>();
+        if (playerHealth == null && sceneContext != null) playerHealth = sceneContext.GetPlayerComponent<PlayerHealth>();
         if (playerHealth == null) playerHealth = FindFirstObjectByType<PlayerHealth>();
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+            sceneContext.ResolveMissingReferences();
     }
 
     private void ApplyRuntime(PlayerStatSnapshot baseSnapshot, PlayerStatSnapshot passiveSnapshot)

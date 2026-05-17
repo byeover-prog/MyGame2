@@ -6,96 +6,62 @@ using _Game.Skills;
 
 namespace _Game.LevelUp
 {
-    // 레벨업 카드 5장을 생성한다.
-    
     public sealed class LevelUpCardGenerator : MonoBehaviour
     {
-        //  전용 스킬 세트 (인스펙터)
+        [Header("=== Catalogs ===")]
+        [SerializeField] private SkillCatalogSO skillCatalog;
+        [SerializeField] private CommonSkillCatalogSO commonSkillCatalog;
+        [SerializeField] private CharacterSkillDatabaseSO characterSkillDatabase;
 
-        [Serializable]
-        public struct CharacterExclusiveSkill
-        {
-            [Tooltip("스킬 정의 SO (PlayerSkillLoadout 추적 + UI 표시용)")]
-            public SkillDefinitionSO definition;
-
-            [Tooltip("SkillRunner에 장착할 프리팹")]
-            public GameObject prefab;
-        }
-
-        [Serializable]
-        public struct CharacterSkillSet
-        {
-            [Tooltip("캐릭터 ID (SquadLoadoutRuntime의 MainId/Support1Id/Support2Id와 일치)")]
-            public string characterId;
-
-            [Tooltip("이 캐릭터의 전용 스킬 (최대 2개)")]
-            public CharacterExclusiveSkill[] skills;
-        }
-        
-        //  인스펙터
-
-        [Header("=== 카탈로그 ===")]
-        [SerializeField, Tooltip("전체 공통 스킬 / 패시브 목록입니다.")]
-        private SkillCatalogSO skillCatalog;
-
-        [SerializeField, Tooltip("액티브 스킬을 실제 런타임 공통 스킬과 매핑할 카탈로그입니다.")]
-        private CommonSkillCatalogSO commonSkillCatalog;
-
-        [Header("=== 캐릭터 전용 스킬 ===")]
-        [Tooltip("캐릭터별 전용 스킬 세트. 파티에 편성된 모든 캐릭터(메인+지원1+지원2)의 세트가 카드 풀에 포함됩니다.")]
-        [SerializeField] private CharacterSkillSet[] characterSkillSets = Array.Empty<CharacterSkillSet>();
-
-        [Header("=== 카드 수 ===")]
+        [Header("=== Card Count ===")]
         [SerializeField, Min(3)] private int totalCardCount = 5;
 
-        [Header("=== 전용 스킬 가중치 ===")]
-        [Tooltip("전용 스킬이 공통 스킬 대비 선택될 확률 배율")]
+        [Header("=== Exclusive Skill Weight ===")]
         [SerializeField, Range(1f, 5f)] private float exclusiveWeightMultiplier = 1.5f;
 
-        [Header("=== 전용 스킬 보장 ===")]
-        [Tooltip("이 레벨부터 전용 스킬이 한 번도 안 나왔으면 강제 배치")]
+        [Header("=== Exclusive Skill Guarantee ===")]
         [SerializeField, Min(1)] private int guaranteeStartLevel = 2;
-
-        [Tooltip("리롤 시 전용 스킬 확률 누적 보너스")]
         [SerializeField, Range(0f, 1f)] private float rerollPityPerRoll = 0.15f;
 
-        [Header("=== 패시브 과속 방지 ===")]
-        [Tooltip("이 레벨까지는 패시브 슬롯 1장만")]
+        [Header("=== Passive Slot Rules ===")]
         [SerializeField, Min(1)] private int passiveSingleSlotUntilLevel = 5;
 
-        [Header("=== 연속 등장 방지 ===")]
+        [Header("=== Repeat Penalty ===")]
         [SerializeField, Range(0f, 1f)] private float recentPenalty1 = 0.5f;
         [SerializeField, Range(0f, 1f)] private float recentPenalty2 = 0.75f;
 
-        [Header("=== 대체 카드 수치 ===")]
+        [Header("=== Fallback Cards ===")]
         [SerializeField] private int fallbackHealAmount = 30;
         [SerializeField] private int fallbackGoldAmount = 200;
         [SerializeField] private float fallbackInvincibleDuration = 5f;
         [SerializeField] private int fallbackBonusExpAmount = 50;
-        
-        //  런 추적 상태
 
         private int _levelUpCount;
         private bool _exclusiveEverOffered;
         private int _currentRerollCount;
         private float _currentPityBonus;
 
-        // 연속 등장 방지: skillId -> 마지막 등장 레벨업 번호
         private readonly Dictionary<string, int> _recentHistory = new(32);
-
-        // 가중치 후보 버퍼
         private readonly List<WeightedSkill> _skillCandidates = new(32);
         private readonly List<SkillDefinitionSO> _passiveCandidates = new(16);
 
         private struct WeightedSkill
         {
             public SkillDefinitionSO definition;
-            public GameObject prefab;       // 전용 스킬이면 프리팹, 공통이면 null
+            public CharacterSkillDefinitionSO characterDefinition;
+            public GameObject prefab;
             public float weight;
             public bool isExclusive;
+
+            public string SkillId => isExclusive
+                ? (characterDefinition != null ? characterDefinition.SkillId : string.Empty)
+                : (definition != null ? definition.SkillId : string.Empty);
+
+            public string DisplayName => isExclusive
+                ? (characterDefinition != null ? characterDefinition.DisplayName : string.Empty)
+                : (definition != null ? definition.DisplayName : string.Empty);
         }
-        
-        // 런 시작 시 호출 — 추적 상태 초기화.
+
         public void ResetRunState()
         {
             _levelUpCount = 0;
@@ -105,80 +71,66 @@ namespace _Game.LevelUp
             _recentHistory.Clear();
         }
 
-        //리롤 시 호출 — 피티 누적.
         public void NotifyReroll()
         {
             _currentRerollCount++;
             _currentPityBonus += rerollPityPerRoll;
         }
 
-        // 레벨업 닫힐 때 호출 — 리롤 상태 초기화.
         public void NotifyLevelUpClosed()
         {
             _currentRerollCount = 0;
             _currentPityBonus = 0f;
         }
 
-        // 전달받은 loadout 기준으로 카드를 생성한다.
-        
         public List<LevelUpCardData> Generate(PlayerSkillLoadout loadout)
         {
             List<LevelUpCardData> result = new List<LevelUpCardData>(totalCardCount);
 
             if (skillCatalog == null || loadout == null)
             {
-                GameLogger.LogWarning("[CardGen] skillCatalog 또는 loadout이 없어 대체 카드로 채웁니다.", this);
+                GameLogger.LogWarning("[CardGen] skillCatalog or loadout is missing. Filling fallback cards.", this);
                 FillWithFallbackCards(result);
                 return result;
             }
 
-            // 레벨업 카운트 증가 (리롤이 아닌 첫 생성일 때만)
             if (_currentRerollCount == 0)
                 _levelUpCount++;
 
-            // 패시브 슬롯 수 결정
             int passiveSlotCount = _levelUpCount <= passiveSingleSlotUntilLevel ? 1 : 2;
             int skillSlotCount = totalCardCount - passiveSlotCount;
 
-            // 후보 수집
             BuildSkillCandidates(loadout);
             BuildPassiveCandidates(loadout);
 
-            GameLogger.Log($"[CardGen] Generate Lv#{_levelUpCount} | 스킬후보={_skillCandidates.Count} 패시브후보={_passiveCandidates.Count} | 스킬슬롯={skillSlotCount} 패시브슬롯={passiveSlotCount}", this);
+            GameLogger.Log(
+                $"[CardGen] Generate Lv#{_levelUpCount} | skillCandidates={_skillCandidates.Count} passiveCandidates={_passiveCandidates.Count} | skillSlots={skillSlotCount} passiveSlots={passiveSlotCount}",
+                this);
 
-            // 후보 0이면 대체 카드
             if (_skillCandidates.Count == 0 && _passiveCandidates.Count == 0)
             {
                 FillWithFallbackCards(result);
                 return result;
             }
 
-            // 스킬 슬롯 채우기 (전용 보장 포함)
             HashSet<string> usedIds = new HashSet<string>();
             bool needGuarantee = NeedExclusiveGuarantee();
 
             FillSkillSlots(result, loadout, usedIds, skillSlotCount, needGuarantee);
-
-            // 패시브 슬롯 채우기
             FillPassiveSlots(result, loadout, usedIds, passiveSlotCount);
 
-            // 부족하면 대체 카드로 채움
             if (result.Count < totalCardCount)
                 FillRemainingWithFallbackCards(result);
 
-            // 연속 등장 기록 갱신
             UpdateRecentHistory(result);
 
             return result;
         }
-        
-        //  후보 수집
 
         private void BuildSkillCandidates(PlayerSkillLoadout loadout)
         {
             _skillCandidates.Clear();
 
-            // 1) 공통 액티브 스킬
             IReadOnlyList<SkillDefinitionSO> actives = skillCatalog.GetByType(SkillType.Active);
             if (actives != null)
             {
@@ -187,38 +139,38 @@ namespace _Game.LevelUp
                     SkillDefinitionSO skill = actives[i];
                     if (!IsValidCandidate(skill, loadout)) continue;
 
-                    // CommonSkillCatalog 매핑 확인
                     if (commonSkillCatalog != null)
                     {
                         if (!commonSkillCatalog.TryResolve(skill, out CommonSkillConfigSO config)) continue;
                         if (config == null || config.weaponPrefab == null) continue;
                     }
 
-                    float w = 1f * GetRecentPenalty(skill.SkillId);
-
                     _skillCandidates.Add(new WeightedSkill
                     {
                         definition = skill,
+                        characterDefinition = null,
                         prefab = null,
-                        weight = w,
+                        weight = GetRecentPenalty(skill.SkillId),
                         isExclusive = false
                     });
                 }
             }
 
-            // 2) 파티 전원(메인+지원1+지원2)의 전용 스킬
             RunSetup runSetup = RunSetupHolder.GetOrCreateFromCurrentState();
-            string mainId     = runSetup != null ? runSetup.mainId : string.Empty;
+            string mainId = runSetup != null ? runSetup.mainId : string.Empty;
             string support1Id = runSetup != null ? runSetup.support1Id : string.Empty;
             string support2Id = runSetup != null ? runSetup.support2Id : string.Empty;
+            int databaseSetCount = characterSkillDatabase != null && characterSkillDatabase.CharacterSkillSets != null
+                ? characterSkillDatabase.CharacterSkillSets.Count
+                : 0;
 
             GameLogger.Log(
-                $"[CardGen] 파티 전용 스킬 탐색 — 메인='{mainId}' 지원1='{support1Id}' 지원2='{support2Id}' | characterSkillSets수={characterSkillSets.Length}",
+                $"[CardGen] party exclusive skill lookup | main='{mainId}' support1='{support1Id}' support2='{support2Id}' | databaseSets={databaseSetCount}",
                 this);
 
-            AppendExclusiveSkillsOf(mainId,     loadout, "메인");
-            AppendExclusiveSkillsOf(support1Id, loadout, "지원1");
-            AppendExclusiveSkillsOf(support2Id, loadout, "지원2");
+            AppendExclusiveSkillsOf(mainId, loadout, "Main");
+            AppendExclusiveSkillsOf(support1Id, loadout, "Support1");
+            AppendExclusiveSkillsOf(support2Id, loadout, "Support2");
         }
 
         private void BuildPassiveCandidates(PlayerSkillLoadout loadout)
@@ -232,14 +184,11 @@ namespace _Game.LevelUp
             {
                 SkillDefinitionSO skill = passives[i];
                 if (!IsValidCandidate(skill, loadout)) continue;
-
                 if (skill.PassiveStatType == PassiveStatType.None) continue;
 
                 _passiveCandidates.Add(skill);
             }
         }
-        
-        //  후보 검증
 
         private bool IsValidCandidate(SkillDefinitionSO skill, PlayerSkillLoadout loadout)
         {
@@ -248,8 +197,15 @@ namespace _Game.LevelUp
             if (string.IsNullOrWhiteSpace(skill.DisplayName)) return false;
             return loadout.CanAppearAsCard(skill);
         }
-        
-        //  슬롯 채우기
+
+        private bool IsValidCandidate(CharacterSkillDefinitionSO skill, PlayerSkillLoadout loadout)
+        {
+            if (skill == null) return false;
+            if (string.IsNullOrWhiteSpace(skill.SkillId)) return false;
+            if (string.IsNullOrWhiteSpace(skill.DisplayName)) return false;
+            if (skill.WeaponPrefab == null) return false;
+            return loadout.CanAppearAsCard(skill);
+        }
 
         private void FillSkillSlots(
             List<LevelUpCardData> result,
@@ -260,37 +216,39 @@ namespace _Game.LevelUp
         {
             if (_skillCandidates.Count == 0) return;
 
-            // 보장: 전용 스킬 1장 강제 배치
             if (needGuarantee)
             {
                 for (int i = 0; i < _skillCandidates.Count; i++)
                 {
                     if (!_skillCandidates[i].isExclusive) continue;
 
-                    var c = _skillCandidates[i];
-                    result.Add(MakeCardData(c, loadout));
-                    usedIds.Add(c.definition.SkillId);
+                    WeightedSkill candidate = _skillCandidates[i];
+                    string skillId = candidate.SkillId;
+                    if (string.IsNullOrWhiteSpace(skillId) || !usedIds.Add(skillId)) continue;
+
+                    result.Add(MakeCardData(candidate, loadout));
                     _exclusiveEverOffered = true;
                     count--;
 
-                    GameLogger.Log($"[CardGen] 전용 스킬 보장: {c.definition.DisplayName}", this);
+                    GameLogger.Log($"[CardGen] exclusive guarantee: {candidate.DisplayName}", this);
                     break;
                 }
             }
 
-            // 나머지: 가중치 랜덤
             int safety = 256;
             while (count > 0 && safety-- > 0)
             {
                 int picked = WeightedRandomPick(usedIds);
                 if (picked < 0) break;
 
-                var c = _skillCandidates[picked];
-                result.Add(MakeCardData(c, loadout));
-                usedIds.Add(c.definition.SkillId);
+                WeightedSkill candidate = _skillCandidates[picked];
+                string skillId = candidate.SkillId;
+                if (string.IsNullOrWhiteSpace(skillId) || !usedIds.Add(skillId)) continue;
+
+                result.Add(MakeCardData(candidate, loadout));
                 count--;
 
-                if (c.isExclusive)
+                if (candidate.isExclusive)
                     _exclusiveEverOffered = true;
             }
         }
@@ -313,92 +271,91 @@ namespace _Game.LevelUp
                 if (!usedIds.Add(skill.SkillId)) continue;
 
                 string desc = loadout.BuildCardDescription(skill);
-                var card = LevelUpCardData.CreateSkillCard(skill, desc);
+                LevelUpCardData card = LevelUpCardData.CreateSkillCard(skill, desc);
 
-                // 현재 레벨 세팅
-                var state = loadout.GetSkill(skill.SkillId);
+                RuntimeSkillState state = loadout.GetSkill(skill.SkillId);
                 card.CurrentLevel = state != null ? state.Level : 0;
-                card.NextLevel    = card.CurrentLevel + 1;
+                card.NextLevel = card.CurrentLevel + 1;
 
                 result.Add(card);
                 count--;
             }
         }
-        
-        //  카드 데이터 생성
 
-        private LevelUpCardData MakeCardData(WeightedSkill ws, PlayerSkillLoadout loadout)
+        private LevelUpCardData MakeCardData(WeightedSkill weightedSkill, PlayerSkillLoadout loadout)
         {
-            string desc = loadout.BuildCardDescription(ws.definition);
-
-            // 현재 레벨 조회
-            var state = loadout.GetSkill(ws.definition.SkillId);
-            int curLevel = state != null ? state.Level : 0;
+            string skillId = weightedSkill.SkillId;
+            RuntimeSkillState state = loadout.GetSkill(skillId);
+            int currentLevel = state != null ? state.Level : 0;
 
             LevelUpCardData card;
-            if (ws.isExclusive)
-                card = LevelUpCardData.CreateCharacterSkillCard(ws.definition, desc, ws.prefab);
+            if (weightedSkill.isExclusive)
+            {
+                CharacterSkillDefinitionSO definition = weightedSkill.characterDefinition;
+                string desc = loadout.BuildCardDescription(definition);
+                card = LevelUpCardData.CreateCharacterSkillCard(definition, desc);
+                card.AddInfo = definition != null ? definition.GetAddInfoForLevel(currentLevel + 1) : string.Empty;
+            }
             else
-                card = LevelUpCardData.CreateSkillCard(ws.definition, desc);
+            {
+                SkillDefinitionSO definition = weightedSkill.definition;
+                string desc = loadout.BuildCardDescription(definition);
+                card = LevelUpCardData.CreateSkillCard(definition, desc);
+                card.AddInfo = definition != null ? definition.GetAddInfoForLevel(currentLevel + 1) : string.Empty;
+            }
 
-            card.CurrentLevel = curLevel;
-            card.NextLevel    = curLevel + 1;
-            card.AddInfo = ws.definition.GetAddInfoForLevel(curLevel + 1);
+            card.CurrentLevel = currentLevel;
+            card.NextLevel = currentLevel + 1;
 
             return card;
         }
-
-        //  가중치 랜덤
 
         private int WeightedRandomPick(HashSet<string> usedIds)
         {
             float totalWeight = 0f;
             for (int i = 0; i < _skillCandidates.Count; i++)
             {
-                if (usedIds.Contains(_skillCandidates[i].definition.SkillId)) continue;
+                if (usedIds.Contains(_skillCandidates[i].SkillId)) continue;
                 totalWeight += Mathf.Max(0f, _skillCandidates[i].weight);
             }
 
             if (totalWeight <= 0f) return -1;
 
             float roll = UnityEngine.Random.Range(0f, totalWeight);
-            float acc = 0f;
+            float accumulated = 0f;
 
             for (int i = 0; i < _skillCandidates.Count; i++)
             {
-                if (usedIds.Contains(_skillCandidates[i].definition.SkillId)) continue;
-                float w = Mathf.Max(0f, _skillCandidates[i].weight);
-                acc += w;
-                if (roll <= acc) return i;
+                if (usedIds.Contains(_skillCandidates[i].SkillId)) continue;
+                float weight = Mathf.Max(0f, _skillCandidates[i].weight);
+                accumulated += weight;
+                if (roll <= accumulated) return i;
             }
 
-            // fallback
             for (int i = _skillCandidates.Count - 1; i >= 0; i--)
             {
-                if (!usedIds.Contains(_skillCandidates[i].definition.SkillId))
+                if (!usedIds.Contains(_skillCandidates[i].SkillId))
                     return i;
             }
 
             return -1;
         }
-        
-        //  보장 / 피티 / 페널티
 
         private bool NeedExclusiveGuarantee()
         {
             if (_exclusiveEverOffered) return false;
 
-            // 전용 후보 존재 확인
             bool hasExclusive = false;
             for (int i = 0; i < _skillCandidates.Count; i++)
             {
-                if (_skillCandidates[i].isExclusive) { hasExclusive = true; break; }
+                if (_skillCandidates[i].isExclusive)
+                {
+                    hasExclusive = true;
+                    break;
+                }
             }
-            if (!hasExclusive) return false;
 
-            // 보장 윈도우: startLevel ~ endLevel 사이면 보장
-            // endLevel 이후에도 미등장이면 강제 보장
-            return _levelUpCount >= guaranteeStartLevel;
+            return hasExclusive && _levelUpCount >= guaranteeStartLevel;
         }
 
         private float GetRecentPenalty(string skillId)
@@ -410,6 +367,7 @@ namespace _Game.LevelUp
                 if (gap <= 1) return recentPenalty1;
                 if (gap <= 2) return recentPenalty2;
             }
+
             return 1f;
         }
 
@@ -417,66 +375,57 @@ namespace _Game.LevelUp
         {
             for (int i = 0; i < cards.Count; i++)
             {
-                if (cards[i].SkillDefinition == null) continue;
-                _recentHistory[cards[i].SkillDefinition.SkillId] = _levelUpCount;
+                string skillId = GetCardSkillId(cards[i]);
+                if (string.IsNullOrWhiteSpace(skillId)) continue;
+
+                _recentHistory[skillId] = _levelUpCount;
             }
         }
 
-        private CharacterSkillSet? FindCharacterSkillSet(string mainId)
+        private string GetCardSkillId(LevelUpCardData card)
         {
-            if (string.IsNullOrWhiteSpace(mainId)) return null;
-            for (int i = 0; i < characterSkillSets.Length; i++)
-            {
-                if (string.Equals(characterSkillSets[i].characterId, mainId, StringComparison.OrdinalIgnoreCase))
-                    return characterSkillSets[i];
-            }
-            return null;
+            if (card == null) return string.Empty;
+            if (card.CharacterSkillDefinition != null) return card.CharacterSkillDefinition.SkillId;
+            if (card.SkillDefinition != null) return card.SkillDefinition.SkillId;
+            return string.Empty;
         }
 
-        /// <summary>
-        /// 지정된 캐릭터 ID의 전용 스킬을 후보 리스트에 추가한다.
-        /// 파티 3슬롯(메인/지원1/지원2)에 대해 각각 호출된다.
-        /// </summary>
-        /// <param name="characterId">캐릭터 ID (비어있으면 스킵)</param>
-        /// <param name="loadout">유효성 검증용 로드아웃</param>
-        /// <param name="slotLabel">로그용 라벨(메인/지원1/지원2)</param>
         private void AppendExclusiveSkillsOf(string characterId, PlayerSkillLoadout loadout, string slotLabel)
         {
             if (string.IsNullOrWhiteSpace(characterId)) return;
 
-            CharacterSkillSet? activeSet = FindCharacterSkillSet(characterId);
-            GameLogger.Log($"[CardGen]   [{slotLabel}] charId='{characterId}' set발견={activeSet.HasValue}", this);
-
-            if (!activeSet.HasValue || activeSet.Value.skills == null) return;
-
-            var skills = activeSet.Value.skills;
-            for (int i = 0; i < skills.Length; i++)
+            if (characterSkillDatabase == null)
             {
-                var exSkill = skills[i];
-                if (exSkill.definition == null) continue;
-                if (exSkill.prefab == null)
-                {
-                    GameLogger.LogWarning($"[CardGen] 전용 스킬 프리팹 null — {exSkill.definition?.DisplayName}", this);
-                    continue;
-                }
-                if (!IsValidCandidate(exSkill.definition, loadout)) continue;
+                GameLogger.LogWarning("[CardGen] characterSkillDatabase is missing. Exclusive skills cannot be resolved.", this);
+                return;
+            }
 
-                float baseW   = exclusiveWeightMultiplier;
-                float pity    = 1f + _currentPityBonus;
-                float penalty = GetRecentPenalty(exSkill.definition.SkillId);
+            bool hasSet = characterSkillDatabase.TryGetSkillSet(characterId, out CharacterSkillSetSO activeSet);
+            GameLogger.Log($"[CardGen]   [{slotLabel}] charId='{characterId}' setFound={hasSet}", this);
+
+            if (!hasSet || activeSet == null) return;
+
+            List<CharacterSkillDefinitionSO> skills = activeSet.GetValidSkills();
+            for (int i = 0; i < skills.Count; i++)
+            {
+                CharacterSkillDefinitionSO skill = skills[i];
+                if (!IsValidCandidate(skill, loadout)) continue;
+
+                float baseWeight = exclusiveWeightMultiplier;
+                float pity = 1f + _currentPityBonus;
+                float penalty = GetRecentPenalty(skill.SkillId);
 
                 _skillCandidates.Add(new WeightedSkill
                 {
-                    definition  = exSkill.definition,
-                    prefab      = exSkill.prefab,
-                    weight      = baseW * pity * penalty,
+                    definition = null,
+                    characterDefinition = skill,
+                    prefab = skill.WeaponPrefab,
+                    weight = baseWeight * pity * penalty,
                     isExclusive = true
                 });
             }
         }
-        
-        //  대체 카드
-        
+
         private void FillWithFallbackCards(List<LevelUpCardData> result)
         {
             result.Clear();
@@ -500,9 +449,7 @@ namespace _Game.LevelUp
             for (int i = 0; i < pool.Count && result.Count < totalCardCount; i++)
                 result.Add(pool[i]);
         }
-        
-        //  유틸
-        
+
         private void Shuffle<T>(List<T> list)
         {
             if (list == null || list.Count <= 1) return;

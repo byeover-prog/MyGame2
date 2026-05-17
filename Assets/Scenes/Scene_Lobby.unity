@@ -1640,9 +1640,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69c83af3a469db244a1931daedd0ef31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyMenuController
-  btnStart: {fileID: 2020325386}
+  btnStoryMode: {fileID: 2020325386}
+  btnCasualMode: {fileID: 0}
+  btnSettings: {fileID: 0}
   btnQuit: {fileID: 538339941}
-  gameSceneName: Scene_Boot
+  btnContinue: {fileID: 0}
+  btnNewGame: {fileID: 0}
+  formationSceneName: Scene_Boot
+  storyOpeningSceneName: Scene_Lobby
+  casualLobbySceneName: Scene_Boot
   log: 1
 --- !u!1 &1799197310
 GameObject:

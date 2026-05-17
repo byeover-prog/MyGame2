@@ -2,39 +2,68 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-public class ClearUIButtonHandler : MonoBehaviour
+public sealed class ClearUIButtonHandler : MonoBehaviour
 {
-    [Header("씬 이름")]
-    [SerializeField] private string homeSceneName = "Scene_Boot";
+    [Header("Scene Routes")]
+    [SerializeField] private string titleSceneName = "Scene_Lobby";
+    [SerializeField] private string storySceneName = "Scene_Lobby";
+    [SerializeField] private string storyLobbySceneName = "Scene_Lobby";
+    [SerializeField] private string casualLobbySceneName = "Scene_Lobby";
 
     private void OnEnable()
     {
-        var doc = GetComponent<UIDocument>();
+        UIDocument doc = GetComponent<UIDocument>();
         if (doc == null)
         {
-            GameLogger.LogWarning("[ClearUIButtonHandler] UIDocument 미연결", this);
+            GameLogger.LogWarning("[ClearUIButtonHandler] UIDocument is missing.", this);
             return;
         }
 
-        var root = doc.rootVisualElement;
+        VisualElement root = doc.rootVisualElement;
         if (root == null)
         {
-            GameLogger.LogWarning("[ClearUIButtonHandler] rootVisualElement null", this);
+            GameLogger.LogWarning("[ClearUIButtonHandler] rootVisualElement is null.", this);
             return;
         }
 
-        var btnNext  = root.Q<Button>("btn-next");
-        var btnRetry = root.Q<Button>("btn-retry");
-        var btnBase  = root.Q<Button>("btn-base");
+        Button btnNext = root.Q<Button>("btn-next");
+        Button btnRetry = root.Q<Button>("btn-retry");
+        Button btnBase = root.Q<Button>("btn-base");
 
-        if (btnNext  != null) btnNext.clicked  += OnClickNext;
+        if (btnNext != null) btnNext.clicked += OnClickNext;
         if (btnRetry != null) btnRetry.clicked += OnClickRetry;
-        if (btnBase  != null) btnBase.clicked  += OnClickHome;
+        if (btnBase != null) btnBase.clicked += OnClickHome;
+    }
+
+    private void OnDisable()
+    {
+        UIDocument doc = GetComponent<UIDocument>();
+        VisualElement root = doc != null ? doc.rootVisualElement : null;
+        if (root == null) return;
+
+        Button btnNext = root.Q<Button>("btn-next");
+        Button btnRetry = root.Q<Button>("btn-retry");
+        Button btnBase = root.Q<Button>("btn-base");
+
+        if (btnNext != null) btnNext.clicked -= OnClickNext;
+        if (btnRetry != null) btnRetry.clicked -= OnClickRetry;
+        if (btnBase != null) btnBase.clicked -= OnClickHome;
     }
 
     private void OnClickNext()
     {
-        SceneManager.LoadScene("Scene_Boot"); // 임시
+        RunSetup runSetup = RunSetupHolder.HasCurrent ? RunSetupHolder.Current : null;
+        StoryClearRoute route = StoryClearRouteService.ResolveAfterStageClear(
+            runSetup,
+            storySceneName,
+            storyLobbySceneName,
+            casualLobbySceneName);
+
+        if (StoryClearRouteService.LoadRoute(route))
+            return;
+
+        GameLogger.LogWarning($"[ClearUIButtonHandler] Clear route failed. reason='{route.Reason}'", this);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void OnClickRetry()
@@ -44,6 +73,6 @@ public class ClearUIButtonHandler : MonoBehaviour
 
     private void OnClickHome()
     {
-        SceneManager.LoadScene(homeSceneName);
+        SceneManager.LoadScene(titleSceneName);
     }
 }

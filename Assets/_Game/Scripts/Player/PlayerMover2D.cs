@@ -26,9 +26,6 @@ public sealed class PlayerMover2D : MonoBehaviour
     [Tooltip("대시 지속 시간(초)입니다.")]
     [SerializeField] private float dashDuration = 0.12f;
 
-    [Tooltip("대시 쿨다운(초)입니다.")]
-    [SerializeField] private float dashCooldown = 0.9f;
-
     [Header("맵 경계 제한")]
     [Tooltip("맵 경계 영역 Collider2D를 넣으면 Bounds를 자동 계산합니다.\n" +
              "99_Map의 MapBounds2D처럼 맵 전체를 감싸는 콜라이더를 넣으세요.\n" +
@@ -48,6 +45,7 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     [Header("참조")]
     [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private PlayerMovementMotor2D movementMotor;
     [SerializeField] private Animator animator;
 
     [Tooltip("플레이어 스프라이트(없으면 자식에서 자동 탐색). 좌/우 반전은 flipX로 처리합니다.")]
@@ -86,15 +84,11 @@ public sealed class PlayerMover2D : MonoBehaviour
     public bool IsInDash => Time.time < _dashEndTime;
 
     private float _dashEndTime = -999f;
-    private float _nextDashReadyTime = 0f;
     private Vector2 _dashVelocity;
 
     private bool _isWalkingCached;
     private bool _isActionLocked;
     private Coroutine _fadeRoutine;
-
-    private float _boundsMinX, _boundsMaxX, _boundsMinY, _boundsMaxY;
-    private bool _boundsReady;
 
     private Color _originalSpriteColor = Color.white;
 
@@ -106,6 +100,7 @@ public sealed class PlayerMover2D : MonoBehaviour
     private void Reset()
     {
         rb = GetComponent<Rigidbody2D>();
+        movementMotor = GetComponent<PlayerMovementMotor2D>();
         animator = GetComponentInChildren<Animator>();
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         combatStats = GetComponent<PlayerCombatStats2D>();
@@ -116,6 +111,9 @@ public sealed class PlayerMover2D : MonoBehaviour
     private void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (movementMotor == null) movementMotor = GetComponent<PlayerMovementMotor2D>();
+        if (movementMotor == null) movementMotor = gameObject.AddComponent<PlayerMovementMotor2D>();
+
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         if (combatStats == null) combatStats = GetComponent<PlayerCombatStats2D>();
@@ -126,44 +124,7 @@ public sealed class PlayerMover2D : MonoBehaviour
             _originalSpriteColor = spriteRenderer.color;
         }
 
-        InitBounds();
-    }
-
-    private void InitBounds()
-    {
-        if (!useBoundary) return;
-
-        if (mapBoundsCollider == null)
-        {
-            GameObject found = GameObject.Find("MapBounds2D");
-            if (found != null)
-            {
-                mapBoundsCollider = found.GetComponent<Collider2D>();
-            }
-        }
-
-        if (mapBoundsCollider != null)
-        {
-            Bounds b = mapBoundsCollider.bounds;
-            float m = boundaryMargin;
-            _boundsMinX = b.min.x + m;
-            _boundsMaxX = b.max.x - m;
-            _boundsMinY = b.min.y + m;
-            _boundsMaxY = b.max.y - m;
-            _boundsReady = true;
-        }
-        else
-        {
-            float m = boundaryMargin;
-            _boundsMinX = manualBounds.xMin + m;
-            _boundsMaxX = manualBounds.xMax - m;
-            _boundsMinY = manualBounds.yMin + m;
-            _boundsMaxY = manualBounds.yMax - m;
-            _boundsReady = true;
-        }
-
-        if (_boundsMinX > _boundsMaxX) (_boundsMinX, _boundsMaxX) = (_boundsMaxX, _boundsMinX);
-        if (_boundsMinY > _boundsMaxY) (_boundsMinY, _boundsMaxY) = (_boundsMaxY, _boundsMinY);
+        movementMotor.Configure(rb, mapBoundsCollider, manualBounds, boundaryMargin, useBoundary);
     }
 
     private void OnEnable()
@@ -189,29 +150,26 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (rb == null)
+        if (movementMotor == null)
         {
             return;
         }
 
         if (_isActionLocked)
         {
-            rb.linearVelocity = Vector2.zero;
-            ClampToBoundary();
+            movementMotor.Stop();
             return;
         }
 
         if (Time.time < _dashEndTime)
         {
-            rb.linearVelocity = _dashVelocity;
+            movementMotor.SetVelocity(_dashVelocity);
         }
         else
         {
             float finalMoveSpeed = moveSpeed * (combatStats != null ? combatStats.MoveSpeedMul : 1f);
-            rb.linearVelocity = MoveInput * finalMoveSpeed;
+            movementMotor.SetVelocity(MoveInput * finalMoveSpeed);
         }
-
-        ClampToBoundary();
     }
 
     private void ReadMoveInput()
@@ -263,7 +221,7 @@ public sealed class PlayerMover2D : MonoBehaviour
 
     private void UpdateWalkAnimationState()
     {
-        if (animator == null || rb == null)
+        if (animator == null || movementMotor == null)
         {
             return;
         }
@@ -274,7 +232,7 @@ public sealed class PlayerMover2D : MonoBehaviour
             return;
         }
 
-        float speed = rb.linearVelocity.magnitude;
+        float speed = movementMotor.VelocityMagnitude;
 
         bool next;
         if (_isWalkingCached)
@@ -322,26 +280,8 @@ public sealed class PlayerMover2D : MonoBehaviour
         }
     }
 
-    private void ClampToBoundary()
-    {
-        if (!useBoundary || !_boundsReady || rb == null)
-        {
-            return;
-        }
-
-        Vector2 pos = rb.position;
-        pos.x = Mathf.Clamp(pos.x, _boundsMinX, _boundsMaxX);
-        pos.y = Mathf.Clamp(pos.y, _boundsMinY, _boundsMaxY);
-        rb.position = pos;
-    }
-
     private void TryDash()
     {
-        /*if (Time.time < _nextDashReadyTime)
-        {
-            return;
-        }*/
-        
         if (dashController != null && !dashController.CanUseDash()) return;
 
         Vector2 dir = MoveInput.sqrMagnitude > 0.0001f ? MoveInput : FacingDir;
@@ -354,8 +294,6 @@ public sealed class PlayerMover2D : MonoBehaviour
         _dashVelocity = dir.normalized * speed;
 
         _dashEndTime = Time.time + dashDuration;
-        //_nextDashReadyTime = Time.time + dashCooldown;
-        
         if (dashController != null)
             dashController.TryUseDash();
     }
@@ -410,10 +348,8 @@ public sealed class PlayerMover2D : MonoBehaviour
 
         _isActionLocked = true;
 
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector2.zero;
-        }
+        if (movementMotor != null)
+            movementMotor.Stop();
 
         SetWalkingAnimation(false);
     }
@@ -530,41 +466,4 @@ public sealed class PlayerMover2D : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-#if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
-    {
-        if (!useBoundary) return;
-
-        float minX, maxX, minY, maxY;
-        if (Application.isPlaying && _boundsReady)
-        {
-            minX = _boundsMinX;
-            maxX = _boundsMaxX;
-            minY = _boundsMinY;
-            maxY = _boundsMaxY;
-        }
-        else if (mapBoundsCollider != null)
-        {
-            Bounds b = mapBoundsCollider.bounds;
-            float m = boundaryMargin;
-            minX = b.min.x + m;
-            maxX = b.max.x - m;
-            minY = b.min.y + m;
-            maxY = b.max.y - m;
-        }
-        else
-        {
-            float m = boundaryMargin;
-            minX = manualBounds.xMin + m;
-            maxX = manualBounds.xMax - m;
-            minY = manualBounds.yMin + m;
-            maxY = manualBounds.yMax - m;
-        }
-
-        Gizmos.color = new Color(1f, 0.3f, 0.3f, 0.6f);
-        Vector3 center = new Vector3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, 0f);
-        Vector3 size = new Vector3(maxX - minX, maxY - minY, 0f);
-        Gizmos.DrawWireCube(center, size);
-    }
-#endif
 }

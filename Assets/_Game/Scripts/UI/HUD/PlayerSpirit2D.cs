@@ -1,49 +1,89 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// 혼령(Spirit) 재화를 관리합니다.
-/// - 인게임에서 획득, 스킬트리에서 소비합니다.
-/// - PlayerCurrency2D(냥)와 독립적으로 동작합니다.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class PlayerSpirit2D : MonoBehaviour
 {
-    [Header("=== 현재 혼령 ===")]
+    [Header("Current Soul")]
     [SerializeField] private int currentSpirit;
 
-    [Header("=== 디버그 ===")]
+    [Header("Save Ownership")]
+    [SerializeField] private bool persistToMetaWallet = true;
+
+    [Header("Debug")]
     [SerializeField] private bool debugLog = false;
+
+    private MetaWalletService2D _wallet;
 
     public int CurrentSpirit => currentSpirit;
 
-    /// <summary>혼령이 변화할 때 발행합니다. (총량, 변화량)</summary>
     public event Action<int, int> OnSpiritChanged;
 
-    // ── 획득 ─────────────────────────────────────
+    private void Awake()
+    {
+        EnsureWallet();
+        SyncFromSave();
+    }
+
+    private void OnEnable()
+    {
+        EnsureWallet();
+        SyncFromSave();
+    }
+
     public void AddSpirit(int amount)
     {
         if (amount <= 0) return;
 
-        currentSpirit += amount;
-        OnSpiritChanged?.Invoke(currentSpirit, amount);
+        int before = currentSpirit;
+
+        if (_wallet != null)
+        {
+            _wallet.AddSoul(amount);
+            currentSpirit = _wallet.Soul;
+        }
+        else
+        {
+            currentSpirit += amount;
+        }
+
+        int delta = currentSpirit - before;
+        OnSpiritChanged?.Invoke(currentSpirit, delta);
 
         if (debugLog)
-            GameLogger.Log($"[PlayerSpirit2D] Spirit +{amount} => {currentSpirit}", this);
+            GameLogger.Log($"[PlayerSpirit2D] Soul +{amount} => {currentSpirit}", this);
     }
 
-    // ── 소비 (스킬트리) ───────────────────────────
-    /// <summary>
-    /// 혼령을 소비합니다. 잔액 부족 시 false 반환.
-    /// 스킬트리 구매 시 호출하세요.
-    /// </summary>
     public bool SpendSpirit(int amount)
     {
         if (amount <= 0) return true;
+
+        int before = currentSpirit;
+
+        if (_wallet != null)
+        {
+            if (!_wallet.SpendSoul(amount))
+            {
+                if (debugLog)
+                    GameLogger.Log($"[PlayerSpirit2D] Not enough Soul. Required={amount}, Current={currentSpirit}", this);
+
+                return false;
+            }
+
+            currentSpirit = _wallet.Soul;
+            OnSpiritChanged?.Invoke(currentSpirit, currentSpirit - before);
+
+            if (debugLog)
+                GameLogger.Log($"[PlayerSpirit2D] Soul -{amount} => {currentSpirit}", this);
+
+            return true;
+        }
+
         if (currentSpirit < amount)
         {
             if (debugLog)
-                GameLogger.Log($"[PlayerSpirit2D] 혼령 부족 — 필요 {amount}, 보유 {currentSpirit}", this);
+                GameLogger.Log($"[PlayerSpirit2D] Not enough local Soul. Required={amount}, Current={currentSpirit}", this);
+
             return false;
         }
 
@@ -51,12 +91,36 @@ public sealed class PlayerSpirit2D : MonoBehaviour
         OnSpiritChanged?.Invoke(currentSpirit, -amount);
 
         if (debugLog)
-            GameLogger.Log($"[PlayerSpirit2D] Spirit -{amount} => {currentSpirit}", this);
+            GameLogger.Log($"[PlayerSpirit2D] Soul -{amount} => {currentSpirit}", this);
 
         return true;
     }
 
-    // ── 조회 ─────────────────────────────────────
-    /// <summary>스킬트리에서 구매 가능 여부 확인용</summary>
-    public bool CanAfford(int cost) => currentSpirit >= cost;
+    public bool CanAfford(int cost)
+    {
+        if (_wallet != null)
+            return _wallet.CanSpendSoul(cost);
+
+        return currentSpirit >= cost;
+    }
+
+    private void EnsureWallet()
+    {
+        if (!persistToMetaWallet) return;
+        if (_wallet != null) return;
+
+        _wallet = new MetaWalletService2D(SaveManager2D.Instance);
+    }
+
+    private void SyncFromSave()
+    {
+        if (_wallet == null) return;
+
+        int savedSoul = _wallet.Soul;
+        if (currentSpirit == savedSoul) return;
+
+        int delta = savedSoul - currentSpirit;
+        currentSpirit = savedSoul;
+        OnSpiritChanged?.Invoke(currentSpirit, delta);
+    }
 }

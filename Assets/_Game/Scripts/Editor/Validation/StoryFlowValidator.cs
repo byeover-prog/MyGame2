@@ -18,7 +18,7 @@ public static class StoryFlowValidator
     {
         new TokenRule("SFV001", "Story Mode", "Story Mode entry is missing from the title scene.", "Story", "\uc2a4\ud1a0\ub9ac"),
         new TokenRule("SFV002", "Casual Mode", "Casual Mode entry is missing from the title scene.", "Casual", "\uce90\uc8fc\uc5bc"),
-        new TokenRule("SFV003", "Settings", "Settings entry is missing from the title scene.", "Btn_Settings", "Btn_Setting", "SettingsText", "Option", "\ud658\uacbd\uc124\uc815", "\uc124\uc815"),
+        new TokenRule("SFV003", "Settings", "Settings entry is missing from the title scene.", "btnSettings", "Btn_Settings", "Btn_Setting", "SettingsText", "Option", "\ud658\uacbd\uc124\uc815", "\uc124\uc815"),
         new TokenRule("SFV004", "Quit", "Quit entry is missing from the title scene.", "Quit", "Exit", "\uc885\ub8cc")
     };
 
@@ -60,7 +60,7 @@ public static class StoryFlowValidator
 
         ValidateTitleScene(report, titleText);
         ValidateStoryOptions(report, titleText, scriptText);
-        ValidateCurrentDirectRoutes(report, titleText, formationText);
+        ValidateCurrentDirectRoutes(report, titleText, formationText, scriptText);
         ValidateCheckpointOwnershipSignal(report, scriptText);
 
         report.Sort();
@@ -106,7 +106,8 @@ public static class StoryFlowValidator
     private static void ValidateCurrentDirectRoutes(
         ValidationReport report,
         string titleText,
-        string formationText)
+        string formationText,
+        string scriptText)
     {
         if (ContainsAll(titleText, "LobbyMenuController", "Btn_Start", "gameSceneName: Scene_Boot"))
         {
@@ -117,7 +118,15 @@ public static class StoryFlowValidator
                 "Title scene still has a generic Start button route to Scene_Boot. Target flow requires Story Mode and Casual Mode to branch explicitly first.");
         }
 
-        if (ContainsAny(formationText, "startSceneName: Scene_Game", "nextSceneName: Scene_Game"))
+        bool storyNewGameRouteIsOwned = ContainsAll(
+            scriptText,
+            "OnClickNewGame",
+            "RunSetupMode.Story",
+            "storyOpeningSceneName",
+            "StoryClearRouteService");
+
+        if (!storyNewGameRouteIsOwned
+            && ContainsAny(formationText, "startSceneName: Scene_Game", "nextSceneName: Scene_Game"))
         {
             report.AddWarning(
                 "SFV008",

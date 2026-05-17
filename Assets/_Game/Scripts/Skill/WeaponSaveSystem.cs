@@ -13,18 +13,20 @@ public sealed class WeaponSaveSystem : MonoBehaviour
 
     public static void Save(WeaponSaveData data)
     {
-        string json = JsonUtility.ToJson(data, true);
-        File.WriteAllText(SavePath, json);
+        if (!JsonIO2D.TrySaveToPersistent(FileName, data, prettyPrint: true, out string error))
+        {
+            GameLogger.LogWarning($"[WeaponSaveSystem] Save failed: {error}");
+            return;
+        }
+
         GameLogger.Log($"[WeaponSaveSystem] Saved: {SavePath}");
     }
 
     public static WeaponSaveData Load()
     {
-        if (!File.Exists(SavePath))
-            return new WeaponSaveData();
+        if (!JsonIO2D.TryLoadFromPersistent(FileName, out WeaponSaveData data, out _))
+            data = new WeaponSaveData();
 
-        string json = File.ReadAllText(SavePath);
-        var data = JsonUtility.FromJson<WeaponSaveData>(json);
         return data ?? new WeaponSaveData();
     }
 }

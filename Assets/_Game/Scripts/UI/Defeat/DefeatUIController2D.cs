@@ -105,8 +105,10 @@ public sealed class DefeatUIController2D : MonoBehaviour
     private void OnClickRetry()
     {
         Close();
-        var active = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(active.name);
+        if (StoryContinueCheckpointService.TryResumeFromSavedCheckpoint())
+            return;
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void OnClickQuit()

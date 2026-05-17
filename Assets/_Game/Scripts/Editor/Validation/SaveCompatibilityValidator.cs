@@ -19,10 +19,12 @@ public static class SaveCompatibilityValidator
     private const string EquipmentSavePath = "Assets/_Game/Scripts/Meta/Save/Characterequipmentsavedata2d.cs";
     private const string StageProgressPath = "Assets/_Game/Scripts/Stage/StageProgressSaveData.cs";
     private const string FormationSavePath = "Assets/_Game/Scripts/Meta/Formation/FormationSaveData2D.cs";
+    private const string RunSetupPath = "Assets/_Game/Scripts/Run_Scripts/RunSetup.cs";
     private const string CurrencyManagerPath = "Assets/_Game/Scripts/UI/ClearUI/CurrencyManager.cs";
     private const string PlayerSpiritPath = "Assets/_Game/Scripts/UI/HUD/PlayerSpirit2D.cs";
     private const string MetaWalletPath = "Assets/_Game/Scripts/Meta/Runtime/MetaWalletService2D.cs";
     private const string WeaponSaveSystemPath = "Assets/_Game/Scripts/Skill/WeaponSaveSystem.cs";
+    private const string WeaponLoadApplierPath = "Assets/_Game/Scripts/Skill/WeaponLoadApplier2D.cs";
     private const int ExpectedTalismanSlots = 6;
 
     [MenuItem(MenuPath)]
@@ -309,7 +311,7 @@ public static class SaveCompatibilityValidator
     {
         List<string> scriptFiles = FindScriptFiles(ScriptRoot);
         List<string> playerPrefsWriters = new List<string>();
-        List<string> persistentJsonWriters = new List<string>();
+        List<string> directJsonWriters = new List<string>();
 
         foreach (string file in scriptFiles)
         {
@@ -317,11 +319,13 @@ public static class SaveCompatibilityValidator
             if (normalized.Contains("/Editor/")) continue;
 
             string text = File.ReadAllText(file);
+            if (IsEditorOnlyScript(text)) continue;
+
             if (ContainsAny(text, "PlayerPrefs.SetInt", "PlayerPrefs.SetFloat", "PlayerPrefs.SetString"))
                 playerPrefsWriters.Add(ToAssetPath(file));
 
-            if (ContainsAny(text, "File.WriteAllText", "TrySaveToPersistent"))
-                persistentJsonWriters.Add(ToAssetPath(file));
+            if (ContainsAny(text, "File.WriteAllText", "File.WriteAllBytes"))
+                directJsonWriters.Add(ToAssetPath(file));
         }
 
         foreach (string path in playerPrefsWriters)
@@ -336,7 +340,7 @@ public static class SaveCompatibilityValidator
                 "Runtime PlayerPrefs writer found outside settings. Verify this is not progression/currency data that should live in player_save.json.");
         }
 
-        foreach (string path in persistentJsonWriters)
+        foreach (string path in directJsonWriters)
         {
             if (path.EndsWith("JsonIO2D.cs", StringComparison.OrdinalIgnoreCase)) continue;
             if (path.EndsWith("JsonManager2D.cs", StringComparison.OrdinalIgnoreCase)) continue;
@@ -346,19 +350,23 @@ public static class SaveCompatibilityValidator
                 "SCV061",
                 path,
                 0,
-                "Additional persistent JSON writer found. Multiple save files are acceptable only if ownership and migration are documented.");
+                "Direct persistent JSON writer found. Runtime save code should use JsonIO2D so atomic write and backup policy stay centralized.");
         }
 
         if (File.Exists(Path.GetFullPath(WeaponSaveSystemPath)))
         {
             string weaponSaveText = ReadAssetText(WeaponSaveSystemPath);
-            if (ContainsOrdinal(weaponSaveText, "weapon_save.json"))
+            bool weaponSaveIsActiveInBuild = IsScriptReferencedByEnabledBuildScene(
+                WeaponLoadApplierPath,
+                "WeaponLoadApplier2D");
+
+            if (ContainsOrdinal(weaponSaveText, "weapon_save.json") && weaponSaveIsActiveInBuild)
             {
                 report.AddWarning(
                     "SCV062",
                     WeaponSaveSystemPath,
                     FindLineNumber(weaponSaveText, "weapon_save.json"),
-                    "WeaponSaveSystem writes a separate weapon_save.json outside SaveManager2D. Verify whether this is legacy or still part of release save compatibility.");
+                    "WeaponSaveSystem still owns a separate weapon_save.json outside SaveManager2D. Verify whether this is legacy or still part of release save compatibility.");
             }
         }
     }
@@ -367,6 +375,7 @@ public static class SaveCompatibilityValidator
     {
         string jsonIOText = ReadAssetText(JsonIOPath);
         string formationText = ReadAssetText(FormationSavePath);
+        string runSetupText = ReadAssetText(RunSetupPath);
 
         if (string.IsNullOrEmpty(jsonIOText))
         {
@@ -383,7 +392,15 @@ public static class SaveCompatibilityValidator
                 "Save writes are not obviously atomic and no backup file policy was found. A crash during save can corrupt player_save.json.");
         }
 
-        if (ContainsAll(formationText, "support1Id", "mainId", "support2Id") && ContainsOrdinal(formationText, "CreateDefault()"))
+        bool formationAllowsEmptyDefault = ContainsAll(formationText, "support1Id", "mainId", "support2Id")
+            && ContainsOrdinal(formationText, "CreateDefault()");
+        bool runStartValidatesMainCharacter = ContainsAll(
+            runSetupText,
+            "bool IsValid",
+            "string.IsNullOrWhiteSpace(mainId)",
+            "RunSetup requires a mainId");
+
+        if (formationAllowsEmptyDefault && !runStartValidatesMainCharacter)
         {
             report.AddWarning(
                 "SCV072",
@@ -493,6 +510,45 @@ public static class SaveCompatibilityValidator
     private static string NormalizePath(string path)
     {
         return string.IsNullOrEmpty(path) ? string.Empty : path.Replace('\\', '/');
+    }
+
+    private static bool IsScriptReferencedByEnabledBuildScene(string scriptPath, string typeName)
+    {
+        string scriptGuid = ReadMetaGuid(scriptPath);
+
+        foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
+        {
+            if (scene == null || !scene.enabled) continue;
+            if (string.IsNullOrWhiteSpace(scene.path)) continue;
+
+            string sceneText = ReadAssetText(scene.path);
+            if (string.IsNullOrEmpty(sceneText)) continue;
+
+            if (!string.IsNullOrWhiteSpace(scriptGuid) && ContainsOrdinal(sceneText, scriptGuid))
+                return true;
+
+            if (!string.IsNullOrWhiteSpace(typeName) && ContainsOrdinal(sceneText, $"Assembly-CSharp::{typeName}"))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static string ReadMetaGuid(string assetPath)
+    {
+        string metaText = ReadAssetText(assetPath + ".meta");
+        if (string.IsNullOrEmpty(metaText)) return null;
+
+        Match match = Regex.Match(metaText, @"\bguid:\s*([a-fA-F0-9]+)");
+        return match.Success ? match.Groups[1].Value : null;
+    }
+
+    private static bool IsEditorOnlyScript(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+
+        string trimmed = text.TrimStart();
+        return trimmed.StartsWith("#if UNITY_EDITOR", StringComparison.Ordinal);
     }
 
     public enum ValidationSeverity

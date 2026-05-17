@@ -14,6 +14,10 @@ using _Game.Skills;
 [DisallowMultipleComponent]
 public sealed class HudConnector : MonoBehaviour
 {
+    [Header("=== Scene Context ===")]
+    [SerializeField, Tooltip("Scene_Game의 런타임 참조 컨텍스트입니다. 비우면 씬에서 자동 탐색합니다.")]
+    private GameSceneContext sceneContext;
+
     // ── HP ──────────────────────────────────────
 
     [Header("=== HP 바 ===")]
@@ -88,16 +92,35 @@ public sealed class HudConnector : MonoBehaviour
 
     private void Awake()
     {
+        ResolveSceneContext();
+
+        if (playerHealth == null && sceneContext != null) playerHealth = sceneContext.GetPlayerComponent<PlayerHealth>();
         if (playerHealth == null) playerHealth = FindFirstObjectByType<PlayerHealth>();
+
+        if (stageManager == null && sceneContext != null) stageManager = sceneContext.StageManager;
         if (stageManager == null) stageManager = FindFirstObjectByType<StageManager2D>();
+
+        if (commonSkillManager == null && sceneContext != null) commonSkillManager = sceneContext.GetSystemsComponent<CommonSkillManager2D>();
         if (commonSkillManager == null) commonSkillManager = FindFirstObjectByType<CommonSkillManager2D>();
+
         if (hudUI == null) hudUI = GetComponent<InGameHudUI>();
         if (hudUI == null) hudUI = FindFirstObjectByType<InGameHudUI>();
+
+        if (skillLoadout == null && sceneContext != null) skillLoadout = sceneContext.GetPlayerComponent<PlayerSkillLoadout>();
         if (skillLoadout == null) skillLoadout = FindFirstObjectByType<PlayerSkillLoadout>();
 
         _lastPassiveHash = new int[passiveSlotCount];
         for (int i = 0; i < _lastPassiveHash.Length; i++)
             _lastPassiveHash[i] = -1;
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+            sceneContext.ResolveMissingReferences();
     }
 
     private void OnEnable()

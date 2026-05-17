@@ -153,7 +153,7 @@ namespace _Game.LevelUp
             if (isTimePaused)
             {
                 ResumeGame();
-                GameLogger.LogWarning("[FlowCoordinator] OnDisable에서 강제 시간 복구", this);
+                GameLogger.Log("[FlowCoordinator] OnDisable restored paused time.", this);
             }
 
             pendingLevelUps = 0;

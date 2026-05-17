@@ -21,6 +21,9 @@ using UnityEngine;
 public sealed class LifestealHandler2D : MonoBehaviour
 {
     [Header("참조")]
+    [Tooltip("Scene_Game의 런타임 참조 컨텍스트입니다. 비워두면 씬에서 자동 탐색합니다.")]
+    [SerializeField] private GameSceneContext sceneContext;
+
     [Tooltip("전투 스탯 (LifestealPercent 읽기). 비워두면 자동 탐색합니다.")]
     [SerializeField] private PlayerCombatStats2D combatStats;
 
@@ -32,13 +35,26 @@ public sealed class LifestealHandler2D : MonoBehaviour
 
     private void Awake()
     {
+        ResolveSceneContext();
+
         if (combatStats == null) combatStats = GetComponent<PlayerCombatStats2D>();
         if (combatStats == null) combatStats = GetComponentInParent<PlayerCombatStats2D>();
+        if (combatStats == null && sceneContext != null) combatStats = sceneContext.GetPlayerComponent<PlayerCombatStats2D>();
         if (combatStats == null) combatStats = FindFirstObjectByType<PlayerCombatStats2D>();
 
         if (playerHealth == null) playerHealth = GetComponent<PlayerHealth>();
         if (playerHealth == null) playerHealth = GetComponentInParent<PlayerHealth>();
+        if (playerHealth == null && sceneContext != null) playerHealth = sceneContext.GetPlayerComponent<PlayerHealth>();
         if (playerHealth == null) playerHealth = FindFirstObjectByType<PlayerHealth>();
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+            sceneContext.ResolveMissingReferences();
     }
 
     private void OnEnable()

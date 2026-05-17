@@ -33,7 +33,7 @@ public class SkillSlotHUDController : MonoBehaviour
             bool hasSkill = i < active.Length && active[i] != null;
             if (!hasSkill) continue;
 
-            var icon = active[i].Definition.Icon;
+            var icon = active[i].Icon;
             if (icon != null)
             {
                 activeSkillIcons[i].sprite = icon;
@@ -48,7 +48,7 @@ public class SkillSlotHUDController : MonoBehaviour
             bool hasSkill = i < passive.Length && passive[i] != null;
             if (!hasSkill) continue;
 
-            var icon = passive[i].Definition.Icon;
+            var icon = passive[i].Icon;
             if (icon != null)
             {
                 passiveSkillIcons[i].sprite = icon;

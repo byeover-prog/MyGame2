@@ -1,59 +1,136 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// 캐릭터별 레벨을 PlayerPrefs에 저장/로드하는 싱글톤
-/// 키 형식: "CharLv_[characterId]"
+[DisallowMultipleComponent]
 public class CharacterLevelData : MonoBehaviour
 {
     public static CharacterLevelData Instance { get; private set; }
 
-    private const string KEY_PREFIX = "CharLv_";
-    private const int DEFAULT_LEVEL = 1;
+    private const string KeyPrefix = "CharLv_";
+    private const int DefaultLevel = 1;
 
-    // 런타임 캐시 (씬 내 반복 접근 최적화)
-    private readonly Dictionary<string, int> _cache = new();
+    [SerializeField] private CharacterCatalogSO catalog;
+
+    private readonly Dictionary<string, int> _cache = new Dictionary<string, int>();
+    private readonly HashSet<string> _legacyImportChecked = new HashSet<string>();
+    private CharacterProgressionService2D _progressionService;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
-    /// <summary>레벨 조회. 저장된 값 없으면 DEFAULT_LEVEL 반환</summary>
     public int GetLevel(string characterId)
     {
-        if (string.IsNullOrWhiteSpace(characterId)) return DEFAULT_LEVEL;
-        if (_cache.TryGetValue(characterId, out int cached)) return cached;
+        if (string.IsNullOrWhiteSpace(characterId))
+            return DefaultLevel;
 
-        int lv = PlayerPrefs.GetInt(KEY_PREFIX + characterId, DEFAULT_LEVEL);
-        _cache[characterId] = lv;
-        return lv;
+        CharacterProgressionService2D progression = GetProgressionService();
+        if (progression == null)
+            return ReadLegacyLevel(characterId);
+
+        int level = progression.GetLevel(characterId);
+        level = ImportLegacyLevelIfHigher(characterId, level, progression);
+
+        _cache[characterId] = level;
+        return level;
     }
 
-    // 레벨 저장
     public void SetLevel(string characterId, int level)
     {
-        if (string.IsNullOrWhiteSpace(characterId)) return;
-        level = Mathf.Max(1, level);
+        if (string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        level = Mathf.Clamp(level, 1, 50);
+
+        CharacterProgressionService2D progression = GetProgressionService();
+        if (progression == null)
+        {
+            _cache[characterId] = level;
+            GameLogger.LogWarning("[CharacterLevelData] SaveManager2D or CharacterCatalogSO is missing. Level was cached for this session only.", this);
+            return;
+        }
+
+        progression.SetLevel(characterId, level);
         _cache[characterId] = level;
-        PlayerPrefs.SetInt(KEY_PREFIX + characterId, level);
-        PlayerPrefs.Save();
     }
 
-    // 레벨 1 증가
     public void LevelUp(string characterId)
     {
         SetLevel(characterId, GetLevel(characterId) + 1);
+    }
+
+    private CharacterProgressionService2D GetProgressionService()
+    {
+        if (_progressionService != null)
+            return _progressionService;
+
+        ResolveCatalog();
+
+        if (catalog == null || SaveManager2D.Instance == null)
+            return null;
+
+        _progressionService = new CharacterProgressionService2D(catalog, SaveManager2D.Instance);
+        return _progressionService;
+    }
+
+    private void ResolveCatalog()
+    {
+        if (catalog != null)
+            return;
+
+        if (RootBootstrapper.Instance != null && RootBootstrapper.Instance.CharacterRoot != null)
+            catalog = RootBootstrapper.Instance.CharacterRoot.catalog;
+    }
+
+    private int ImportLegacyLevelIfHigher(
+        string characterId,
+        int currentLevel,
+        CharacterProgressionService2D progression)
+    {
+        if (_legacyImportChecked.Contains(characterId))
+            return currentLevel;
+
+        _legacyImportChecked.Add(characterId);
+
+        string legacyKey = KeyPrefix + characterId;
+        if (!PlayerPrefs.HasKey(legacyKey))
+            return currentLevel;
+
+        int legacyLevel = Mathf.Clamp(PlayerPrefs.GetInt(legacyKey, DefaultLevel), 1, 50);
+        if (legacyLevel <= currentLevel)
+            return currentLevel;
+
+        progression.SetLevel(characterId, legacyLevel);
+        _cache[characterId] = legacyLevel;
+        return legacyLevel;
+    }
+
+    private int ReadLegacyLevel(string characterId)
+    {
+        if (_cache.TryGetValue(characterId, out int cached))
+            return cached;
+
+        int level = Mathf.Clamp(PlayerPrefs.GetInt(KeyPrefix + characterId, DefaultLevel), 1, 50);
+        _cache[characterId] = level;
+        return level;
     }
 
 #if UNITY_EDITOR
     [ContextMenu("Debug/Set All Level 1")]
     private void DebugReset()
     {
-        foreach (var key in new List<string>(_cache.Keys))
+        foreach (string key in new List<string>(_cache.Keys))
             SetLevel(key, 1);
-        GameLogger.Log("[CharacterLevelData] 전체 레벨 초기화");
+
+        GameLogger.Log("[CharacterLevelData] Cached levels reset to 1.");
     }
 #endif
 }

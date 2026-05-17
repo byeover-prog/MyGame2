@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 
 // Save data for each character's owned and equipped talisman/equipment state.
 // This lives under MetaProfileSaveData2D.equipment.
@@ -49,7 +50,8 @@ public sealed class CharacterEquipmentSaveData
 
     public List<string> slotItemIds = new List<string>(TargetTalismanSlots);
 
-    public List<OwnedShopItemEntry> ownedItems = new List<OwnedShopItemEntry>(13);
+    [FormerlySerializedAs("ownedItems")]
+    public List<OwnedEquipmentItemEntry> ownedEquipmentItems = new List<OwnedEquipmentItemEntry>(13);
 
     public const int TargetTalismanSlots = 6;
     public const int LegacySlotCapacity = 8;
@@ -65,8 +67,8 @@ public sealed class CharacterEquipmentSaveData
         if (slotItemIds == null)
             slotItemIds = new List<string>(TargetTalismanSlots);
 
-        if (ownedItems == null)
-            ownedItems = new List<OwnedShopItemEntry>(13);
+        if (ownedEquipmentItems == null)
+            ownedEquipmentItems = new List<OwnedEquipmentItemEntry>(13);
 
         while (slotItemIds.Count < MaxSlots)
             slotItemIds.Add(string.Empty);
@@ -112,12 +114,12 @@ public sealed class CharacterEquipmentSaveData
     public int GetOwnedCount(string itemId)
     {
         if (string.IsNullOrWhiteSpace(itemId)) return 0;
-        if (ownedItems == null) return 0;
+        if (ownedEquipmentItems == null) return 0;
 
-        for (int i = 0; i < ownedItems.Count; i++)
+        for (int i = 0; i < ownedEquipmentItems.Count; i++)
         {
-            if (ownedItems[i] != null && ownedItems[i].itemId == itemId)
-                return ownedItems[i].count;
+            if (ownedEquipmentItems[i] != null && ownedEquipmentItems[i].itemId == itemId)
+                return ownedEquipmentItems[i].count;
         }
 
         return 0;
@@ -127,24 +129,24 @@ public sealed class CharacterEquipmentSaveData
     {
         if (string.IsNullOrWhiteSpace(itemId)) return;
 
-        if (ownedItems == null)
-            ownedItems = new List<OwnedShopItemEntry>(13);
+        if (ownedEquipmentItems == null)
+            ownedEquipmentItems = new List<OwnedEquipmentItemEntry>(13);
 
-        for (int i = 0; i < ownedItems.Count; i++)
+        for (int i = 0; i < ownedEquipmentItems.Count; i++)
         {
-            if (ownedItems[i] != null && ownedItems[i].itemId == itemId)
+            if (ownedEquipmentItems[i] != null && ownedEquipmentItems[i].itemId == itemId)
             {
-                ownedItems[i].count = count;
+                ownedEquipmentItems[i].count = count;
                 return;
             }
         }
 
-        ownedItems.Add(new OwnedShopItemEntry { itemId = itemId, count = count });
+        ownedEquipmentItems.Add(new OwnedEquipmentItemEntry { itemId = itemId, count = count });
     }
 }
 
 [Serializable]
-public sealed class OwnedShopItemEntry
+public sealed class OwnedEquipmentItemEntry
 {
     public string itemId;
     public int count;

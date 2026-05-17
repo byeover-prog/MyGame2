@@ -4,6 +4,11 @@ using System.Collections.Generic;
 [Serializable]
 public sealed class MetaProfileSaveData2D
 {
+    public const int CurrentVersion = 1;
+
+    /// <summary>Meta-profile schema version for Story/Casual shared progression.</summary>
+    public int version = CurrentVersion;
+
     /// <summary>보유 냥 (재화)입니다.</summary>
     public int nyang;
 
@@ -33,6 +38,10 @@ public sealed class MetaProfileSaveData2D
     /// <summary>기본값을 보장합니다.</summary>
     public void EnsureDefaults()
     {
+        if (version <= 0) version = CurrentVersion;
+        if (version > CurrentVersion) version = CurrentVersion;
+        version = CurrentVersion;
+
         if (nyang < 0) nyang = 0;
         if (soul < 0) soul = 0;
 
@@ -54,6 +63,7 @@ public sealed class MetaProfileSaveData2D
     {
         MetaProfileSaveData2D data = new MetaProfileSaveData2D
         {
+            version = CurrentVersion,
             nyang = 0,
             soul = 0,
         };

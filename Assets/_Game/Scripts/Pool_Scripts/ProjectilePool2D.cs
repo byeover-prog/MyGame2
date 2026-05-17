@@ -40,6 +40,7 @@ public sealed class ProjectilePool2D : MonoBehaviour
 
     private readonly Queue<PooledObject2D> _pool = new Queue<PooledObject2D>(256);
     private Coroutine _prewarmCo;
+    private bool _missingPrefabLogged;
 
     // ★ 프리팹 원본 localScale 캐싱 (부모 스케일 영향 복원용)
     private Vector3 _prefabLocalScale = Vector3.one;
@@ -94,6 +95,8 @@ public sealed class ProjectilePool2D : MonoBehaviour
     public T Get<T>(Vector3 pos, Quaternion rot) where T : PooledObject2D
     {
         var obj = GetRaw();
+        if (obj == null)
+            return null;
 
         // ★ 핵심 수정: 풀 부모에서 분리하여 월드 공간에서 독립 동작
         // - 부모 스케일(무기 프리팹 0.2~0.28 등) 영향 제거
@@ -117,6 +120,12 @@ public sealed class ProjectilePool2D : MonoBehaviour
 
     public PooledObject2D GetRaw()
     {
+        if (prefab == null)
+        {
+            LogMissingPrefab();
+            return null;
+        }
+
         if (_pool.Count > 0)
             return _pool.Dequeue();
 
@@ -125,6 +134,12 @@ public sealed class ProjectilePool2D : MonoBehaviour
 
     private PooledObject2D CreateNew()
     {
+        if (prefab == null)
+        {
+            LogMissingPrefab();
+            return null;
+        }
+
         var obj = Instantiate(prefab, transform);
         obj.name = prefab.name;
         obj.BindPool(this);
@@ -149,6 +164,14 @@ public sealed class ProjectilePool2D : MonoBehaviour
         }
 
         _pool.Enqueue(obj);
+    }
+
+    private void LogMissingPrefab()
+    {
+        if (_missingPrefabLogged) return;
+
+        _missingPrefabLogged = true;
+        Debug.LogError($"[ProjectilePool2D] Prefab is missing on '{name}'. Assign a PooledObject2D prefab.", this);
     }
 
 #if UNITY_EDITOR

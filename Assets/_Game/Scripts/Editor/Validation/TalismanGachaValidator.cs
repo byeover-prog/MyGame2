@@ -262,7 +262,12 @@ public static class TalismanGachaValidator
                 "Equipment save data still encodes the old 8-slot structure. Target rule is exactly 6 equipped talismans.");
         }
 
-        if (ContainsOrdinal(equipmentSaveText, "OwnedShopItemEntry") || ContainsOrdinal(equipmentSaveText, "ownedItems"))
+        bool hasLegacyOwnershipNames = ContainsOrdinal(equipmentSaveText, "OwnedShopItemEntry")
+            || ContainsOrdinal(equipmentSaveText, "ownedItems");
+        bool hasOfficialEquipmentOwnershipNames = ContainsOrdinal(equipmentSaveText, "OwnedEquipmentItemEntry")
+            && ContainsOrdinal(equipmentSaveText, "ownedEquipmentItems");
+
+        if (hasLegacyOwnershipNames && !hasOfficialEquipmentOwnershipNames)
         {
             report.AddWarning(
                 "TGV033",
@@ -309,8 +314,11 @@ public static class TalismanGachaValidator
         bool legacyShopCodeExists = !string.IsNullOrEmpty(shopServiceText)
             || !string.IsNullOrEmpty(shopDatabaseText)
             || !string.IsNullOrEmpty(shopItemText);
+        bool legacyShopIsActive = shopDatabases.Count > 0
+            || shopItems.Count > 0
+            || RuntimeReferencesLegacyShop();
 
-        if (legacyShopCodeExists && equipments.Count > 0)
+        if (legacyShopCodeExists && legacyShopIsActive && equipments.Count > 0)
         {
             report.AddWarning(
                 "TGV050",
@@ -319,7 +327,7 @@ public static class TalismanGachaValidator
                 "Legacy ShopItem/ShopService code coexists with the new Equipment/Gacha system. Decide which system owns talisman purchase, inventory, and equip effects.");
         }
 
-        if (shopDatabases.Count == 0 && shopItems.Count == 0 && legacyShopCodeExists)
+        if (shopDatabases.Count == 0 && shopItems.Count == 0 && legacyShopCodeExists && legacyShopIsActive)
         {
             report.AddWarning(
                 "TGV051",
@@ -397,6 +405,27 @@ public static class TalismanGachaValidator
         }
 
         return result;
+    }
+
+    private static bool RuntimeReferencesLegacyShop()
+    {
+        List<string> runtimeFiles = FindScriptFiles(ScriptRoot);
+
+        foreach (string file in runtimeFiles)
+        {
+            string normalized = NormalizePath(file);
+            if (normalized.Contains("/Editor/", StringComparison.OrdinalIgnoreCase)) continue;
+            if (normalized.EndsWith("/Shopservice.cs", StringComparison.OrdinalIgnoreCase)) continue;
+            if (normalized.EndsWith("/Shopdatabaseso.cs", StringComparison.OrdinalIgnoreCase)) continue;
+            if (normalized.EndsWith("/Shopitemso.cs", StringComparison.OrdinalIgnoreCase)) continue;
+            if (normalized.EndsWith("/TalismanGachaValidator.cs", StringComparison.OrdinalIgnoreCase)) continue;
+
+            string text = File.ReadAllText(file);
+            if (ContainsAny(text, "new ShopService", "ShopService(", "ShopDatabaseSO.RuntimeInstance", "ShopItemSO"))
+                return true;
+        }
+
+        return false;
     }
 
     private static List<string> FindScriptFiles(string root)

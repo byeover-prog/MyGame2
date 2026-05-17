@@ -2,6 +2,8 @@ using UnityEngine;
 
 public sealed class WeaponLoadApplier2D : MonoBehaviour
 {
+    [SerializeField] private GameSceneContext sceneContext;
+
     [Header("참조")]
     [SerializeField] private WeaponDatabaseSO database;
     [SerializeField] private WeaponShooterSystem2D shooter;
@@ -13,7 +15,7 @@ public sealed class WeaponLoadApplier2D : MonoBehaviour
 
     private void Awake()
     {
-        if (shooter == null) shooter = FindFirstObjectByType<WeaponShooterSystem2D>();
+        ResolveReferences();
         ApplyLoad(); // 시작 시 자동 로드
     }
 
@@ -61,5 +63,17 @@ public sealed class WeaponLoadApplier2D : MonoBehaviour
 
         WeaponSaveData data = shooter.BuildSaveData();
         WeaponSaveSystem.Save(data);
+    }
+
+    private void ResolveReferences()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (shooter == null && sceneContext != null)
+            shooter = sceneContext.GetPlayerComponent<WeaponShooterSystem2D>();
+
+        if (shooter == null)
+            shooter = FindFirstObjectByType<WeaponShooterSystem2D>();
     }
 }

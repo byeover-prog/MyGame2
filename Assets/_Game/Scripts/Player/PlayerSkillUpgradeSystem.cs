@@ -9,6 +9,9 @@ using _Game.Skills;
 [DisallowMultipleComponent]
 public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
 {
+    [Header("Scene Context")]
+    [SerializeField] private GameSceneContext sceneContext;
+
     [Header("공통 스킬(카탈로그)")]
     [SerializeField] private CommonSkillCatalogSO commonSkillCatalog;
     [SerializeField] private CommonSkillManager2D commonSkillManager;
@@ -47,14 +50,33 @@ public sealed class PlayerSkillUpgradeSystem : MonoBehaviour
 
     private void Awake()
     {
+        ResolveSceneContext();
+
+        if (playerExp == null && sceneContext != null) playerExp = sceneContext.GetPlayerComponent<PlayerExp>();
         if (playerExp == null) playerExp = FindFirstObjectByType<PlayerExp>();
+
+        if (shooter == null && sceneContext != null) shooter = sceneContext.GetPlayerComponent<WeaponShooterSystem2D>();
         if (shooter == null) shooter = FindFirstObjectByType<WeaponShooterSystem2D>();
+
         if (weaponDatabase == null) weaponDatabase = FindFirstObjectByType<WeaponDatabaseSO>();
+
+        if (commonSkillManager == null && sceneContext != null) commonSkillManager = sceneContext.GetSystemsComponent<CommonSkillManager2D>();
         if (commonSkillManager == null) commonSkillManager = FindFirstObjectByType<CommonSkillManager2D>();
+
+        if (passiveManager == null && sceneContext != null) passiveManager = sceneContext.GetSystemsComponent<PassiveManager2D>();
         if (passiveManager == null) passiveManager = FindFirstObjectByType<PassiveManager2D>();
 
         if (seedEquippedWeaponsAsLevel1)
             SeedEquippedWeapons();
+    }
+
+    private void ResolveSceneContext()
+    {
+        if (sceneContext == null)
+            sceneContext = FindFirstObjectByType<GameSceneContext>(FindObjectsInactive.Include);
+
+        if (sceneContext != null)
+            sceneContext.ResolveMissingReferences();
     }
     
     // 무기 업그레이드 적용

@@ -48,6 +48,24 @@ public sealed class StageProgressSaveData
             maxReachedStage = stageIndex + 1;
     }
 
+    public void SaveContinueStageStart(int stageIndex, string sceneName)
+    {
+        EnsureDefaults();
+        continueCheckpoint.checkpointKind = StoryContinueCheckpointKind.StageStart;
+        continueCheckpoint.stageIndex = stageIndex;
+        continueCheckpoint.sceneName = sceneName ?? string.Empty;
+        continueCheckpoint.storyId = string.Empty;
+    }
+
+    public void SaveContinueStoryLobby(string sceneName)
+    {
+        EnsureDefaults();
+        continueCheckpoint.checkpointKind = StoryContinueCheckpointKind.StoryLobby;
+        continueCheckpoint.stageIndex = -1;
+        continueCheckpoint.sceneName = sceneName ?? string.Empty;
+        continueCheckpoint.storyId = string.Empty;
+    }
+
     /// <summary>캐릭터 해금을 기록합니다.</summary>
     public void UnlockCharacter(string characterId)
     {

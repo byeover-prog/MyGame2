@@ -830,7 +830,6 @@ Transform:
   m_Children:
   - {fileID: 1900860596}
   - {fileID: 785189485}
-  - {fileID: 1835682872}
   - {fileID: 260136714}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2979,7 +2978,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &369529870
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4271,13 +4270,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e76afcc8f83a54a4fab891e447f347a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HudConnector
+  sceneContext: {fileID: 891563922}
   hpUI: {fileID: 259713601}
   hpText: {fileID: 1882745652}
   playerHealth: {fileID: 2030997279}
   timerText: {fileID: 1346656023}
   stageManager: {fileID: 893328437}
   hudUI: {fileID: 551152355}
-  commonSkillManager: {fileID: 1860680914}
+  commonSkillManager: {fileID: 825136500}
   commonSkillCatalog: {fileID: 11400000, guid: e2aaa27eb67edab47890e551a747e9ac, type: 2}
   skillLoadout: {fileID: 2030997273}
   passiveSlotStartIndex: 5
@@ -4876,7 +4876,7 @@ PrefabInstance:
         type: 3}
       propertyPath: manager
       value: 
-      objectReference: {fileID: 1860680914}
+      objectReference: {fileID: 825136500}
     - target: {fileID: 2912561503510384750, guid: 329a26c93f2a18a4db0228599421d790,
         type: 3}
       propertyPath: startSkills.Array.size
@@ -5869,7 +5869,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &785189484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5882,6 +5882,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe31269ac4d1b248975170c35c4a706, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameBootstrapper
+  sceneContext: {fileID: 0}
   player: {fileID: 2030997286}
   systemsRoot: {fileID: 33406060}
 --- !u!4 &785189485
@@ -7022,6 +7023,7 @@ GameObject:
   m_Component:
   - component: {fileID: 891563920}
   - component: {fileID: 891563921}
+  - component: {fileID: 891563922}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -7059,8 +7061,29 @@ MonoBehaviour:
   sessionManager: {fileID: 1050791946}
   killCountSource: {fileID: 1460292016}
   stageManager: {fileID: 893328437}
+  sceneContext: {fileID: 891563922}
   autoStartOnAwake: 1
   log: 1
+--- !u!114 &891563922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891563919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fde13afb7673d34ab91a6309a56579c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSceneContext
+  gameManager: {fileID: 891563921}
+  sessionManager: {fileID: 1050791946}
+  killCountSource: {fileID: 1460292016}
+  stageManager: {fileID: 893328437}
+  enemySpawner: {fileID: 1075071068}
+  player: {fileID: 2030997286}
+  systemsRoot: {fileID: 33406060}
+  resolveMissingReferencesOnAwake: 1
 --- !u!1 &893328435
 GameObject:
   m_ObjectHideFlags: 0
@@ -7105,11 +7128,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 346908e1d23590c48bd983c110b81e2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StageManager2D
-  stageCatalog: {fileID: 0}
+  stageCatalog: {fileID: 11400000, guid: b8cbf634cf8a4b24b3b1d0134d2bb501, type: 2}
   currentStageIndex: 0
-  spawner: {fileID: 0}
+  spawner: {fileID: 1075071068}
   sessionManager: {fileID: 1050791946}
-  saveManager: {fileID: 0}
+  sceneContext: {fileID: 891563922}
+  saveManager: {fileID: 1814798082}
   currentBossInstance: {fileID: 0}
   debugLog: 1
 --- !u!1 &897571212
@@ -7566,12 +7590,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 591f01d4cbe49cd4d8cd09cab7b653b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Game.LevelUp.LevelUpRewardApplier
+  sceneContext: {fileID: 891563922}
   loadout: {fileID: 2030997273}
   statRuntimeApplier: {fileID: 2030997271}
   playerHealth: {fileID: 2030997279}
   playerExp: {fileID: 2030997280}
   playerCurrency: {fileID: 2030997272}
-  commonSkillManager: {fileID: 1860680914}
+  commonSkillManager: {fileID: 825136500}
   commonSkillCatalog: {fileID: 11400000, guid: e2aaa27eb67edab47890e551a747e9ac, type: 2}
   skillRunner: {fileID: 1165307192}
 --- !u!114 &992432616 stripped
@@ -10700,6 +10725,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e89d34375f496f4b874fedd376a5f45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillUpgradeSystem
+  sceneContext: {fileID: 891563922}
   commonSkillCatalog: {fileID: 11400000, guid: e2aaa27eb67edab47890e551a747e9ac, type: 2}
   commonSkillManager: {fileID: 825136500}
   passiveCatalog: {fileID: 11400000, guid: 7736da31479d16d43b5f35125210b075, type: 2}
@@ -10746,7 +10772,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1377909634
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13051,7 +13077,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1687929294
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13437,31 +13463,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Game.LevelUp.LevelUpCardGenerator
   skillCatalog: {fileID: 11400000, guid: 81b900ba0169ccd47b476b0f029f7c16, type: 2}
   commonSkillCatalog: {fileID: 11400000, guid: e2aaa27eb67edab47890e551a747e9ac, type: 2}
-  characterSkillSets:
-  - characterId: hayul
-    skills:
-    - definition: {fileID: 11400000, guid: 8f3b7150a6772dd48833356cfa7f81b4, type: 2}
-      prefab: {fileID: 5649188341972359735, guid: 0d39f86ffea50df43bdae7965a0fc6da,
-        type: 3}
-    - definition: {fileID: 11400000, guid: ba7b8cc4d969123409c57042acfaefe8, type: 2}
-      prefab: {fileID: 3912402837701340767, guid: c922daa6a352e924c97f68557ead3406,
-        type: 3}
-  - characterId: yoonseol
-    skills:
-    - definition: {fileID: 11400000, guid: 5a919af6feb5f0b42b44d7e9784a7b21, type: 2}
-      prefab: {fileID: 5243818757162806966, guid: e4520b4cf630ce64bbe77cea38120ebf,
-        type: 3}
-    - definition: {fileID: 11400000, guid: 176470f9fc9725a4b8173c2da88f92dd, type: 2}
-      prefab: {fileID: 3991592632795931640, guid: c4b93b65964da2d45ba0c8d30ca331ff,
-        type: 3}
-  - characterId: harin
-    skills:
-    - definition: {fileID: 11400000, guid: ee2b804efe815c046ae2c7842c496ab0, type: 2}
-      prefab: {fileID: 6848772423557377901, guid: 761a1ec71d3c7d341ba88dcadf479959,
-        type: 3}
-    - definition: {fileID: 11400000, guid: 5de8bd979f3f75741837719ddb516701, type: 2}
-      prefab: {fileID: 1898139017280662815, guid: c8e998f4d2e6f4f4ab46a1d534f38176,
-        type: 3}
+  characterSkillDatabase: {fileID: 11400000, guid: a4fb8cda0f6919348b63ba47e4d9ef57,
+    type: 2}
   totalCardCount: 5
   exclusiveWeightMultiplier: 1.5
   guaranteeStartLevel: 2
@@ -13914,56 +13917,6 @@ MonoBehaviour:
   autoSave: 1
   autoSaveIntervalSeconds: 5
   log: 1
---- !u!1 &1835682871
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1835682872}
-  - component: {fileID: 1835682873}
-  m_Layer: 0
-  m_Name: 'Playerstatruntimeapplier2d '
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1835682872
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1835682871}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 33406060}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1835682873
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1835682871}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b99ad7631bca0940b77956517117bc6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRuntimeApplier2D
-  baseStatProfile: {fileID: 11400000, guid: d9ff6d3783f7f634bb7d841bc0299ded, type: 2}
-  loadout: {fileID: 2030997273}
-  combatStats: {fileID: 2030997287}
-  playerHealth: {fileID: 2030997279}
-  healToFullWhenMaxHpChanges: 1
-  debugLog: 0
 --- !u!1 &1837950478
 GameObject:
   m_ObjectHideFlags: 0
@@ -14017,7 +13970,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1860680913
 Transform:
   m_ObjectHideFlags: 0

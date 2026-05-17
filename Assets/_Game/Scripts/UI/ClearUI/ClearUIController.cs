@@ -42,7 +42,7 @@ public class ClearUIController : MonoBehaviour
             return;
         }
 
-        root          = visualRoot.Q<VisualElement>("root");
+        root = visualRoot.Q<VisualElement>("root") ?? visualRoot;
         if (root == null)
         {
             GameLogger.LogWarning("[ClearUIController] 'root' VisualElement 없음 — UXML 확인 필요", this);
@@ -103,6 +103,9 @@ public class ClearUIController : MonoBehaviour
     
     public void ShowClearUI(float clearTime, int nyangReward, int honryeongReward, string stageName)
     {
+        if (root == null)
+            return;
+
         if (_areaLabel != null)
             _areaLabel.text = stageName;
 
@@ -119,11 +122,16 @@ public class ClearUIController : MonoBehaviour
         string grade = CalculateGrade(killCount, clearTime);
 
         // 데이터 세팅
-        killValue.text     = killCount.ToString();
-        gradeValue.text    = grade;
-        timeValue.text     = FormatTime(clearTime);
-        nyangGain.text     = "+" + nyangReward.ToString("N0");
-        honryeongGain.text = "+" + honryeongReward.ToString();
+        if (killValue != null)
+            killValue.text = killCount.ToString();
+        if (gradeValue != null)
+            gradeValue.text = grade;
+        if (timeValue != null)
+            timeValue.text = FormatTime(clearTime);
+        if (nyangGain != null)
+            nyangGain.text = "+" + nyangReward.ToString("N0");
+        if (honryeongGain != null)
+            honryeongGain.text = "+" + honryeongReward.ToString();
         
         int baseNyang  = CurrencyManager.Instance != null ? CurrencyManager.Instance.BaseNyang  : 0;
         int baseSpirit = CurrencyManager.Instance != null ? CurrencyManager.Instance.BaseSpirit : 0;
@@ -233,7 +241,7 @@ public class ClearUIController : MonoBehaviour
         Color normalColor = new Color(0.88f, 0.82f, 0.63f);
 
         // S등급일 때만 반짝임
-        if (grade != "S") return;
+        if (grade != "S" || gradeValue == null) return;
 
         // 크기 팝업
         gradeValue.style.scale = new Scale(new Vector2(0.3f, 0.3f));
@@ -299,6 +307,12 @@ public class ClearUIController : MonoBehaviour
     // 페이드 아웃
     void FadeOutAndDo(System.Action callback)
     {
+        if (root == null)
+        {
+            callback?.Invoke();
+            return;
+        }
+
         DOTween.To(
             () => root.style.opacity.value,
             x  => root.style.opacity = x,
