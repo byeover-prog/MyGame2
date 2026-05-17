@@ -18,15 +18,26 @@ public sealed class PlayerMovementMotor2D : MonoBehaviour
     [SerializeField] private float boundaryMargin = 0.5f;
     [SerializeField] private bool useBoundary = true;
 
+    [Header("Obstacle Collision")]
+    [SerializeField] private bool blockObstacles = true;
+    [SerializeField, Min(0f)] private float skinWidth = 0.02f;
+
+    private const int MaxObstacleHits = 8;
+
     private float _boundsMinX;
     private float _boundsMaxX;
     private float _boundsMinY;
     private float _boundsMaxY;
     private bool _boundsReady;
+    private readonly RaycastHit2D[] _obstacleHits = new RaycastHit2D[MaxObstacleHits];
+    private ContactFilter2D _obstacleFilter;
+    private bool _obstacleFilterReady;
+    private PlayerCollisionBody2D _collisionBody;
+    private Vector2 _lastRequestedVelocity;
 
     public Rigidbody2D Rigidbody => rb;
-    public Vector2 Velocity => rb != null ? rb.linearVelocity : Vector2.zero;
-    public float VelocityMagnitude => rb != null ? rb.linearVelocity.magnitude : 0f;
+    public Vector2 Velocity => rb != null ? _lastRequestedVelocity : Vector2.zero;
+    public float VelocityMagnitude => Velocity.magnitude;
 
     private void Reset()
     {
@@ -36,6 +47,8 @@ public sealed class PlayerMovementMotor2D : MonoBehaviour
     private void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
+        EnsureCollisionBody();
+        RebuildObstacleFilter();
         RebuildBounds();
     }
 
@@ -56,6 +69,8 @@ public sealed class PlayerMovementMotor2D : MonoBehaviour
         boundaryMargin = Mathf.Max(0f, margin);
         useBoundary = enableBoundary;
 
+        EnsureCollisionBody();
+        RebuildObstacleFilter();
         RebuildBounds();
     }
 
@@ -63,13 +78,24 @@ public sealed class PlayerMovementMotor2D : MonoBehaviour
     {
         if (rb == null) return;
 
+        _lastRequestedVelocity = velocity;
+
+        if (blockObstacles && Time.inFixedTimeStep && TryMoveWithObstacleCast(velocity * Time.fixedDeltaTime))
+        {
+            ClampToBoundary();
+            return;
+        }
+
         rb.linearVelocity = velocity;
         ClampToBoundary();
     }
 
     public void Stop()
     {
-        SetVelocity(Vector2.zero);
+        _lastRequestedVelocity = Vector2.zero;
+        if (rb != null)
+            rb.linearVelocity = Vector2.zero;
+        ClampToBoundary();
     }
 
     public void RebuildBounds()
@@ -107,6 +133,72 @@ public sealed class PlayerMovementMotor2D : MonoBehaviour
         if (_boundsMinY > _boundsMaxY) (_boundsMinY, _boundsMaxY) = (_boundsMaxY, _boundsMinY);
 
         _boundsReady = true;
+    }
+
+    private void EnsureCollisionBody()
+    {
+        if (rb == null)
+            return;
+
+        Transform bodyRoot = rb.transform;
+        if (_collisionBody == null)
+            _collisionBody = bodyRoot.GetComponent<PlayerCollisionBody2D>();
+
+        if (_collisionBody == null)
+            _collisionBody = bodyRoot.GetComponentInChildren<PlayerCollisionBody2D>(true);
+
+        if (_collisionBody == null)
+            _collisionBody = bodyRoot.gameObject.AddComponent<PlayerCollisionBody2D>();
+
+        _collisionBody.EnsureBody();
+    }
+
+    private void RebuildObstacleFilter()
+    {
+        int obstacleLayer = GameplayCollisionLayers2D.ObstacleLayer;
+        _obstacleFilterReady = obstacleLayer >= 0;
+        if (!_obstacleFilterReady)
+            return;
+
+        _obstacleFilter = new ContactFilter2D
+        {
+            useLayerMask = true,
+            layerMask = 1 << obstacleLayer,
+            useTriggers = false
+        };
+    }
+
+    private bool TryMoveWithObstacleCast(Vector2 delta)
+    {
+        if (!_obstacleFilterReady)
+            return false;
+
+        rb.linearVelocity = Vector2.zero;
+
+        float distance = delta.magnitude;
+        if (distance <= 0.0001f)
+            return true;
+
+        EnsureCollisionBody();
+
+        Vector2 direction = delta / distance;
+        float castDistance = distance + skinWidth;
+        int hitCount = rb.Cast(direction, _obstacleFilter, _obstacleHits, castDistance);
+        float allowedDistance = distance;
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            RaycastHit2D hit = _obstacleHits[i];
+            if (hit.collider == null || hit.collider.isTrigger)
+                continue;
+
+            float hitDistance = Mathf.Max(0f, hit.distance - skinWidth);
+            if (hitDistance < allowedDistance)
+                allowedDistance = hitDistance;
+        }
+
+        rb.position += direction * allowedDistance;
+        return true;
     }
 
     private void ClampToBoundary()

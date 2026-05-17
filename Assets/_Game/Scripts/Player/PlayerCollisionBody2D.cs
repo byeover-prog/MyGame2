@@ -41,6 +41,9 @@ public sealed class PlayerCollisionBody2D : MonoBehaviour
         if (sourceTrigger == null)
             sourceTrigger = GetComponent<BoxCollider2D>();
 
+        if (sourceTrigger != null)
+            sourceTrigger.isTrigger = true;
+
         int playerLayer = GameplayCollisionLayers2D.PlayerLayer;
         int bodyLayer = GameplayCollisionLayers2D.PlayerBodyLayer;
         if (playerLayer >= 0)
